@@ -2,8 +2,9 @@ import { format } from 'date-fns';
 import { Calendar, CheckCircle, Clock, CreditCard, Upload, AlertCircle, Loader, ScrollText, Download, FileText, Eye } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from './ui';
-import { calculatePriceForSlots, checkTimeSlotConflicts } from '../services/booking';
+import { checkTimeSlotConflicts, calculatePriceForSlots } from '../services/booking';
 import { getQrCodes } from '../services/qrCodes';
+import { Config } from '../lib/config';
 
 export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
     const [step, setStep] = useState(1);
@@ -299,7 +300,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
         ctx.fillText('Booking Receipt', W / 2, 30);
         ctx.fillStyle = '#ccfbf1';
         ctx.font = '12px Arial, sans-serif';
-        ctx.fillText('Pickle Point Cebu', W / 2, 50);
+        ctx.fillText(Config.company.name, W / 2, 50);
         y = headerH;
 
         // Booking ID band
@@ -446,7 +447,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                             await navigator.share({
                                 files: [file],
                                 title: 'Booking Receipt',
-                                text: 'Your Pickle Point Cebu booking receipt',
+                                text: `Your ${Config.company.name} booking receipt`,
                             });
                             return;
                         }
@@ -539,7 +540,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                             </div>
                             <Button
                                 size="lg"
-                                className="w-full text-white bg-brand-green hover:bg-brand-green-dark"
+                                className="w-full text-white bg-primary hover:bg-primary-dark"
                                 onClick={() => {
                                     setShowBlockedModal(false);
                                     setSubmitError(null);
@@ -583,7 +584,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                             </div>
                             <Button
                                 size="lg"
-                                className="w-full text-white bg-brand-green hover:bg-brand-green-dark"
+                                className="w-full text-white bg-primary hover:bg-primary-dark"
                                 onClick={() => {
                                     setShowConflictModal(false);
                                     setSubmitError(null);
@@ -604,11 +605,11 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                     {/* Progress Bar — hidden on success */}
                     {step !== 5 && (
                         <div className="flex items-center gap-2 mb-6">
-                            <div className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${step >= 1 ? 'bg-brand-green' : 'bg-gray-100'}`} />
-                            <div className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${step >= 2 ? 'bg-brand-green' : 'bg-gray-100'}`} />
-                            <div className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${step >= 3 ? 'bg-brand-green' : 'bg-gray-100'}`} />
-                            <div className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${step >= 4 ? 'bg-brand-green' : 'bg-gray-100'}`} />
-                            <div className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${step >= 5 ? 'bg-brand-green' : 'bg-gray-100'}`} />
+                            <div className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${step >= 1 ? 'bg-primary' : 'bg-gray-100'}`} />
+                            <div className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${step >= 2 ? 'bg-primary' : 'bg-gray-100'}`} />
+                            <div className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${step >= 3 ? 'bg-primary' : 'bg-gray-100'}`} />
+                            <div className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${step >= 4 ? 'bg-primary' : 'bg-gray-100'}`} />
+                            <div className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${step >= 5 ? 'bg-primary' : 'bg-gray-100'}`} />
                         </div>
                     )}
 
@@ -627,13 +628,13 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                             </>
                         ) : (
                             <>
-                                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brand-green-light text-brand-green-dark mb-4">
+                                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary-light text-primary-dark mb-4">
                                     {step === 1 && <CheckCircle size={24} />}
                                     {step === 2 && <ScrollText size={24} />}
                                     {step === 3 && <CreditCard size={24} />}
                                     {step === 4 && <Eye size={24} />}
                                 </div>
-                                <h2 className="text-2xl font-display font-bold text-brand-green-dark">
+                                <h2 className="text-2xl font-display font-bold text-primary-dark">
                                     {step === 1 && 'Confirm Booking'}
                                     {step === 2 && 'Terms & Conditions'}
                                     {step === 3 && 'Payment'}
@@ -688,7 +689,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                 </div>
                                 <div className="flex justify-between items-center pt-2 border-t border-gray-200">
                                     <span className="text-gray-500 text-sm">Total Price ({bookingData.times?.length || 1} slots)</span>
-                                    <span className="font-bold text-brand-orange text-lg">
+                                    <span className="font-bold text-secondary text-lg">
                                         ₱{getDynamicPrice().toLocaleString()}
                                     </span>
                                 </div>
@@ -704,7 +705,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                             setFormData({ ...formData, name: e.target.value });
                                             setErrors({ ...errors, name: '' });
                                         }}
-                                        className={`w-full px-4 py-2 border ${errors.name ? 'border-red-500 ring-2 ring-red-100' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none transition-all`}
+                                        className={`w-full px-4 py-2 border ${errors.name ? 'border-red-500 ring-2 ring-red-100' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all`}
                                         placeholder="Enter your name"
                                     />
                                     {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
@@ -721,7 +722,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                                 setErrors({ ...errors, phone: '' });
                                             }
                                         }}
-                                        className={`w-full px-4 py-2 border ${errors.phone ? 'border-red-500 ring-2 ring-red-100' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none transition-all`}
+                                        className={`w-full px-4 py-2 border ${errors.phone ? 'border-red-500 ring-2 ring-red-100' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all`}
                                         placeholder="09123456789"
                                         maxLength={11}
                                     />
@@ -740,7 +741,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                             setFormData({ ...formData, email: e.target.value });
                                             setErrors({ ...errors, email: '' });
                                         }}
-                                        className={`w-full px-4 py-2 border ${errors.email ? 'border-red-500 ring-2 ring-red-100' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none transition-all`}
+                                        className={`w-full px-4 py-2 border ${errors.email ? 'border-red-500 ring-2 ring-red-100' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all`}
                                         placeholder="Enter your email"
                                     />
                                     {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
@@ -799,17 +800,17 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                             <div
                                 onClick={() => setTermsAccepted(prev => !prev)}
                                 className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer select-none transition-colors ${
-                                    termsAccepted ? 'border-brand-green bg-green-50' : 'border-gray-200 bg-gray-50 hover:border-brand-green/50'
+                                    termsAccepted ? 'border-primary bg-green-50' : 'border-gray-200 bg-gray-50 hover:border-primary/50'
                                 }`}
                             >
                                 <input
                                     type="checkbox"
                                     checked={termsAccepted}
                                     readOnly
-                                    className="mt-0.5 w-4 h-4 accent-brand-green shrink-0 pointer-events-none"
+                                    className="mt-0.5 w-4 h-4 accent-primary shrink-0 pointer-events-none"
                                 />
                                 <span className="text-sm text-gray-700 leading-snug">
-                                    I have read and agree to the <span className="font-medium text-brand-green-dark">Terms and Conditions</span>
+                                    I have read and agree to the <span className="font-medium text-primary-dark">Terms and Conditions</span>
                                 </span>
                             </div>
 
@@ -858,7 +859,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                                 onClick={() => setPaymentMethod(option.id)}
                                                 disabled={isSubmitting}
                                                 className={`py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 truncate ${selectedPaymentOption?.id === option.id
-                                                    ? 'bg-white text-brand-green-dark shadow-sm'
+                                                    ? 'bg-white text-primary-dark shadow-sm'
                                                     : 'text-gray-500 hover:text-gray-700'
                                                     } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                             >
@@ -897,14 +898,14 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                         <p className="font-bold text-gray-900 text-lg leading-tight mb-1">
                                             {selectedPaymentOption?.account_name || 'Not set'}
                                         </p>
-                                        <span className="text-xs font-bold uppercase tracking-wide text-brand-green-dark">
+                                        <span className="text-xs font-bold uppercase tracking-wide text-primary-dark">
                                             {selectedPaymentLabel} Payment
                                         </span>
                                     </div>
                                 </div>
 
                                 <p className="text-center text-sm text-gray-600 mt-4">
-                                    Total Amount: <span className="font-bold text-brand-orange text-lg">
+                                    Total Amount: <span className="font-bold text-secondary text-lg">
                                         ₱{getDynamicPrice().toLocaleString()}
                                     </span>
                                 </p>
@@ -923,7 +924,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                             setFormData({ ...formData, reference: val });
                                             setErrors({ ...errors, reference: '' });
                                         }}
-                                        className={`w-full px-4 py-2 border ${errors.reference ? 'border-red-500 ring-2 ring-red-100' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none transition-all font-mono text-center tracking-[0.5em] uppercase text-lg ${isSubmitting ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                        className={`w-full px-4 py-2 border ${errors.reference ? 'border-red-500 ring-2 ring-red-100' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-mono text-center tracking-[0.5em] uppercase text-lg ${isSubmitting ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                                         placeholder="0000"
                                     />
                                     {errors.reference && <p className="text-xs text-red-500 mt-1 text-center">{errors.reference}</p>}
@@ -998,12 +999,12 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                         />
                                         <label
                                             htmlFor="payment-proof-upload"
-                                            className={`flex items-center justify-center gap-2 w-full px-4 py-3 border-2 border-dashed ${errors.paymentProof ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-brand-green hover:bg-green-50/50'} rounded-xl ${(isSubmitting || isCompressing) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} transition-all`}
+                                            className={`flex items-center justify-center gap-2 w-full px-4 py-3 border-2 border-dashed ${errors.paymentProof ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-primary hover:bg-green-50/50'} rounded-xl ${(isSubmitting || isCompressing) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} transition-all`}
                                         >
                                             {isCompressing ? (
                                                 <>
-                                                    <Loader size={18} className="animate-spin text-brand-green" />
-                                                    <span className="text-sm text-brand-green-dark font-medium">Compressing image…</span>
+                                                    <Loader size={18} className="animate-spin text-primary" />
+                                                    <span className="text-sm text-primary-dark font-medium">Compressing image…</span>
                                                 </>
                                             ) : (
                                                 <>
@@ -1088,7 +1089,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                 </div>
                                 <div className="flex justify-between items-center pt-2 border-t border-gray-200">
                                         <span className="text-gray-500 text-sm">Total Amount</span>
-                                        <span className="font-bold text-brand-orange text-lg">₱{getDynamicPrice().toLocaleString()}</span>
+                                        <span className="font-bold text-secondary text-lg">₱{getDynamicPrice().toLocaleString()}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1167,7 +1168,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                 {/* Receipt Header */}
                                 <div className="p-4 text-center" style={{ backgroundColor: '#14B8A6' }}>
                                     <h3 className="font-bold text-lg" style={{ color: '#ffffff' }}>Booking Receipt</h3>
-                                    <p className="text-xs mt-0.5" style={{ color: '#dcfce7' }}>Pickle Point Cebu</p>
+                                    <p className="text-xs mt-0.5" style={{ color: '#dcfce7' }}>{Config.company.name}</p>
                                 </div>
 
                                 {/* Booking ID */}
@@ -1260,7 +1261,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                 <Button
                                     size="sm"
                                     variant="outline"
-                                    className="border-brand-green text-brand-green-dark hover:bg-green-50"
+                                    className="border-primary text-primary-dark hover:bg-green-50"
                                     onClick={handleDownloadImage}
                                     disabled={isDownloading}
                                 >
@@ -1270,7 +1271,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                 <Button
                                     size="sm"
                                     variant="outline"
-                                    className="border-brand-orange text-brand-orange hover:bg-orange-50"
+                                    className="border-secondary text-secondary hover:bg-orange-50"
                                     onClick={handleDownloadPDF}
                                     disabled={isDownloading}
                                 >

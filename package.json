@@ -1,10 +1,12 @@
 {
-  "name": "pickle-point-cebu",
+  "name": "multi-tenant-booking-engine",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:testclient": "vite --mode testclient",
+    "dev:kennydink": "vite --mode kennydink",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

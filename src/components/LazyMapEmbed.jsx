@@ -27,12 +27,12 @@ export function LazyMapEmbed({
                     className="absolute inset-0 w-full h-full"
                 ></iframe>
             ) : (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-white via-brand-green-light to-brand-orange-light p-5 sm:p-6 text-center">
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-white via-primary-light to-secondary-light p-5 sm:p-6 text-center">
                     <div className="max-w-sm w-full rounded-2xl bg-white/70 px-4 py-6 shadow-sm backdrop-blur-sm sm:px-6">
-                        <div className="mx-auto mb-4 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-white/90 text-brand-green-dark shadow-sm">
+                        <div className="mx-auto mb-4 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-white/90 text-primary-dark shadow-sm">
                             <MapPin size={24} className="sm:w-7 sm:h-7" />
                         </div>
-                        <h4 className="text-base sm:text-lg font-display font-bold text-brand-green-dark">{title}</h4>
+                        <h4 className="text-base sm:text-lg font-display font-bold text-primary-dark">{title}</h4>
                         {description ? (
                             <p className="mt-2 text-sm leading-relaxed text-gray-600">{description}</p>
                         ) : null}

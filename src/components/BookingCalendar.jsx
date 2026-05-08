@@ -76,11 +76,11 @@ export function BookingCalendar({
             {showLegend && (
                 <div className="flex flex-wrap gap-4 items-center text-sm px-4 py-3 bg-gray-50 rounded-xl border border-gray-200">
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-white border-2 border-brand-green"></div>
+                        <div className="w-4 h-4 rounded-full bg-white border-2 border-primary"></div>
                         <span className="text-gray-700">Available</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-brand-orange/30 border-2 border-brand-orange"></div>
+                        <div className="w-4 h-4 rounded-full bg-secondary/30 border-2 border-secondary"></div>
                         <span className="text-gray-700">Partially Booked</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ export function BookingCalendar({
             {showDatePicker && (
                 <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h3 className="font-display font-semibold text-lg text-brand-green-dark">
+                    <h3 className="font-display font-semibold text-lg text-primary-dark">
                         {format(currentMonth, 'MMMM yyyy')}
                     </h3>
                     <div className="flex gap-2">
@@ -140,12 +140,12 @@ export function BookingCalendar({
                                     disabled={isPast || isFullyBooked}
                                     className={cn(
                                         'h-10 w-10 rounded-full flex items-center justify-center text-sm transition-all duration-200 relative',
-                                        isSelected && 'bg-brand-green text-white font-bold shadow-md ring-2 ring-brand-green ring-offset-2',
+                                        isSelected && 'bg-primary text-white font-bold shadow-md ring-2 ring-primary ring-offset-2',
                                         !isSelected && isPast && 'text-gray-300 cursor-not-allowed',
                                         !isSelected && !isPast && isFullyBooked && 'bg-red-100 border-2 border-red-400 text-red-600 font-semibold cursor-not-allowed',
-                                        !isSelected && !isPast && isPartiallyBooked && 'bg-brand-orange/30 border-2 border-brand-orange text-gray-700 hover:bg-brand-orange/40',
-                                        !isSelected && !isPast && !isFullyBooked && !isPartiallyBooked && 'hover:bg-brand-green/20 text-gray-700 border border-transparent hover:border-brand-green',
-                                        !isSelected && isTodayDate && !isFullyBooked && 'border-2 border-brand-green text-brand-green font-semibold',
+                                        !isSelected && !isPast && isPartiallyBooked && 'bg-secondary/30 border-2 border-secondary text-gray-700 hover:bg-secondary/40',
+                                        !isSelected && !isPast && !isFullyBooked && !isPartiallyBooked && 'hover:bg-primary/20 text-gray-700 border border-transparent hover:border-primary',
+                                        !isSelected && isTodayDate && !isFullyBooked && 'border-2 border-primary text-primary font-semibold',
                                     )}
                                     title={
                                         isFullyBooked
@@ -167,7 +167,7 @@ export function BookingCalendar({
             {showTimeSlots && (
                 <div className="space-y-4 pt-4 border-t border-gray-100">
                 <div className="flex items-center justify-between">
-                    <h3 className="font-display font-semibold text-lg text-brand-green-dark flex items-center gap-2">
+                    <h3 className="font-display font-semibold text-lg text-primary-dark flex items-center gap-2">
                         <Clock size={18} /> Available Times
                     </h3>
                     <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">Select multiple</span>
@@ -220,7 +220,7 @@ export function BookingCalendar({
                                 <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
                                     {section.title}
                                     {section.note && (
-                                        <span className="text-brand-orange text-xs normal-case font-bold px-2 py-0.5 bg-orange-50 rounded-full border border-orange-100">
+                                        <span className="text-secondary text-xs normal-case font-bold px-2 py-0.5 bg-orange-50 rounded-full border border-orange-100">
                                             {section.note}
                                         </span>
                                     )}
@@ -241,8 +241,8 @@ export function BookingCalendar({
                                                     isBooked
                                                         ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
                                                         : isSelected
-                                                            ? 'bg-brand-orange text-white border-brand-orange shadow-md scale-105'
-                                                            : 'bg-white border-gray-200 text-gray-600 hover:border-brand-orange hover:text-brand-orange'
+                                                            ? 'bg-secondary text-white border-secondary shadow-md scale-105'
+                                                            : 'bg-white border-gray-200 text-gray-600 hover:border-secondary hover:text-secondary'
                                                 )}
                                                 title={isBooked ? 'This time slot is already booked' : undefined}
                                             >

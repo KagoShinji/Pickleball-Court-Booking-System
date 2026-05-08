@@ -25,7 +25,7 @@ const PasswordInput = ({
                 type={show ? 'text' : 'password'}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none transition-all"
+                className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                 placeholder={placeholder}
                 required
                 disabled={disabled}
@@ -141,7 +141,7 @@ export function ChangePassword() {
     return (
         <div className="max-w-2xl w-full">
             <div className="mb-8">
-                <h1 className="text-2xl font-display font-bold text-brand-green-dark mb-2">
+                <h1 className="text-2xl font-display font-bold text-primary-dark mb-2">
                     Change Password
                 </h1>
                 <p className="text-gray-600">

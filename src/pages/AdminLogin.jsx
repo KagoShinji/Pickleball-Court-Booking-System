@@ -42,7 +42,7 @@ export function AdminLogin() {
         <div className="min-h-screen flex items-center justify-center bg-bg-user p-4">
             <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-md border border-gray-100">
                 <div className="text-center mb-10">
-                    <h1 className="text-3xl font-display font-bold text-brand-green-dark">Admin Login</h1>
+                    <h1 className="text-3xl font-display font-bold text-primary-dark">Admin Login</h1>
                     <p className="text-gray-500 mt-2">Welcome back! Please enter your details.</p>
                 </div>
 
@@ -55,7 +55,7 @@ export function AdminLogin() {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none transition-all"
+                                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                                 placeholder="Enter your email"
                             />
                         </div>
@@ -69,7 +69,7 @@ export function AdminLogin() {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none transition-all"
+                                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                                 placeholder="Enter your password"
                                 required
                                 disabled={loading}

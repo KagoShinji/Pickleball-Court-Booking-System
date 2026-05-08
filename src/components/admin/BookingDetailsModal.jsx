@@ -158,28 +158,28 @@ export function BookingDetailsModal({ isOpen, onClose, booking, onUpdateStatus, 
                             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Customer Information</h3>
                             <div className="space-y-2">
                                 <div className="flex items-start gap-2">
-                                    <User size={15} className="text-brand-green mt-0.5" />
+                                    <User size={15} className="text-primary mt-0.5" />
                                     <div>
                                         <p className="font-semibold text-gray-900 text-sm">{booking.customer_name}</p>
                                         <p className="text-xs text-gray-500">Customer Name</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-2">
-                                    <Mail size={15} className="text-brand-green mt-0.5" />
+                                    <Mail size={15} className="text-primary mt-0.5" />
                                     <div>
                                         <p className="font-medium text-gray-900 text-sm">{booking.customer_email}</p>
                                         <p className="text-xs text-gray-500">Email Address</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-2">
-                                    <Phone size={15} className="text-brand-green mt-0.5" />
+                                    <Phone size={15} className="text-primary mt-0.5" />
                                     <div>
                                         <p className="font-medium text-gray-900 text-sm">{booking.customer_phone}</p>
                                         <p className="text-xs text-gray-500">Phone Number</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-2">
-                                    <FileText size={15} className="text-brand-green mt-0.5" />
+                                    <FileText size={15} className="text-primary mt-0.5" />
                                     <div>
                                         <p className="font-medium text-gray-900 text-sm font-mono">{booking.notes || '-'}</p>
                                         <p className="text-xs text-gray-500">Reference Number</p>
@@ -191,9 +191,9 @@ export function BookingDetailsModal({ isOpen, onClose, booking, onUpdateStatus, 
 
                         <div>
                             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Booking Details</h3>
-                            <div className="bg-brand-green-light/30 rounded-xl p-3 border border-brand-green/10 space-y-2">
+                            <div className="bg-primary-light/30 rounded-xl p-3 border border-primary/10 space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2 text-brand-green-dark">
+                                    <div className="flex items-center gap-2 text-primary-dark">
                                         <MapPin size={14} />
                                         <span className="font-semibold text-sm">{booking.courts?.name || 'Court'}</span>
                                     </div>
@@ -227,9 +227,9 @@ export function BookingDetailsModal({ isOpen, onClose, booking, onUpdateStatus, 
                                         </div>
                                     </div>
                                 )}
-                                <div className="pt-1.5 border-t border-brand-green/10 flex justify-between items-center">
+                                <div className="pt-1.5 border-t border-primary/10 flex justify-between items-center">
                                     <span className="text-xs text-gray-500">Total Amount</span>
-                                    <span className="font-bold text-base text-brand-orange">
+                                    <span className="font-bold text-base text-secondary">
                                         ₱{booking.total_price || 0}
                                     </span>
                                 </div>
@@ -240,8 +240,8 @@ export function BookingDetailsModal({ isOpen, onClose, booking, onUpdateStatus, 
                         {booking.rescheduled_from && (
                             <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <History size={14} className="text-brand-orange" />
-                                    <h4 className="text-xs font-bold text-brand-orange uppercase tracking-wider">
+                                    <History size={14} className="text-secondary" />
+                                    <h4 className="text-xs font-bold text-secondary uppercase tracking-wider">
                                         Rescheduled Booking
                                     </h4>
                                 </div>
@@ -351,7 +351,7 @@ export function BookingDetailsModal({ isOpen, onClose, booking, onUpdateStatus, 
                                 <div className="aspect-[3/4] bg-gray-100 rounded-xl border-2 border-gray-200 flex items-center justify-center overflow-hidden relative group">
                                     {imageLoading ? (
                                         <div className="flex flex-col items-center gap-3 text-gray-400">
-                                            <Loader size={32} className="animate-spin text-brand-green" />
+                                            <Loader size={32} className="animate-spin text-primary" />
                                             <span className="text-sm font-medium">Loading receipt…</span>
                                         </div>
                                     ) : (
@@ -409,7 +409,7 @@ export function BookingDetailsModal({ isOpen, onClose, booking, onUpdateStatus, 
                                 <Button
                                     onClick={() => { setIsRescheduling(true); onReschedule(booking); }}
                                     disabled={isRescheduling}
-                                    className="bg-orange-50 text-brand-orange hover:bg-orange-100 border border-orange-200 flex items-center gap-1.5 text-sm px-3 py-1.5 disabled:opacity-70 disabled:cursor-not-allowed"
+                                    className="bg-orange-50 text-secondary hover:bg-orange-100 border border-orange-200 flex items-center gap-1.5 text-sm px-3 py-1.5 disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
                                     {isRescheduling ? <Loader size={14} className="animate-spin" /> : <RefreshCw size={14} />}
                                     Reschedule
@@ -426,7 +426,7 @@ export function BookingDetailsModal({ isOpen, onClose, booking, onUpdateStatus, 
                                 <Button
                                     onClick={handleDownloadReceipt}
                                     disabled={!booking.proof_of_payment_url || isDownloading}
-                                    className="bg-brand-green hover:bg-brand-green-dark text-white flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed text-sm px-3 py-1.5"
+                                    className="bg-primary hover:bg-primary-dark text-white flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed text-sm px-3 py-1.5"
                                 >
                                     {isDownloading ? (
                                         <Loader size={14} className="animate-spin" />

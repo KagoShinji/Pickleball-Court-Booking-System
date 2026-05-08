@@ -337,14 +337,14 @@ export function AdminBookings() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <div>
-                        <h1 className="text-2xl font-bold font-display text-brand-green-dark">Booking Management</h1>
+                        <h1 className="text-2xl font-bold font-display text-primary-dark">Booking Management</h1>
                         <p className="text-gray-500">View and manage customer bookings</p>
                     </div>
                     <button
                         onClick={() => refreshCurrentView({ force: true })}
                         disabled={loading}
                         title="Refresh bookings"
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand-green-dark bg-brand-green/10 hover:bg-brand-green/20 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-dark bg-primary/10 hover:bg-primary/20 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
                         Refresh
@@ -358,7 +358,7 @@ export function AdminBookings() {
                         placeholder="Search name, ref..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 w-full"
+                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 w-full"
                     />
                 </div>
             </div>
@@ -373,7 +373,7 @@ export function AdminBookings() {
                                 className={`
                                     px-4 py-2 text-sm font-medium rounded-lg transition-all
                                     ${sortOrder === value
-                                        ? 'bg-white text-brand-green-dark shadow-sm'
+                                        ? 'bg-white text-primary-dark shadow-sm'
                                         : 'text-gray-500 hover:text-gray-700'
                                     }
                                 `}
@@ -434,8 +434,8 @@ export function AdminBookings() {
                 const todayLabel = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Manila', month: 'long', day: 'numeric', year: 'numeric' }).format(new Date());
                 return !loading && (
                     <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1.5 bg-brand-green/10 text-brand-green-dark text-sm font-medium px-3 py-1.5 rounded-full">
-                            <span className="w-2 h-2 rounded-full bg-brand-green animate-pulse" />
+                        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary-dark text-sm font-medium px-3 py-1.5 rounded-full">
+                            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                             {todayCount === 0
                                 ? `No new bookings today — ${todayLabel}`
                                 : `${todayCount} new booking${todayCount > 1 ? 's' : ''} added today — ${todayLabel}`
@@ -486,7 +486,7 @@ export function AdminBookings() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-1 shrink-0">
-                                    <Button size="sm" variant="ghost" onClick={() => { setSelectedBooking(booking); setIsModalOpen(true); }} className="text-gray-500 hover:text-brand-green h-8 w-8 p-0 grid place-items-center" title="View Details">
+                                    <Button size="sm" variant="ghost" onClick={() => { setSelectedBooking(booking); setIsModalOpen(true); }} className="text-gray-500 hover:text-primary h-8 w-8 p-0 grid place-items-center" title="View Details">
                                         <Eye size={15} />
                                     </Button>
                                     <Button size="sm" variant="ghost" onClick={() => handleDeleteClick(booking)} className="text-gray-400 hover:text-red-500 h-8 w-8 p-0 grid place-items-center">
@@ -568,7 +568,7 @@ export function AdminBookings() {
                                         </td>
                                         <td className="px-4 py-2.5 text-right">
                                             <div className="flex items-center justify-end gap-1">
-                                                <Button size="sm" variant="ghost" onClick={() => { setSelectedBooking(booking); setIsModalOpen(true); }} className="text-gray-500 hover:text-brand-green h-7 w-7 p-0 grid place-items-center" title="View Details">
+                                                <Button size="sm" variant="ghost" onClick={() => { setSelectedBooking(booking); setIsModalOpen(true); }} className="text-gray-500 hover:text-primary h-7 w-7 p-0 grid place-items-center" title="View Details">
                                                     <Eye size={14} />
                                                 </Button>
                                                 <Button size="sm" variant="ghost" onClick={() => handleDeleteClick(booking)} className="text-gray-400 hover:text-red-500 h-7 w-7 p-0 grid place-items-center">

@@ -78,7 +78,7 @@ export function AdminDashboard() {
     return (
         <div className="space-y-8 w-full max-w-full overflow-x-hidden">
             <div>
-                <h1 className="text-2xl font-bold font-display text-brand-green-dark">Dashboard Overview</h1>
+                <h1 className="text-2xl font-bold font-display text-primary-dark">Dashboard Overview</h1>
                 <p className="text-gray-500">Welcome back, Admin! Here's what's happening today.</p>
             </div>
 
@@ -88,25 +88,25 @@ export function AdminDashboard() {
                     title="Total Bookings"
                     value={loading ? '...' : stats.totalBookings}
                     icon={Calendar}
-                    colorClass="bg-brand-green-light text-brand-green-dark"
+                    colorClass="bg-primary-light text-primary-dark"
                 />
                 <StatCard
                     title="Total Revenue"
                     value={loading ? '...' : `₱${stats.revenue.toLocaleString()}`}
                     icon={DollarSign}
-                    colorClass="bg-brand-orange-light text-brand-orange"
+                    colorClass="bg-secondary-light text-secondary"
                 />
                 <StatCard
                     title="Active Courts"
                     value={loading ? '...' : stats.activeCourts}
                     icon={Users}
-                    colorClass="bg-brand-green-light text-brand-green-dark"
+                    colorClass="bg-primary-light text-primary-dark"
                 />
                 <StatCard
                     title="Bookings Today"
                     value={loading ? '...' : stats.todayBookings}
                     icon={Activity}
-                    colorClass="bg-brand-orange-light text-brand-orange"
+                    colorClass="bg-secondary-light text-secondary"
                 />
             </div>
 
@@ -115,7 +115,7 @@ export function AdminDashboard() {
                 <div className="lg:col-span-2 space-y-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-bold text-gray-800">Recent Bookings</h2>
-                        <Link to="/admin/bookings" className="text-sm text-brand-orange hover:underline">View All</Link>
+                        <Link to="/admin/bookings" className="text-sm text-secondary hover:underline">View All</Link>
                     </div>
 
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -161,18 +161,18 @@ export function AdminDashboard() {
                 <div className="space-y-6">
                     <h2 className="text-lg font-bold text-gray-800">System Status</h2>
                     <Card className="p-6 space-y-4">
-                        <div className="flex items-center justify-between p-3 bg-brand-green-light rounded-lg border border-brand-green/20">
+                        <div className="flex items-center justify-between p-3 bg-primary-light rounded-lg border border-primary/20">
                             <div className="flex items-center gap-3">
-                                <div className="h-2 w-2 rounded-full bg-brand-green"></div>
-                                <span className="font-medium text-brand-green-dark">System Online</span>
+                                <div className="h-2 w-2 rounded-full bg-primary"></div>
+                                <span className="font-medium text-primary-dark">System Online</span>
                             </div>
-                            <span className="text-xs text-brand-green">99.9% Uptime</span>
+                            <span className="text-xs text-primary">99.9% Uptime</span>
                         </div>
 
                         <div className="space-y-2">
                             <p className="text-sm font-medium text-gray-500">Storage Usage</p>
                             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                <div className="h-full w-[24%] bg-brand-green rounded-full"></div>
+                                <div className="h-full w-[24%] bg-primary rounded-full"></div>
                             </div>
                             <p className="text-xs text-gray-400 text-right">24% used</p>
                         </div>
@@ -180,7 +180,7 @@ export function AdminDashboard() {
                         <div className="space-y-2">
                             <p className="text-sm font-medium text-gray-500">Daily API Calls</p>
                             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                <div className="h-full w-[65%] bg-brand-orange rounded-full"></div>
+                                <div className="h-full w-[65%] bg-secondary rounded-full"></div>
                             </div>
                             <p className="text-xs text-gray-400 text-right">1.2k / 2k</p>
                         </div>

@@ -1,6 +1,7 @@
 import { MapPin, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from './ui';
+import { Config } from '../lib/config';
 
 export function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -10,26 +11,26 @@ export function Navbar() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     <div className="flex items-center gap-2">
-                        <div className="bg-brand-orange p-1.5 rounded-lg rotate-3">
-                            <span className="text-white font-bold text-lg">PP</span>
+                        <div className="bg-secondary p-1.5 rounded-lg rotate-3">
+                            <span className="text-white font-bold text-lg">{Config.company.initials}</span>
                         </div>
-                        <span className="font-display font-bold text-xl tracking-tight text-brand-green-dark">
-                            The Pickle Point- Cebu<span className="text-brand-orange">.</span>
+                        <span className="font-display font-bold text-xl tracking-tight text-primary-dark">
+                            {Config.company.name}<span className="text-secondary">.</span>
                         </span>
                     </div>
 
                     <div className="hidden md:block">
                         <div className="ml-10 flex items-baseline space-x-8">
-                            <a href="#courts" className="font-medium hover:text-brand-orange transition-colors">Courts</a>
-                            <a href="#offers" className="font-medium hover:text-brand-orange transition-colors">Offers</a>
-                            <a href="#contact" className="font-medium hover:text-brand-orange transition-colors">Contact</a>
+                            <a href="#courts" className="font-medium hover:text-secondary transition-colors">Courts</a>
+                            <a href="#offers" className="font-medium hover:text-secondary transition-colors">Offers</a>
+                            <a href="#contact" className="font-medium hover:text-secondary transition-colors">Contact</a>
                         </div>
                     </div>
 
                     <div className="hidden md:flex items-center gap-4">
                         <div className="flex items-center gap-1 text-sm text-gray-500">
                             <MapPin size={16} />
-                            <span>Mandaue City</span>
+                            <span>{Config.company.location}</span>
                         </div>
                     </div>
 

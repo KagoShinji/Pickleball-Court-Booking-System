@@ -198,7 +198,7 @@ export function AdminCalendar() {
     return (
         <div className="space-y-6 w-full max-w-full">
             <div>
-                <h1 className="text-2xl font-bold font-display text-brand-green-dark">Calendar Schedule</h1>
+                <h1 className="text-2xl font-bold font-display text-primary-dark">Calendar Schedule</h1>
                 <p className="text-gray-500">Overview of efficient court utilization</p>
             </div>
 
@@ -206,9 +206,9 @@ export function AdminCalendar() {
             {!loading && (
                 <button
                     onClick={() => navigate('/admin/bookings')}
-                    className="inline-flex items-center gap-1.5 bg-brand-green/10 hover:bg-brand-green/20 text-brand-green-dark text-sm font-medium px-3 py-1.5 rounded-full transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary-dark text-sm font-medium px-3 py-1.5 rounded-full transition-colors cursor-pointer"
                 >
-                    <span className="w-2 h-2 rounded-full bg-brand-green animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                     {todayCount === 0
                         ? `No new bookings today — ${todayLabel}`
                         : `${todayCount} new booking${todayCount > 1 ? 's' : ''} added today — ${todayLabel}`
@@ -255,13 +255,13 @@ export function AdminCalendar() {
                                     onClick={() => setSelectedDate(day)}
                                     className={`
                                         min-h-[64px] p-2 rounded-xl text-left transition-all relative flex flex-col
-                                        ${isSelected ? 'ring-2 ring-brand-green bg-brand-green/5' : 'hover:bg-gray-50'}
+                                        ${isSelected ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-gray-50'}
                                         ${!isCurrentMonth ? 'opacity-40' : ''}
                                     `}
                                 >
                                     <span className={`
                                         text-sm font-medium block
-                                        ${isSelected ? 'text-brand-green-dark' : 'text-gray-700'}
+                                        ${isSelected ? 'text-primary-dark' : 'text-gray-700'}
                                     `}>
                                         {format(day, 'd')}
                                     </span>
@@ -272,17 +272,17 @@ export function AdminCalendar() {
                                             {count <= 3 ? (
                                                 <div className="flex flex-col gap-[3px]">
                                                     {Array.from({ length: count }).map((_, i) => (
-                                                        <div key={i} className="h-1 rounded-full bg-brand-orange w-full opacity-80" />
+                                                        <div key={i} className="h-1 rounded-full bg-secondary w-full opacity-80" />
                                                     ))}
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center gap-1">
                                                     <div className="flex flex-col gap-[3px] flex-1">
                                                         {Array.from({ length: 3 }).map((_, i) => (
-                                                            <div key={i} className="h-1 rounded-full bg-brand-orange w-full opacity-80" />
+                                                            <div key={i} className="h-1 rounded-full bg-secondary w-full opacity-80" />
                                                         ))}
                                                     </div>
-                                                    <span className="text-[9px] font-bold text-brand-orange leading-none shrink-0">
+                                                    <span className="text-[9px] font-bold text-secondary leading-none shrink-0">
                                                         {count}
                                                     </span>
                                                 </div>
@@ -299,10 +299,10 @@ export function AdminCalendar() {
                 <div className="lg:w-1/3 flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-bold text-gray-800">
-                            Schedule for <span className="text-brand-green-dark">{format(selectedDate, 'MMM do')}</span>
+                            Schedule for <span className="text-primary-dark">{format(selectedDate, 'MMM do')}</span>
                         </h2>
                         {selectedDayBookings.length > 0 && (
-                            <span className="text-xs font-semibold bg-brand-green/10 text-brand-green-dark px-2 py-0.5 rounded-full">
+                            <span className="text-xs font-semibold bg-primary/10 text-primary-dark px-2 py-0.5 rounded-full">
                                 {selectedDayBookings.length} booking{selectedDayBookings.length !== 1 ? 's' : ''}
                             </span>
                         )}
@@ -317,11 +317,11 @@ export function AdminCalendar() {
                                         <div
                                             key={booking.id}
                                             onClick={() => handleBookingClick(booking)}
-                                            className="px-3 py-2 rounded-lg bg-gray-50 border border-gray-100 hover:border-brand-green/40 hover:bg-white hover:shadow-sm cursor-pointer transition-all flex items-center gap-3"
+                                            className="px-3 py-2 rounded-lg bg-gray-50 border border-gray-100 hover:border-primary/40 hover:bg-white hover:shadow-sm cursor-pointer transition-all flex items-center gap-3"
                                         >
                                             {/* Time block */}
                                             <div className="shrink-0 text-center bg-white border border-gray-200 rounded-lg px-2 py-1 min-w-[72px]">
-                                                <p className="text-xs font-bold text-brand-green-dark leading-tight">{booking.start_time}</p>
+                                                <p className="text-xs font-bold text-primary-dark leading-tight">{booking.start_time}</p>
                                                 <p className="text-[10px] text-gray-400 leading-tight">{booking.end_time}</p>
                                             </div>
 

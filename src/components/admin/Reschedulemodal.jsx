@@ -152,7 +152,7 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
         };
         const newPrice = calculatePriceForSlots(selectedTimes, courtData);
 
-        const message = `Good day, ${customerName}! Due to ${reasonText}, we need to reschedule your ${courtName} booking from ${originalDate} (${originalTimes}) to ${newDate} (${newTimes}). Total: ₱${newPrice}. Questions? Contact us. - ThePicklepointCebu`;
+        const message = `Good day, ${customerName}! Due to ${reasonText}, we need to reschedule your ${courtName} booking from ${originalDate} (${originalTimes}) to ${newDate} (${newTimes}). Total: ₱${newPrice}. Questions? Contact us. - ${Config.company.name}`;
 
         return message;
     };
@@ -257,9 +257,9 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
                 {/* Progress Steps */}
                 <div className="px-6 py-4 border-b border-gray-100 shrink-0">
                     <div className="flex items-center gap-2">
-                        <div className={`h-2 flex-1 rounded-full transition-colors ${step >= 1 ? 'bg-brand-orange' : 'bg-gray-200'}`} />
-                        <div className={`h-2 flex-1 rounded-full transition-colors ${step >= 2 ? 'bg-brand-orange' : 'bg-gray-200'}`} />
-                        <div className={`h-2 flex-1 rounded-full transition-colors ${step >= 3 ? 'bg-brand-orange' : 'bg-gray-200'}`} />
+                        <div className={`h-2 flex-1 rounded-full transition-colors ${step >= 1 ? 'bg-secondary' : 'bg-gray-200'}`} />
+                        <div className={`h-2 flex-1 rounded-full transition-colors ${step >= 2 ? 'bg-secondary' : 'bg-gray-200'}`} />
+                        <div className={`h-2 flex-1 rounded-full transition-colors ${step >= 3 ? 'bg-secondary' : 'bg-gray-200'}`} />
                     </div>
                     <div className="flex justify-between mt-2 text-xs text-gray-500">
                         <span>Reason</span>
@@ -282,7 +282,7 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
                                         <label
                                             key={reasonOption}
                                             className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${reason === reasonOption
-                                                    ? 'border-brand-orange bg-orange-50'
+                                                    ? 'border-secondary bg-orange-50'
                                                     : 'border-gray-200 hover:border-gray-300'
                                                 }`}
                                         >
@@ -292,7 +292,7 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
                                                 value={reasonOption}
                                                 checked={reason === reasonOption}
                                                 onChange={(e) => setReason(e.target.value)}
-                                                className="w-4 h-4 text-brand-orange"
+                                                className="w-4 h-4 text-secondary"
                                             />
                                             <span className="text-gray-900 capitalize flex-1">
                                                 {reasonOption === 'custom' ? 'Other (specify below)' : reasonOption}
@@ -311,7 +311,7 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
                                             onChange={(e) => setCustomReason(e.target.value)}
                                             placeholder="e.g., power outage, emergency repairs..."
                                             rows={3}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-orange focus:border-brand-orange outline-none"
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary focus:border-secondary outline-none"
                                         />
                                     </div>
                                 )}
@@ -333,7 +333,7 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
                                         }
                                         setStep(2);
                                     }}
-                                    className="flex-1 bg-brand-orange hover:bg-brand-orange/90 text-white"
+                                    className="flex-1 bg-secondary hover:bg-secondary/90 text-white"
                                 >
                                     Next: Select Date & Time
                                 </Button>
@@ -402,7 +402,7 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
                                         }
                                         setStep(3);
                                     }}
-                                    className="flex-1 bg-brand-orange hover:bg-brand-orange/90 text-white"
+                                    className="flex-1 bg-secondary hover:bg-secondary/90 text-white"
                                     disabled={!selectedDate || selectedTimes.length === 0}
                                 >
                                     Next: Review ({selectedTimes.length} slot{selectedTimes.length !== 1 ? 's' : ''})
@@ -451,7 +451,7 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
 
                                         {/* New */}
                                         <div>
-                                            <h4 className="text-xs font-bold text-brand-orange uppercase mb-2">
+                                            <h4 className="text-xs font-bold text-secondary uppercase mb-2">
                                                 New Booking
                                             </h4>
                                             <div className="space-y-2 text-sm">
@@ -495,7 +495,7 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
                                             onClick={handleCopySMS}
                                             className={`absolute top-2 right-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${copied
                                                     ? 'bg-green-100 text-green-700'
-                                                    : 'bg-brand-orange text-white hover:bg-brand-orange/90'
+                                                    : 'bg-secondary text-white hover:bg-secondary/90'
                                                 }`}
                                         >
                                             {copied ? (
@@ -531,7 +531,7 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
                                 <Button
                                     onClick={handleConfirm}
                                     disabled={isConfirming}
-                                    className="flex-1 bg-brand-orange hover:bg-brand-orange/90 text-white flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                                    className="flex-1 bg-secondary hover:bg-secondary/90 text-white flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
                                     {isConfirming ? (
                                         <>

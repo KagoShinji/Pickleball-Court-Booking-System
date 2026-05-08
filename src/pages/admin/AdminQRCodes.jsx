@@ -8,6 +8,7 @@ import {
     updateQrCode,
     uploadQrImage
 } from '../../services/qrCodes';
+import { FeatureGate } from '../../components/FeatureGate';
 
 const emptyNewOption = {
     label: '',
@@ -238,13 +239,13 @@ export function AdminQRCodes() {
         <div className="space-y-8 w-full max-w-full overflow-x-hidden">
             <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
-                    <h1 className="text-2xl font-bold font-display text-brand-green-dark">QR Code Management</h1>
+                    <h1 className="text-2xl font-bold font-display text-primary-dark">QR Code Management</h1>
                     <p className="text-sm text-gray-500 mt-1">Add, edit, and hide payment QR options shown in the booking modal.</p>
                 </div>
                 <button
                     onClick={loadQrCodes}
                     disabled={pageLoading}
-                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-brand-green-dark px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary-dark px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
                 >
                     <RefreshCw size={15} className={pageLoading ? 'animate-spin' : ''} />
                     Refresh
@@ -274,7 +275,7 @@ export function AdminQRCodes() {
                                         onClick={() => setActiveId(option.id)}
                                         className={`shrink-0 flex items-center gap-1.5 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                                             activeId === option.id
-                                                ? 'bg-white shadow-sm text-gray-900 ring-1 ring-brand-green'
+                                                ? 'bg-white shadow-sm text-gray-900 ring-1 ring-primary'
                                                 : 'bg-gray-100 text-gray-500 hover:text-gray-700'
                                         }`}
                                     >
@@ -300,7 +301,7 @@ export function AdminQRCodes() {
                                                 <p className="text-xs text-gray-400 text-center px-4">No image set</p>
                                             )}
                                             {activeForm.localPreview && (
-                                                <span className="absolute top-2 right-2 bg-brand-green text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                <span className="absolute top-2 right-2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                                                     NEW
                                                 </span>
                                             )}
@@ -325,8 +326,8 @@ export function AdminQRCodes() {
                                                 fileErr[activeOption.id]
                                                     ? 'border-red-300 text-red-500 bg-red-50'
                                                     : activeForm.localPreview
-                                                        ? 'border-brand-green text-brand-green-dark bg-green-50/60'
-                                                        : 'border-gray-300 text-gray-500 hover:border-brand-green hover:text-brand-green-dark hover:bg-green-50/40'
+                                                        ? 'border-primary text-primary-dark bg-green-50/60'
+                                                        : 'border-gray-300 text-gray-500 hover:border-primary hover:text-primary-dark hover:bg-green-50/40'
                                             }`}
                                         >
                                             <Upload size={16} />
@@ -351,7 +352,7 @@ export function AdminQRCodes() {
                                                 value={activeForm.label}
                                                 onChange={e => patch(activeOption.id, { label: e.target.value })}
                                                 placeholder="e.g. GCash"
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none transition-all"
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                                             />
                                         </div>
                                         <div>
@@ -361,7 +362,7 @@ export function AdminQRCodes() {
                                                 value={activeForm.account_name}
                                                 onChange={e => patch(activeOption.id, { account_name: e.target.value })}
                                                 placeholder="e.g. Juan Dela Cruz"
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none transition-all"
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                                             />
                                         </div>
                                     </div>
@@ -373,7 +374,7 @@ export function AdminQRCodes() {
                                             value={activeForm.image_url}
                                             onChange={e => patch(activeOption.id, { image_url: e.target.value, file: null, localPreview: null })}
                                             placeholder="https://..."
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none transition-all"
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                                         />
                                         <p className="text-xs text-gray-400 mt-1">Uploading a file above overrides this URL.</p>
                                     </div>
@@ -388,18 +389,20 @@ export function AdminQRCodes() {
                                                 type="checkbox"
                                                 checked={activeForm.is_active}
                                                 onChange={e => patch(activeOption.id, { is_active: e.target.checked })}
-                                                className="h-5 w-5 accent-brand-green"
+                                                className="h-5 w-5 accent-primary"
                                             />
                                         </label>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
-                                            <input
-                                                type="number"
-                                                value={activeForm.sort_order}
-                                                onChange={e => patch(activeOption.id, { sort_order: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none transition-all"
-                                            />
-                                        </div>
+                                        <FeatureGate feature="advancedVitals">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+                                                <input
+                                                    type="number"
+                                                    value={activeForm.sort_order}
+                                                    onChange={e => patch(activeOption.id, { sort_order: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                                />
+                                            </div>
+                                        </FeatureGate>
                                     </div>
 
                                     {saveErr[activeOption.id] && (
@@ -426,7 +429,7 @@ export function AdminQRCodes() {
                                         <button
                                             onClick={() => restoreSaved(activeOption.id)}
                                             disabled={!savedData[activeOption.id]}
-                                            className="w-full text-sm font-semibold py-2.5 rounded-xl border transition-all disabled:opacity-30 disabled:cursor-not-allowed border-gray-300 text-gray-600 hover:border-brand-green hover:text-brand-green-dark hover:bg-green-50"
+                                            className="w-full text-sm font-semibold py-2.5 rounded-xl border transition-all disabled:opacity-30 disabled:cursor-not-allowed border-gray-300 text-gray-600 hover:border-primary hover:text-primary-dark hover:bg-green-50"
                                         >
                                             Restore Saved
                                         </button>
@@ -458,14 +461,14 @@ export function AdminQRCodes() {
                                     value={newOption.label}
                                     onChange={e => setNewOption(prev => ({ ...prev, label: e.target.value }))}
                                     placeholder="Payment name"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none transition-all"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                                 />
                                 <input
                                     type="text"
                                     value={newOption.account_name}
                                     onChange={e => setNewOption(prev => ({ ...prev, account_name: e.target.value }))}
                                     placeholder="Account name"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none transition-all"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                                 />
                             </div>
 
@@ -474,7 +477,7 @@ export function AdminQRCodes() {
                                 value={newOption.image_url}
                                 onChange={e => setNewOption(prev => ({ ...prev, image_url: e.target.value, file: null, localPreview: null }))}
                                 placeholder="Image URL, or upload a file below"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none transition-all"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                             />
 
                             <input
@@ -491,8 +494,8 @@ export function AdminQRCodes() {
                                     addFileErr
                                         ? 'border-red-300 text-red-500 bg-red-50'
                                         : newOption.localPreview
-                                            ? 'border-brand-green text-brand-green-dark bg-green-50/60'
-                                            : 'border-gray-300 text-gray-500 hover:border-brand-green hover:text-brand-green-dark hover:bg-green-50/40'
+                                            ? 'border-primary text-primary-dark bg-green-50/60'
+                                            : 'border-gray-300 text-gray-500 hover:border-primary hover:text-primary-dark hover:bg-green-50/40'
                                 }`}
                             >
                                 <Upload size={16} />
@@ -529,7 +532,7 @@ export function AdminQRCodes() {
                                     <h2 className="text-sm font-semibold text-gray-800">Live Preview</h2>
                                     <p className="text-xs text-gray-400">Only visible options appear here.</p>
                                 </div>
-                                <span className="text-xs font-medium text-brand-green-dark bg-brand-green-light px-2 py-0.5 rounded-full">
+                                <span className="text-xs font-medium text-primary-dark bg-primary-light px-2 py-0.5 rounded-full">
                                     Step 3 - Payment
                                 </span>
                             </div>
@@ -538,15 +541,15 @@ export function AdminQRCodes() {
                                 <div className="px-4 pt-4 pb-2 border-b border-gray-100">
                                     <div className="flex items-center gap-1.5 mb-2.5">
                                         {[1, 2, 3, 4].map(i => (
-                                            <div key={i} className={`h-1 flex-1 rounded-full ${i <= 3 ? 'bg-brand-green' : 'bg-gray-100'}`} />
+                                            <div key={i} className={`h-1 flex-1 rounded-full ${i <= 3 ? 'bg-primary' : 'bg-gray-100'}`} />
                                         ))}
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <div className="w-7 h-7 rounded-full bg-brand-green-light text-brand-green-dark flex items-center justify-center shrink-0">
+                                        <div className="w-7 h-7 rounded-full bg-primary-light text-primary-dark flex items-center justify-center shrink-0">
                                             <CreditCard size={14} />
                                         </div>
                                         <div>
-                                            <p className="font-bold text-brand-green-dark text-xs leading-tight">Payment</p>
+                                            <p className="font-bold text-primary-dark text-xs leading-tight">Payment</p>
                                             <p className="text-[10px] text-gray-400">Scan to pay with your selected method</p>
                                         </div>
                                     </div>
@@ -568,7 +571,7 @@ export function AdminQRCodes() {
                                                             onClick={() => setPreviewId(option.id)}
                                                             className={`py-1 px-2 rounded-md text-[10px] font-medium transition-all truncate ${
                                                                 previewOption?.id === option.id
-                                                                    ? 'bg-white text-brand-green-dark shadow-sm'
+                                                                    ? 'bg-white text-primary-dark shadow-sm'
                                                                     : 'text-gray-400 hover:text-gray-600'
                                                             }`}
                                                         >
@@ -596,7 +599,7 @@ export function AdminQRCodes() {
                                                     <p className="font-bold text-gray-900 text-xs leading-tight text-center">
                                                         {previewForm?.account_name || <span className="text-gray-300 italic">Not set</span>}
                                                     </p>
-                                                    <span className="text-[9px] font-bold uppercase tracking-wide mt-0.5 text-brand-green-dark">
+                                                    <span className="text-[9px] font-bold uppercase tracking-wide mt-0.5 text-primary-dark">
                                                         {previewForm?.label || previewOption.label} Payment
                                                     </span>
                                                 </div>
@@ -606,7 +609,7 @@ export function AdminQRCodes() {
                                         )}
 
                                         <p className="text-center text-[10px] text-gray-500 mt-2">
-                                            Total: <span className="font-bold text-brand-orange">PHP 350</span>
+                                            Total: <span className="font-bold text-secondary">PHP 350</span>
                                         </p>
                                     </div>
                                 </div>
@@ -627,7 +630,7 @@ export function AdminQRCodes() {
                                         <div
                                             key={option.id}
                                             className={`rounded-xl border p-3 flex flex-col items-center gap-2 transition-all ${
-                                                isActive ? 'border-brand-green bg-green-50/40' : 'border-gray-200 bg-gray-50'
+                                                isActive ? 'border-primary bg-green-50/40' : 'border-gray-200 bg-gray-50'
                                             }`}
                                         >
                                             <div className="w-20 aspect-square rounded-lg overflow-hidden bg-white border border-gray-200">
@@ -646,7 +649,7 @@ export function AdminQRCodes() {
                                             </div>
 
                                             <div className="text-center w-full min-w-0">
-                                                <span className="text-[10px] font-bold uppercase tracking-wide text-brand-green-dark">
+                                                <span className="text-[10px] font-bold uppercase tracking-wide text-primary-dark">
                                                     {savedOption?.label || option.label}
                                                 </span>
                                                 <p className="text-xs font-medium text-gray-700 truncate mt-0.5">
@@ -660,7 +663,7 @@ export function AdminQRCodes() {
                                             <button
                                                 onClick={() => restoreSaved(option.id)}
                                                 disabled={!savedOption}
-                                                className="w-full text-[10px] font-semibold py-1 rounded-lg border transition-all disabled:opacity-30 disabled:cursor-not-allowed border-gray-300 text-gray-600 hover:border-brand-green hover:text-brand-green-dark hover:bg-green-50"
+                                                className="w-full text-[10px] font-semibold py-1 rounded-lg border transition-all disabled:opacity-30 disabled:cursor-not-allowed border-gray-300 text-gray-600 hover:border-primary hover:text-primary-dark hover:bg-green-50"
                                             >
                                                 Restore
                                             </button>

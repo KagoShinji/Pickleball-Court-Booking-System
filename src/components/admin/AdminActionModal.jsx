@@ -53,7 +53,7 @@ export function AdminActionModal({
 
                 {status === 'idle' && (
                     <div className="text-center space-y-4">
-                        <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center ${variant === 'danger' ? 'bg-red-100 text-red-600' : 'bg-brand-green-light text-brand-green-dark'}`}>
+                        <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center ${variant === 'danger' ? 'bg-red-100 text-red-600' : 'bg-primary-light text-primary-dark'}`}>
                             <AlertTriangle size={32} />
                         </div>
                         <div>
@@ -70,7 +70,7 @@ export function AdminActionModal({
                 {status === 'loading' && (
                     <div className="text-center py-8 space-y-4">
                         <div className="flex justify-center">
-                            <Loader2 className="animate-spin text-brand-green" size={48} />
+                            <Loader2 className="animate-spin text-primary" size={48} />
                         </div>
                         <p className="text-gray-500 font-medium">Processing...</p>
                     </div>

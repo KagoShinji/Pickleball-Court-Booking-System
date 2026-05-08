@@ -6,24 +6,17 @@
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Poppins', system-ui, sans-serif;
 
-  --color-brand-green: #14B8A6;
-  /* Teal 500 */
-  --color-brand-green-light: #F0FDFA;
-  /* Teal 50 */
-  --color-brand-green-dark: #0F766E;
-  /* Teal 700 */
+  --color-primary: var(--theme-primary, #14B8A6);
+  --color-primary-light: var(--theme-primary-light, #F0FDFA);
+  --color-primary-dark: var(--theme-primary-dark, #0F766E);
 
-  --color-brand-orange: #F97316;
-  /* Orange 500 (Darker) */
-  --color-brand-orange-light: #FFF7ED;
-  /* Orange 50 */
-
+  --color-secondary: var(--theme-secondary, #F97316);
+  --color-secondary-light: var(--theme-secondary-light, #FFF7ED);
 
   --color-bg-light: #F9F9F9;
   --color-bg-surface: #FFFFFF;
   --color-bg-user: #E9F5DB;
-  --color-text-main: #0F766E;
-  /* Teal 700 */
+  --color-text-main: var(--theme-primary-dark, #0F766E);
 }
 
 
@@ -31,7 +24,7 @@
 @layer base {
   body {
     background-color: var(--color-bg-light);
-    color: var(--color-brand-green-dark);
+    color: var(--color-primary-dark);
     font-family: var(--font-sans);
   }
 }

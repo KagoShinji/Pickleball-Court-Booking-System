@@ -6,6 +6,7 @@ import { getCurrentUser, signOut } from '../services/auth';
 import { AdminActionModal } from '../components/admin/AdminActionModal';
 import { DeveloperAuditPanel } from '../components/admin/DeveloperAuditPanel';
 import { appendAuditLog } from '../services/auditLogs';
+import { Config } from '../lib/config';
 
 export function AdminLayout() {
     const navigate = useNavigate();
@@ -79,7 +80,7 @@ export function AdminLayout() {
             <div className="min-h-screen flex items-center justify-center bg-bg-light">
                 <div className="text-center">
                     <div className="inline-block animate-spin">
-                        <div className="w-8 h-8 border-4 border-brand-green border-t-transparent rounded-full"></div>
+                        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
                     </div>
                     <p className="mt-4 text-gray-600">Loading admin panel...</p>
                 </div>
@@ -95,10 +96,10 @@ export function AdminLayout() {
         { path: '/admin/dashboard', label: 'Overview', icon: LayoutDashboard },
         { path: '/admin/bookings', label: 'Bookings', icon: Calendar },
         { path: '/admin/courts', label: 'Court Management', icon: Settings },
-        { path: '/admin/time-slots', label: 'Time Slot Control', icon: Lock }, // **NEW**
+        ...(Config.features.timeSlots ? [{ path: '/admin/time-slots', label: 'Time Slot Control', icon: Lock }] : []),
         { path: '/admin/calendar', label: 'Calendar View', icon: Calendar },
-        { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
-        { path: '/admin/qr-codes', label: 'QR Codes', icon: QrCode },
+        ...(Config.features.analytics ? [{ path: '/admin/analytics', label: 'Analytics', icon: BarChart3 }] : []),
+        ...(Config.features.qrCodes ? [{ path: '/admin/qr-codes', label: 'QR Codes', icon: QrCode }] : []),
         { path: '/admin/change-password', label: 'Change Password', icon: KeyRound },
     ];
 
@@ -107,10 +108,10 @@ export function AdminLayout() {
             {/* Sidebar */}
             <aside className="w-64 bg-white border-r border-gray-200 fixed top-0 bottom-0 left-0 z-50 hidden md:flex flex-col">
                 <div className="h-16 flex items-center gap-2 px-6 border-b border-gray-100">
-                    <div className="bg-brand-orange p-1.5 rounded-lg">
+                    <div className="bg-secondary p-1.5 rounded-lg">
                         <span className="text-white font-bold text-sm">PP</span>
                     </div>
-                    <span className="font-display font-bold text-lg text-brand-green-dark">Admin Panel</span>
+                    <span className="font-display font-bold text-lg text-primary-dark">Admin Panel</span>
                 </div>
 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -121,7 +122,7 @@ export function AdminLayout() {
                             className={({ isActive }) => `
                                 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
                                 ${isActive
-                                    ? 'bg-brand-green-light text-brand-green-dark'
+                                    ? 'bg-primary-light text-primary-dark'
                                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
                             `}
                         >
@@ -145,10 +146,10 @@ export function AdminLayout() {
             {/* Mobile Header (visible on small screens) */}
             <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-50 flex items-center px-4 justify-between">
                 <div className="flex items-center gap-2">
-                    <div className="bg-brand-orange p-1.5 rounded-lg">
+                    <div className="bg-secondary p-1.5 rounded-lg">
                         <span className="text-white font-bold text-sm">PP</span>
                     </div>
-                    <span className="font-display font-bold text-lg text-brand-green-dark">Admin Panel</span>
+                    <span className="font-display font-bold text-lg text-primary-dark">Admin Panel</span>
                 </div>
                 <button
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -174,7 +175,7 @@ export function AdminLayout() {
                                     className={({ isActive }) => `
                                         flex items-center gap-3 px-3 py-3 rounded-xl text-base font-medium transition-colors
                                         ${isActive
-                                            ? 'bg-brand-green-light text-brand-green-dark'
+                                            ? 'bg-primary-light text-primary-dark'
                                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
                                     `}
                                 >

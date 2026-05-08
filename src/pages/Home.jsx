@@ -514,7 +514,7 @@ export function Home() {
     };
 
     return (
-        <div className="min-h-screen bg-bg-user font-sans text-brand-green-dark selection:bg-brand-orange-light selection:text-brand-orange">
+        <div className="min-h-screen bg-bg-user font-sans text-primary-dark selection:bg-secondary-light selection:text-secondary">
             <Navbar />
             <Hero />
             <Offers />
@@ -542,8 +542,8 @@ export function Home() {
 
                     {selectedCourt && !isSlotModalOpen && !isModalOpen && (
                         <div className="mt-8 max-w-2xl mx-auto bg-white border border-gray-100 rounded-3xl shadow-lg px-6 py-5 text-center">
-                            <p className="text-xs font-bold uppercase tracking-wider text-brand-orange">Last Selected Court</p>
-                            <h3 className="mt-2 text-2xl font-display font-bold text-brand-green-dark">{selectedCourt.name}</h3>
+                            <p className="text-xs font-bold uppercase tracking-wider text-secondary">Last Selected Court</p>
+                            <h3 className="mt-2 text-2xl font-display font-bold text-primary-dark">{selectedCourt.name}</h3>
                             <p className="mt-2 text-sm text-gray-600">
                                 Ready to continue? Use the Book Now button again to choose a fresh date and time.
                             </p>

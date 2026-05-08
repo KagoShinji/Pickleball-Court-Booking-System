@@ -7,10 +7,10 @@ export function cn(...inputs) {
 
 export function Button({ className, variant = 'primary', size = 'md', children, ...props }) {
     const variants = {
-        primary: 'bg-brand-green text-brand-green-dark hover:bg-brand-green/90 shadow-sm',
-        secondary: 'bg-brand-orange text-white hover:bg-brand-orange/90 shadow-sm',
-        outline: 'border-2 border-brand-green text-brand-green-dark hover:bg-brand-green-light',
-        ghost: 'hover:bg-black/5 text-brand-green-dark',
+        primary: 'bg-primary text-primary-dark hover:bg-primary/90 shadow-sm',
+        secondary: 'bg-secondary text-white hover:bg-secondary/90 shadow-sm',
+        outline: 'border-2 border-primary text-primary-dark hover:bg-primary-light',
+        ghost: 'hover:bg-black/5 text-primary-dark',
         danger: 'bg-red-500 text-white hover:bg-red-600 shadow-sm',
     };
 
@@ -51,8 +51,8 @@ export function Card({ className, children, ...props }) {
 
 export function Badge({ className, variant = 'green', children }) {
     const variants = {
-        green: 'bg-brand-green-light text-brand-green-dark',
-        orange: 'bg-brand-orange-light text-orange-800',
+        green: 'bg-primary-light text-primary-dark',
+        orange: 'bg-secondary-light text-orange-800',
         gray: 'bg-gray-100 text-gray-700',
         red: 'bg-red-100 text-red-800',
     };
@@ -155,7 +155,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }) {
                                     key={item}
                                     onClick={() => onPageChange(item)}
                                     className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${safeCurrentPage === item
-                                        ? 'z-10 bg-brand-green-light border-brand-green text-brand-green-dark'
+                                        ? 'z-10 bg-primary-light border-primary text-primary-dark'
                                         : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                                         }`}
                                 >

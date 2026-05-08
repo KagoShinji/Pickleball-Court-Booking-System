@@ -1,27 +1,30 @@
 import { ArrowRight, Calendar, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from './ui';
+import { Config } from '../lib/config';
 
 export function Hero() {
     const [currentSlide, setCurrentSlide] = useState(0);
 
-    const heroImages = [
-        {
-            src: "/images/picklepoint.jpg",
-            title: "Center Court",
-            subtitle: "Premium Surface • Lighting"
-        },
-        {
-            src: "/images/court1.jpg",
-            title: "Pro-Grade Surface",
-            subtitle: "Optimized for Performance"
-        },
-        {
-            src: "/images/court2.jpg",
-            title: "Vibrant Community",
-            subtitle: "Join the Club"
-        }
-    ];
+    const heroImages = Config.assets.heroImages.length > 0 
+        ? Config.assets.heroImages 
+        : [
+            {
+                src: "/images/picklepoint.jpg",
+                title: "Center Court",
+                subtitle: "Premium Surface • Lighting"
+            },
+            {
+                src: "/images/court1.jpg",
+                title: "Pro-Grade Surface",
+                subtitle: "Optimized for Performance"
+            },
+            {
+                src: "/images/court2.jpg",
+                title: "Vibrant Community",
+                subtitle: "Join the Club"
+            }
+        ];
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -36,30 +39,30 @@ export function Hero() {
     return (
         <div className="relative pt-24 pb-16 sm:pt-32 sm:pb-24 overflow-hidden bg-bg-user">
             {/* Background blobs */}
-            <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-96 h-96 bg-brand-green-light rounded-full blur-3xl opacity-50 -z-10"></div>
-            <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-96 h-96 bg-brand-orange-light rounded-full blur-3xl opacity-50 -z-10"></div>
+            <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-96 h-96 bg-primary-light rounded-full blur-3xl opacity-50 -z-10"></div>
+            <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-96 h-96 bg-secondary-light rounded-full blur-3xl opacity-50 -z-10"></div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
                     <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-brand-green/20 mb-6 shadow-sm">
-                            <span className="flex h-2 w-2 rounded-full bg-brand-green"></span>
-                            <span className="text-sm font-medium text-gray-600">New courts available in Mandaue City</span>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-primary/20 mb-6 shadow-sm">
+                            <span className="flex h-2 w-2 rounded-full bg-primary"></span>
+                            <span className="text-sm font-medium text-gray-600">New courts available in {Config.company.location}</span>
                         </div>
 
-                        <h1 className="text-5xl sm:text-6xl font-display font-bold leading-tight text-brand-green-dark mb-6">
+                        <h1 className="text-5xl sm:text-6xl font-display font-bold leading-tight text-primary-dark mb-6">
                             Book your next <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-green to-brand-green-dark">Pickle Point</span>
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-dark">{Config.company.shortName}</span>
                         </h1>
 
                         <p className="text-lg text-gray-600 mb-8 max-w-lg leading-relaxed">
-                            Experience the best pickleball courts in Cebu. Premium surfaces, night lighting, and a vibrant community waiting for you.
+                            Experience the best pickleball courts in {Config.company.location}. Premium surfaces, night lighting, and a vibrant community waiting for you.
                         </p>
 
                         <div className="flex flex-wrap gap-4">
                             <Button
                                 size="lg"
-                                className="shadow-brand-green/25 shadow-lg text-white"
+                                className="shadow-primary/25 shadow-lg text-white"
                                 onClick={() => document.getElementById('courts')?.scrollIntoView({ behavior: 'smooth' })}
                             >
                                 Book a Court <ArrowRight size={18} />
@@ -68,11 +71,11 @@ export function Hero() {
 
                         <div className="mt-10 flex items-center gap-6 text-gray-500 text-sm font-medium">
                             <div className="flex items-center gap-2">
-                                <Users size={18} className="text-brand-orange" />
+                                <Users size={18} className="text-secondary" />
                                 <span>50+ Active Players</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Calendar size={18} className="text-brand-orange" />
+                                <Calendar size={18} className="text-secondary" />
                                 <span>Open 7 Days a Week</span>
                             </div>
                         </div>
@@ -120,7 +123,7 @@ export function Hero() {
                                     <button
                                         key={index}
                                         onClick={() => setCurrentSlide(index)}
-                                        className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentSlide ? 'w-6 bg-brand-orange' : 'bg-white/50 hover:bg-white/80'}`}
+                                        className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentSlide ? 'w-6 bg-secondary' : 'bg-white/50 hover:bg-white/80'}`}
                                         aria-label={`Go to slide ${index + 1}`}
                                     />
                                 ))}
@@ -128,7 +131,7 @@ export function Hero() {
                         </div>
 
                         {/* Decorative element behind */}
-                        <div className="absolute -inset-4 bg-brand-green/20 rounded-[2.5rem] -z-10 rotate-3 group-hover:rotate-6 transition-transform duration-500"></div>
+                        <div className="absolute -inset-4 bg-primary/20 rounded-[2.5rem] -z-10 rotate-3 group-hover:rotate-6 transition-transform duration-500"></div>
                     </div>
                 </div>
             </div>

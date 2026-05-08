@@ -314,7 +314,7 @@ export function TimeSlotManagement() {
         <div className="space-y-6 w-full max-w-full overflow-x-hidden">
             {/* Header */}
             <div>
-                <h1 className="text-2xl font-bold font-display text-brand-green-dark">Time Slot Management</h1>
+                <h1 className="text-2xl font-bold font-display text-primary-dark">Time Slot Management</h1>
                 <p className="text-gray-500 text-sm">Block or unblock time slots to control court availability</p>
             </div>
 
@@ -330,7 +330,7 @@ export function TimeSlotManagement() {
                 {/* Calendar */}
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-display font-semibold text-lg text-brand-green-dark">
+                        <h3 className="font-display font-semibold text-lg text-primary-dark">
                             {format(currentMonth, 'MMMM yyyy')}
                         </h3>
                         <div className="flex gap-1">
@@ -378,10 +378,10 @@ export function TimeSlotManagement() {
                                         disabled={isPast}
                                         className={`
                                             h-9 w-9 rounded-full flex items-center justify-center text-sm transition-all duration-200
-                                            ${isSelected ? 'bg-brand-green text-white font-bold shadow-sm ring-2 ring-brand-green ring-offset-1' : ''}
+                                            ${isSelected ? 'bg-primary text-white font-bold shadow-sm ring-2 ring-primary ring-offset-1' : ''}
                                             ${!isSelected && isPast ? 'text-gray-300 cursor-not-allowed' : ''}
-                                            ${!isSelected && !isPast ? 'hover:bg-brand-green/15 text-gray-700' : ''}
-                                            ${!isSelected && isToday ? 'border-2 border-brand-green text-brand-green font-semibold' : ''}
+                                            ${!isSelected && !isPast ? 'hover:bg-primary/15 text-gray-700' : ''}
+                                            ${!isSelected && isToday ? 'border-2 border-primary text-primary font-semibold' : ''}
                                         `}
                                     >
                                         {format(day, 'd')}
@@ -397,7 +397,7 @@ export function TimeSlotManagement() {
                             { color: 'bg-white border-2 border-gray-200', label: 'Available' },
                             { color: 'bg-red-50 border-2 border-red-300', label: 'Blocked' },
                             { color: 'bg-blue-50 border-2 border-blue-500 ring-2 ring-blue-300 ring-offset-1', label: 'Booked' },
-                            { color: 'bg-brand-orange border-2 border-brand-orange', label: 'Selected' },
+                            { color: 'bg-secondary border-2 border-secondary', label: 'Selected' },
                         ].map(({ color, label }) => (
                             <div key={label} className="flex items-center gap-2">
                                 <div className={`w-4 h-4 rounded shrink-0 ${color}`} />
@@ -411,12 +411,12 @@ export function TimeSlotManagement() {
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col">
                     {/* Time slots header */}
                     <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-display font-semibold text-lg text-brand-green-dark flex items-center gap-2">
+                        <h3 className="font-display font-semibold text-lg text-primary-dark flex items-center gap-2">
                             <Clock size={17} />
                             <span>{format(selectedDate, 'MMM d, yyyy')}</span>
                         </h3>
                         {loading && (
-                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-brand-green border-t-transparent" />
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
                         )}
                     </div>
 
@@ -430,7 +430,7 @@ export function TimeSlotManagement() {
                                 setSelectedCourt(court);
                                 setSelectedSlots([]);
                             }}
-                            className="flex-1 px-3 py-2 text-sm font-medium border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-brand-green outline-none bg-white text-gray-700"
+                            className="flex-1 px-3 py-2 text-sm font-medium border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white text-gray-700"
                         >
                             {courts.map(court => (
                                 <option key={court.id} value={court.id}>{court.name}</option>
@@ -442,7 +442,7 @@ export function TimeSlotManagement() {
                     <div className="flex items-center gap-2 mb-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
                         <span className="text-sm text-gray-500 mr-auto">
                             {selectedSlots.length > 0
-                                ? <><strong className="text-brand-green-dark">{selectedSlots.length}</strong> slot{selectedSlots.length > 1 ? 's' : ''} selected</>
+                                ? <><strong className="text-primary-dark">{selectedSlots.length}</strong> slot{selectedSlots.length > 1 ? 's' : ''} selected</>
                                 : 'Click slots to select'
                             }
                         </span>
@@ -459,10 +459,10 @@ export function TimeSlotManagement() {
                         <button
                             onClick={handleUnblockSlots}
                             disabled={selectedBlockedSlots.length === 0 || isBlocking || isUnblocking}
-                            className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-semibold rounded-lg border-2 border-brand-green text-brand-green-dark hover:bg-brand-green-light disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                            className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-semibold rounded-lg border-2 border-primary text-primary-dark hover:bg-primary-light disabled:opacity-40 disabled:pointer-events-none transition-colors"
                         >
                             {isUnblocking
-                                ? <><div className="h-3.5 w-3.5 rounded-full border-2 border-brand-green border-t-transparent animate-spin" /> Unblocking...</>
+                                ? <><div className="h-3.5 w-3.5 rounded-full border-2 border-primary border-t-transparent animate-spin" /> Unblocking...</>
                                 : <><Unlock size={13} /> Unblock ({selectedBlockedSlots.length})</>
                             }
                         </button>
@@ -508,12 +508,12 @@ export function TimeSlotManagement() {
                                                     className={`
                                                         py-2 px-3 rounded-xl text-xs font-medium border-2 transition-all duration-150 text-left leading-snug
                                                         ${selected
-                                                            ? 'bg-brand-orange text-white border-brand-orange shadow-sm'
+                                                            ? 'bg-secondary text-white border-secondary shadow-sm'
                                                             : booked
                                                                 ? 'bg-blue-50 border-blue-500 text-blue-700 cursor-not-allowed ring-2 ring-blue-300 ring-offset-1 shadow-sm shadow-blue-100'
                                                                 : blocked
                                                                     ? 'bg-red-50 border-red-200 text-red-600'
-                                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-brand-green hover:text-brand-green hover:bg-brand-green/5'
+                                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-primary hover:text-primary hover:bg-primary/5'
                                                         }
                                                     `}
                                                 >

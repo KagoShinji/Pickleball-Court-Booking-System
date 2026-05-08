@@ -59,14 +59,14 @@ export function CourtCard({ court, onBook }) {
                 <div className="p-5 flex-1 flex flex-col">
                     <div className="flex justify-between items-start mb-2">
                         <div>
-                            <h3 className="font-display font-bold text-lg text-brand-green-dark">{court.name}</h3>
+                            <h3 className="font-display font-bold text-lg text-primary-dark">{court.name}</h3>
                             <div className="flex items-center gap-1 text-gray-500 text-sm mt-1">
                                 <MapPin size={14} />
                                 <span>{courtTypeLabel}</span>
                             </div>
                         </div>
                         <div className="text-right">
-                            <span className="block font-bold text-brand-orange text-lg">₱{court.price}</span>
+                            <span className="block font-bold text-secondary text-lg">₱{court.price}</span>
                             <span className="text-xs text-gray-400">/ hour</span>
                         </div>
                     </div>
@@ -77,7 +77,7 @@ export function CourtCard({ court, onBook }) {
                     {court.description && court.description.length > 80 && (
                         <button
                             onClick={() => setIsExpanded(true)}
-                            className="text-xs text-brand-green hover:text-brand-green-dark font-medium mb-3 text-left underline"
+                            className="text-xs text-primary hover:text-primary-dark font-medium mb-3 text-left underline"
                         >
                             See full description →
                         </button>
@@ -85,14 +85,14 @@ export function CourtCard({ court, onBook }) {
 
                     {/* Dynamic Pricing Rules Badge */}
                     {hasPricingRules && isActive && (
-                        <div className="mb-3 p-2.5 bg-brand-orange/10 border border-brand-orange/30 rounded-lg">
+                        <div className="mb-3 p-2.5 bg-secondary/10 border border-secondary/30 rounded-lg">
                             <div className="flex items-start gap-2">
-                                <DollarSign size={14} className="text-brand-orange mt-0.5 flex-shrink-0" />
+                                <DollarSign size={14} className="text-secondary mt-0.5 flex-shrink-0" />
                                 <div className="text-xs space-y-1.5 flex-1">
-                                    <p className="font-semibold text-brand-orange">Time-Based Pricing</p>
+                                    <p className="font-semibold text-secondary">Time-Based Pricing</p>
                                     {court.pricing_rules.map((rule, idx) => (
                                         <p key={idx} className="text-gray-700">
-                                            {formatHour12(rule.startHour)} - {formatHour12(rule.endHour)}: <span className="font-bold text-brand-orange">₱{rule.price}/hr</span>
+                                            {formatHour12(rule.startHour)} - {formatHour12(rule.endHour)}: <span className="font-bold text-secondary">₱{rule.price}/hr</span>
                                         </p>
                                     ))}
                                 </div>
@@ -111,7 +111,7 @@ export function CourtCard({ court, onBook }) {
 
                     <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
                         <div className="flex items-center gap-1 text-xs text-gray-500 font-medium">
-                            <Users size={14} className="text-brand-green" />
+                            <Users size={14} className="text-primary" />
                             Up to {maxPlayers} pax{maxPlayers !== 1 ? '' : ''}
                         </div>
                         <Button
@@ -170,7 +170,7 @@ export function CourtCard({ court, onBook }) {
                             {/* Title and Price */}
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h2 className="font-display font-bold text-2xl sm:text-3xl text-brand-green-dark mb-2">
+                                    <h2 className="font-display font-bold text-2xl sm:text-3xl text-primary-dark mb-2">
                                         {court.name}
                                     </h2>
                                     <div className="flex items-center gap-2 text-gray-600">
@@ -179,7 +179,7 @@ export function CourtCard({ court, onBook }) {
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <span className="block font-bold text-brand-orange text-2xl">₱{court.price}</span>
+                                    <span className="block font-bold text-secondary text-2xl">₱{court.price}</span>
                                     <span className="text-sm text-gray-400">per hour</span>
                                 </div>
                             </div>
@@ -194,7 +194,7 @@ export function CourtCard({ court, onBook }) {
 
                             {/* Capacity */}
                             <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                <Users size={18} className="text-brand-green" />
+                                <Users size={18} className="text-primary" />
                                 <span className="text-sm font-medium text-gray-700">
                                     Capacity: Up to {maxPlayers} player{maxPlayers !== 1 ? 's' : ''}
                                 </span>
@@ -204,17 +204,17 @@ export function CourtCard({ court, onBook }) {
                             {hasPricingRules && isActive && (
                                 <div className="space-y-3">
                                     <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wider">Time-Based Pricing</h3>
-                                    <div className="bg-brand-orange/10 border border-brand-orange/30 rounded-lg p-4">
+                                    <div className="bg-secondary/10 border border-secondary/30 rounded-lg p-4">
                                         <div className="space-y-3">
                                             {court.pricing_rules.map((rule, idx) => (
-                                                <div key={idx} className="flex items-center justify-between py-2 border-b border-brand-orange/20 last:border-0">
+                                                <div key={idx} className="flex items-center justify-between py-2 border-b border-secondary/20 last:border-0">
                                                     <div className="flex items-center gap-2">
-                                                        <DollarSign size={16} className="text-brand-orange" />
+                                                        <DollarSign size={16} className="text-secondary" />
                                                         <span className="text-sm font-medium text-gray-700">
                                                             {formatHour12(rule.startHour)} - {formatHour12(rule.endHour)}
                                                         </span>
                                                     </div>
-                                                    <span className="font-bold text-brand-orange text-lg">
+                                                    <span className="font-bold text-secondary text-lg">
                                                         ₱{rule.price}/hr
                                                     </span>
                                                 </div>

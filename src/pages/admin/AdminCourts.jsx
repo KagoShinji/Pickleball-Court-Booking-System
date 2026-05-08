@@ -384,7 +384,7 @@ export function AdminCourts() {
         <div className="space-y-6 w-full max-w-full">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold font-display text-brand-green-dark">Court Management</h1>
+                    <h1 className="text-2xl font-bold font-display text-primary-dark">Court Management</h1>
                     <p className="text-gray-500">Add, edit, archive, and control homepage order of courts</p>
                     <p className="text-xs text-gray-400 mt-1">Desktop: drag cards. Mobile/tablet: touch and drag cards. Pin sets first.</p>
                 </div>
@@ -411,7 +411,7 @@ export function AdminCourts() {
                                     type="text"
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green outline-none"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                                     placeholder="e.g. Court 3 (Indoor)"
                                     disabled={loading}
                                 />
@@ -424,7 +424,7 @@ export function AdminCourts() {
                                         <select
                                             value={typeSelection}
                                             onChange={e => handleTypeSelectionChange(e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green outline-none"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                                             disabled={loading}
                                         >
                                             {COURT_TYPE_OPTIONS.map((option) => (
@@ -439,7 +439,7 @@ export function AdminCourts() {
                                                 type="text"
                                                 value={customType}
                                                 onChange={e => handleCustomTypeChange(e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green outline-none"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                                                 placeholder="Enter custom court type"
                                                 disabled={loading}
                                             />
@@ -453,7 +453,7 @@ export function AdminCourts() {
                                         type="number"
                                         value={formData.price}
                                         onChange={e => setFormData({ ...formData, price: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green outline-none"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                                         disabled={loading}
                                     />
                                 </div>
@@ -468,7 +468,7 @@ export function AdminCourts() {
                                     max="50"
                                     value={formData.maxPlayers}
                                     onChange={e => setFormData({ ...formData, maxPlayers: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green outline-none"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                                     placeholder="e.g. 10"
                                     disabled={loading}
                                 />
@@ -480,7 +480,7 @@ export function AdminCourts() {
                                 <textarea
                                     value={formData.description}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green outline-none"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                                     rows="3"
                                     disabled={loading}
                                     placeholder="Describe the court features, amenities, etc."
@@ -494,7 +494,7 @@ export function AdminCourts() {
                                     accept="image/*"
                                     multiple
                                     onChange={handleImageSelect}
-                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-green file:text-white hover:file:bg-brand-green-dark disabled:opacity-50"
+                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-dark disabled:opacity-50"
                                     disabled={loading}
                                 />
                                 <p className="text-xs text-gray-500 mt-1">You can upload multiple images</p>
@@ -536,7 +536,7 @@ export function AdminCourts() {
                                                         <select
                                                             value={rule.startHour}
                                                             onChange={(e) => handleUpdatePricingRule(index, 'startHour', e.target.value)}
-                                                            className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm outline-none focus:ring-2 focus:ring-brand-green"
+                                                            className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm outline-none focus:ring-2 focus:ring-primary"
                                                             disabled={loading}
                                                         >
                                                             {Array.from({ length: 24 }, (_, i) => {
@@ -551,7 +551,7 @@ export function AdminCourts() {
                                                         <select
                                                             value={rule.endHour}
                                                             onChange={(e) => handleUpdatePricingRule(index, 'endHour', e.target.value)}
-                                                            className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm outline-none focus:ring-2 focus:ring-brand-green"
+                                                            className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm outline-none focus:ring-2 focus:ring-primary"
                                                             disabled={loading}
                                                         >
                                                             {Array.from({ length: 24 }, (_, i) => {
@@ -567,7 +567,7 @@ export function AdminCourts() {
                                                             type="number"
                                                             value={rule.price}
                                                             onChange={(e) => handleUpdatePricingRule(index, 'price', e.target.value)}
-                                                            className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm outline-none focus:ring-2 focus:ring-brand-green"
+                                                            className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm outline-none focus:ring-2 focus:ring-primary"
                                                             disabled={loading}
                                                             min="1"
                                                         />
@@ -634,7 +634,7 @@ export function AdminCourts() {
                                 onTouchMove={handleTouchMove}
                                 onTouchEnd={handleTouchEnd}
                                 onTouchCancel={handleTouchEnd}
-                                className={`overflow-hidden group cursor-move ${!isActive ? 'opacity-60' : ''} ${isDragOver ? 'ring-2 ring-brand-green' : ''} ${isTouchDragging ? 'touch-none' : ''}`}
+                                className={`overflow-hidden group cursor-move ${!isActive ? 'opacity-60' : ''} ${isDragOver ? 'ring-2 ring-primary' : ''} ${isTouchDragging ? 'touch-none' : ''}`}
                             >
                                 <div className="aspect-video relative overflow-hidden bg-gray-100">
                                     <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-2 py-1 rounded-full bg-white/85 text-gray-600 text-xs font-medium shadow-sm">
@@ -697,7 +697,7 @@ export function AdminCourts() {
                                             <h3 className="font-bold text-lg text-gray-900">{court.name}</h3>
                                             <p className="text-sm text-gray-500">{court.type}</p>
                                         </div>
-                                        <span className="font-bold text-brand-orange">₱{court.price}</span>
+                                        <span className="font-bold text-secondary">₱{court.price}</span>
                                     </div>
                                     <p className="text-sm text-gray-600 line-clamp-2">{court.description}</p>
                                     <p className="text-xs text-gray-400 mt-2">Homepage position: #{index + 1}</p>

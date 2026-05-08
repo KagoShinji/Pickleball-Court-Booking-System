@@ -1,7 +1,9 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { QueryProvider } from './providers/QueryProvider';
 import { SplashScreen } from './components/SplashScreen';
+import { Config } from './lib/config';
+import { FeatureGate } from './components/FeatureGate';
 
 const AdminLayout = lazy(() => import('./layouts/AdminLayout').then((module) => ({ default: module.AdminLayout })));
 const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics').then((module) => ({ default: module.AdminAnalytics })));
@@ -24,6 +26,15 @@ function RouteFallback() {
 function App() {
   const [showSplash, setShowSplash] = useState(true);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--theme-primary', Config.theme.primary);
+    root.style.setProperty('--theme-primary-light', Config.theme.primaryLight);
+    root.style.setProperty('--theme-primary-dark', Config.theme.primaryDark);
+    root.style.setProperty('--theme-secondary', Config.theme.secondary);
+    root.style.setProperty('--theme-secondary-light', Config.theme.secondaryLight);
+  }, []);
+
   return (
     <QueryProvider>
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
@@ -39,10 +50,22 @@ function App() {
               <Route path="bookings" element={<AdminBookings />} />
               <Route path="courts" element={<AdminCourts />} />
               <Route path="calendar" element={<AdminCalendar />} />
-              <Route path="analytics" element={<AdminAnalytics />} />
+              <Route path="analytics" element={
+                <FeatureGate feature="analytics">
+                  <AdminAnalytics />
+                </FeatureGate>
+              } />
               <Route path="change-password" element={<ChangePassword />} />
-              <Route path="time-slots" element={<TimeSlotManagement />} />
-              <Route path="qr-codes" element={<AdminQRCodes />} />
+              <Route path="time-slots" element={
+                <FeatureGate feature="timeSlots">
+                  <TimeSlotManagement />
+                </FeatureGate>
+              } />
+              <Route path="qr-codes" element={
+                <FeatureGate feature="qrCodes">
+                  <AdminQRCodes />
+                </FeatureGate>
+              } />
             </Route>
           </Routes>
         </Suspense>

@@ -189,7 +189,7 @@ export function AdminAnalytics() {
     return (
         <div className="space-y-8 w-full max-w-full">
             <div>
-                <h1 className="text-2xl font-bold font-display text-brand-green-dark">Analytics & Reports</h1>
+                <h1 className="text-2xl font-bold font-display text-primary-dark">Analytics & Reports</h1>
                 <p className="text-gray-500">Performance metrics and utilization reports</p>
             </div>
 
@@ -272,7 +272,7 @@ export function AdminAnalytics() {
                 {/* Remove h-full and fix the structure */}
                 <div className="relative w-full flex flex-col justify-end" style={{ height: '280px' }}>
                     <div
-                        className="w-full bg-gradient-to-t from-brand-green to-brand-green-light rounded-t-md transition-all duration-500 hover:from-brand-green-dark hover:to-brand-green shadow-sm hover:shadow-md"
+                        className="w-full bg-gradient-to-t from-primary to-primary-light rounded-t-md transition-all duration-500 hover:from-primary-dark hover:to-primary shadow-sm hover:shadow-md"
                         style={{ height: item.height, minHeight: item.value > 0 ? '8px' : '0px' }}
                     ></div>
                     {/* Tooltip */}
@@ -301,7 +301,7 @@ export function AdminAnalytics() {
                             <h3 className="text-lg font-bold text-gray-800">Court Utilization</h3>
                             <p className="text-sm text-gray-500">Weekly occupancy rates</p>
                         </div>
-                        <div className="p-2 bg-brand-orange-light text-brand-orange rounded-lg">
+                        <div className="p-2 bg-secondary-light text-secondary rounded-lg">
                             <BarChart3 size={20} />
                         </div>
                     </div>
@@ -318,7 +318,7 @@ export function AdminAnalytics() {
                                     </div>
                                     <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
                                         <div
-                                            className="h-full bg-brand-orange rounded-full transition-all duration-1000"
+                                            className="h-full bg-secondary rounded-full transition-all duration-1000"
                                             style={{ width: `${item.value}%` }}
                                         ></div>
                                     </div>
@@ -362,7 +362,7 @@ export function AdminAnalytics() {
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="text-brand-green-dark hover:text-brand-green hover:bg-brand-green-light"
+                                        className="text-primary-dark hover:text-primary hover:bg-primary-light"
                                         onClick={() => generateReport('weekly_revenue')}
                                         disabled={loading}
                                     >
@@ -378,7 +378,7 @@ export function AdminAnalytics() {
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="text-brand-green-dark hover:text-brand-green hover:bg-brand-green-light"
+                                        className="text-primary-dark hover:text-primary hover:bg-primary-light"
                                         onClick={() => generateReport('monthly_sales')}
                                         disabled={loading}
                                     >
@@ -394,7 +394,7 @@ export function AdminAnalytics() {
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="text-brand-green-dark hover:text-brand-green hover:bg-brand-green-light"
+                                        className="text-primary-dark hover:text-primary hover:bg-primary-light"
                                         onClick={() => generateReport('all_bookings')}
                                         disabled={loading}
                                     >
