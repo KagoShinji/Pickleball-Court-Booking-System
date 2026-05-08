@@ -4,6 +4,7 @@ import { QueryProvider } from './providers/QueryProvider';
 import { SplashScreen } from './components/SplashScreen';
 import { Config } from './lib/config';
 import { FeatureGate } from './components/FeatureGate';
+import { CompanyProvider } from './lib/CompanyProvider';
 
 const AdminLayout = lazy(() => import('./layouts/AdminLayout').then((module) => ({ default: module.AdminLayout })));
 const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics').then((module) => ({ default: module.AdminAnalytics })));
@@ -15,6 +16,7 @@ const AdminLogin = lazy(() => import('./pages/AdminLogin').then((module) => ({ d
 const ChangePassword = lazy(() => import('./pages/admin/AdminChangepassword').then((module) => ({ default: module.ChangePassword })));
 const TimeSlotManagement = lazy(() => import('./pages/admin/TimeSlotManagement').then((module) => ({ default: module.TimeSlotManagement })));
 const AdminQRCodes = lazy(() => import('./pages/admin/AdminQRCodes').then((module) => ({ default: module.AdminQRCodes })));
+const AdminSettings = lazy(() => import('./pages/admin/AdminSettings').then((module) => ({ default: module.AdminSettings })));
 const Home = lazy(() => import('./pages/Home').then((module) => ({ default: module.Home })));
 
 function RouteFallback() {
@@ -37,39 +39,42 @@ function App() {
 
   return (
     <QueryProvider>
-      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
-      <BrowserRouter>
-        <Suspense fallback={<RouteFallback />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/admin" element={<AdminLogin />} />
+      <CompanyProvider>
+        {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+        <BrowserRouter>
+          <Suspense fallback={<RouteFallback />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/admin" element={<AdminLogin />} />
 
-            {/* Protected Admin Routes */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="bookings" element={<AdminBookings />} />
-              <Route path="courts" element={<AdminCourts />} />
-              <Route path="calendar" element={<AdminCalendar />} />
-              <Route path="analytics" element={
-                <FeatureGate feature="analytics">
-                  <AdminAnalytics />
-                </FeatureGate>
-              } />
-              <Route path="change-password" element={<ChangePassword />} />
-              <Route path="time-slots" element={
-                <FeatureGate feature="timeSlots">
-                  <TimeSlotManagement />
-                </FeatureGate>
-              } />
-              <Route path="qr-codes" element={
-                <FeatureGate feature="qrCodes">
-                  <AdminQRCodes />
-                </FeatureGate>
-              } />
-            </Route>
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
+              {/* Protected Admin Routes */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="bookings" element={<AdminBookings />} />
+                <Route path="courts" element={<AdminCourts />} />
+                <Route path="calendar" element={<AdminCalendar />} />
+                <Route path="analytics" element={
+                  <FeatureGate feature="analytics">
+                    <AdminAnalytics />
+                  </FeatureGate>
+                } />
+                <Route path="change-password" element={<ChangePassword />} />
+                <Route path="time-slots" element={
+                  <FeatureGate feature="timeSlots">
+                    <TimeSlotManagement />
+                  </FeatureGate>
+                } />
+                <Route path="qr-codes" element={
+                  <FeatureGate feature="qrCodes">
+                    <AdminQRCodes />
+                  </FeatureGate>
+                } />
+                <Route path="settings" element={<AdminSettings />} />
+              </Route>
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </CompanyProvider>
     </QueryProvider>
   );
 }

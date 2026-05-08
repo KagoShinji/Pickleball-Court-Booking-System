@@ -1,5 +1,5 @@
-import { Armchair, Car, DoorOpen, Volleyball, Gamepad2, ShowerHead, Wifi, Coffee, Music, TreePine } from 'lucide-react';
-import { Config } from '../lib/config';
+import { Armchair, Car, DoorOpen, Volleyball, Gamepad2, ShowerHead, Wifi, Coffee, Music, TreePine, CheckCircle2 } from 'lucide-react';
+import { useCompany } from '../lib/CompanyProvider';
 
 const ICONS = {
     'shower': <ShowerHead size={32} />,
@@ -30,8 +30,10 @@ const AMENITY_TITLES = {
 };
 
 export function Offers() {
-    const amenities = Config.offers.amenities.length > 0 
-        ? Config.offers.amenities 
+    const { company } = useCompany();
+    
+    const amenities = company.amenities && company.amenities.length > 0 
+        ? company.amenities 
         : ['shower', 'lounge', 'parking', 'pingpong', 'billiards'];
 
     return (

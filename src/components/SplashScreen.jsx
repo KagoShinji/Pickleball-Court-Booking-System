@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Config } from '../lib/config';
+import { useCompany } from '../lib/CompanyProvider';
 
 export function SplashScreen({ onComplete }) {
     const [isFadingOut, setIsFadingOut] = useState(false);
+    const { company } = useCompany();
 
     useEffect(() => {
         // Prevent scrolling while splash screen is active
@@ -37,7 +38,7 @@ export function SplashScreen({ onComplete }) {
                 {/* Logo Icon */}
                 <div className="relative mb-6">
                     <div className="w-24 h-24 bg-secondary rounded-3xl flex items-center justify-center rotate-12 animate-bounce-slow shadow-[0_0_40px_rgba(249,115,22,0.4)]">
-                        <span className="text-white font-bold text-5xl">{Config.company.initials}</span>
+                        <span className="text-white font-bold text-5xl">{company.initials}</span>
                     </div>
                     {/* Decorative ring */}
                     <div className="absolute inset-0 border-4 border-white/20 rounded-3xl -rotate-6 animate-pulse"></div>
@@ -46,14 +47,14 @@ export function SplashScreen({ onComplete }) {
                 {/* Brand Name Text */}
                 <div className="overflow-hidden mt-4">
                     <h1 className="text-4xl sm:text-6xl font-display font-bold text-white tracking-tight animate-slide-up-fade">
-                        {Config.company.name}<span className="text-secondary">.</span>
+                        {company.name}<span className="text-secondary">.</span>
                     </h1>
                 </div>
 
                 {/* Subtitle */}
                 <div className="overflow-hidden mt-3">
                     <p className="text-primary-light/80 font-medium tracking-[0.3em] uppercase text-sm sm:text-base animate-slide-up-fade" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
-                        {Config.company.location}
+                        {company.location}
                     </p>
                 </div>
 

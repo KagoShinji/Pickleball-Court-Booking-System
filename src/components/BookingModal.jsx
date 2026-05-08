@@ -5,8 +5,10 @@ import { Button } from './ui';
 import { checkTimeSlotConflicts, calculatePriceForSlots } from '../services/booking';
 import { getQrCodes } from '../services/qrCodes';
 import { Config } from '../lib/config';
+import { useCompany } from '../lib/CompanyProvider';
 
 export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
+    const { company } = useCompany();
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({ name: '', phone: '', email: '', reference: '', paymentProof: null });
     const [errors, setErrors] = useState({});
@@ -300,7 +302,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
         ctx.fillText('Booking Receipt', W / 2, 30);
         ctx.fillStyle = '#ccfbf1';
         ctx.font = '12px Arial, sans-serif';
-        ctx.fillText(Config.company.name, W / 2, 50);
+        ctx.fillText(company.name, W / 2, 50);
         y = headerH;
 
         // Booking ID band
@@ -447,7 +449,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                             await navigator.share({
                                 files: [file],
                                 title: 'Booking Receipt',
-                                text: `Your ${Config.company.name} booking receipt`,
+                                text: `Your ${company.name} booking receipt`,
                             });
                             return;
                         }
@@ -1168,7 +1170,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                 {/* Receipt Header */}
                                 <div className="p-4 text-center" style={{ backgroundColor: '#14B8A6' }}>
                                     <h3 className="font-bold text-lg" style={{ color: '#ffffff' }}>Booking Receipt</h3>
-                                    <p className="text-xs mt-0.5" style={{ color: '#dcfce7' }}>{Config.company.name}</p>
+                                    <p className="text-xs mt-0.5" style={{ color: '#dcfce7' }}>{company.name}</p>
                                 </div>
 
                                 {/* Booking ID */}

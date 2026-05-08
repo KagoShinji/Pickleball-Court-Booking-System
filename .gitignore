@@ -24,5 +24,10 @@ dist-ssr
 *.sw?
 
 
-.env.local
+
+# Ignore all environment variables and local configs
 .env
+.env.*
+
+# EXCEPT for the example file (allow this to be tracked)
+!.env.example

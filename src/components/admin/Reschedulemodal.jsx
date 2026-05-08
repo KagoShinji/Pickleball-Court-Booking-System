@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { Button } from '../ui';
 import { BookingCalendar } from '../BookingCalendar';
 import { calculatePriceForSlots, getDailyBookings } from '../../services/booking';
+import { useCompany } from '../../lib/CompanyProvider';
 
 export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
+    const { company } = useCompany();
     const [step, setStep] = useState(1);
     const [reason, setReason] = useState('');
     const [customReason, setCustomReason] = useState('');
@@ -152,7 +154,7 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
         };
         const newPrice = calculatePriceForSlots(selectedTimes, courtData);
 
-        const message = `Good day, ${customerName}! Due to ${reasonText}, we need to reschedule your ${courtName} booking from ${originalDate} (${originalTimes}) to ${newDate} (${newTimes}). Total: ₱${newPrice}. Questions? Contact us. - ${Config.company.name}`;
+        const message = `Good day, ${customerName}! Due to ${reasonText}, we need to reschedule your ${courtName} booking from ${originalDate} (${originalTimes}) to ${newDate} (${newTimes}). Total: ₱${newPrice}. Questions? Contact us. - ${company.name}`;
 
         return message;
     };

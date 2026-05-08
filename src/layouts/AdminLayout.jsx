@@ -7,8 +7,10 @@ import { AdminActionModal } from '../components/admin/AdminActionModal';
 import { DeveloperAuditPanel } from '../components/admin/DeveloperAuditPanel';
 import { appendAuditLog } from '../services/auditLogs';
 import { Config } from '../lib/config';
+import { useCompany } from '../lib/CompanyProvider';
 
 export function AdminLayout() {
+    const { company } = useCompany();
     const navigate = useNavigate();
     const location = useLocation();
     const [user, setUser] = useState(null);
@@ -95,12 +97,13 @@ export function AdminLayout() {
     const navItems = [
         { path: '/admin/dashboard', label: 'Overview', icon: LayoutDashboard },
         { path: '/admin/bookings', label: 'Bookings', icon: Calendar },
-        { path: '/admin/courts', label: 'Court Management', icon: Settings },
+        { path: '/admin/courts', label: 'Court Management', icon: KeyRound },
         ...(Config.features.timeSlots ? [{ path: '/admin/time-slots', label: 'Time Slot Control', icon: Lock }] : []),
         { path: '/admin/calendar', label: 'Calendar View', icon: Calendar },
+        { path: '/admin/settings', label: 'Company Settings', icon: Settings },
         ...(Config.features.analytics ? [{ path: '/admin/analytics', label: 'Analytics', icon: BarChart3 }] : []),
         ...(Config.features.qrCodes ? [{ path: '/admin/qr-codes', label: 'QR Codes', icon: QrCode }] : []),
-        { path: '/admin/change-password', label: 'Change Password', icon: KeyRound },
+        { path: '/admin/change-password', label: 'Change Password', icon: Lock },
     ];
 
     return (
@@ -109,7 +112,7 @@ export function AdminLayout() {
             <aside className="w-64 bg-white border-r border-gray-200 fixed top-0 bottom-0 left-0 z-50 hidden md:flex flex-col">
                 <div className="h-16 flex items-center gap-2 px-6 border-b border-gray-100">
                     <div className="bg-secondary p-1.5 rounded-lg">
-                        <span className="text-white font-bold text-sm">PP</span>
+                        <span className="text-white font-bold text-sm">{company.initials}</span>
                     </div>
                     <span className="font-display font-bold text-lg text-primary-dark">Admin Panel</span>
                 </div>
@@ -147,7 +150,7 @@ export function AdminLayout() {
             <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-50 flex items-center px-4 justify-between">
                 <div className="flex items-center gap-2">
                     <div className="bg-secondary p-1.5 rounded-lg">
-                        <span className="text-white font-bold text-sm">PP</span>
+                        <span className="text-white font-bold text-sm">{company.initials}</span>
                     </div>
                     <span className="font-display font-bold text-lg text-primary-dark">Admin Panel</span>
                 </div>

@@ -179,3 +179,14 @@ export function Pagination({ currentPage, totalPages, onPageChange }) {
         </div>
     );
 }
+export function Input({ className, ...props }) {
+    return (
+        <input
+            className={cn(
+                'w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-gray-400',
+                className
+            )}
+            {...props}
+        />
+    );
+}

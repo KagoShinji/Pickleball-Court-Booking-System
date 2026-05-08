@@ -1,13 +1,14 @@
 import { ArrowRight, Calendar, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from './ui';
-import { Config } from '../lib/config';
+import { useCompany } from '../lib/CompanyProvider';
 
 export function Hero() {
+    const { company } = useCompany();
     const [currentSlide, setCurrentSlide] = useState(0);
 
-    const heroImages = Config.assets.heroImages.length > 0 
-        ? Config.assets.heroImages 
+    const heroImages = (company.heroContent && company.heroContent.length > 0)
+        ? company.heroContent 
         : [
             {
                 src: "/images/picklepoint.jpg",
@@ -31,7 +32,7 @@ export function Hero() {
             setCurrentSlide((prev) => (prev + 1) % heroImages.length);
         }, 5000);
         return () => clearInterval(timer);
-    }, []);
+    }, [heroImages.length]);
 
     const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % heroImages.length);
     const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + heroImages.length) % heroImages.length);
@@ -47,16 +48,15 @@ export function Hero() {
                     <div>
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-primary/20 mb-6 shadow-sm">
                             <span className="flex h-2 w-2 rounded-full bg-primary"></span>
-                            <span className="text-sm font-medium text-gray-600">New courts available in {Config.company.location}</span>
+                            <span className="text-sm font-medium text-gray-600">{company.heroBadge}</span>
                         </div>
 
                         <h1 className="text-5xl sm:text-6xl font-display font-bold leading-tight text-primary-dark mb-6">
-                            Book your next <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-dark">{Config.company.shortName}</span>
+                            {company.heroTitle}
                         </h1>
 
                         <p className="text-lg text-gray-600 mb-8 max-w-lg leading-relaxed">
-                            Experience the best pickleball courts in {Config.company.location}. Premium surfaces, night lighting, and a vibrant community waiting for you.
+                            {company.heroSubtitle}
                         </p>
 
                         <div className="flex flex-wrap gap-4">
@@ -72,11 +72,11 @@ export function Hero() {
                         <div className="mt-10 flex items-center gap-6 text-gray-500 text-sm font-medium">
                             <div className="flex items-center gap-2">
                                 <Users size={18} className="text-secondary" />
-                                <span>50+ Active Players</span>
+                                <span>{company.heroStatPlayers}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Calendar size={18} className="text-secondary" />
-                                <span>Open 7 Days a Week</span>
+                                <span>{company.heroStatDays}</span>
                             </div>
                         </div>
                     </div>

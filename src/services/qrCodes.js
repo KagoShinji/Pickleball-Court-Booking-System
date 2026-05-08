@@ -3,25 +3,6 @@ import { appendAuditLog } from './auditLogs';
 
 export const MAX_QR_FILE_SIZE_MB = 5;
 
-export const DEFAULT_QR_OPTIONS = [
-  {
-    id: 'gcash',
-    label: 'GCash',
-    image_url: '/images/gcash.jpg',
-    account_name: 'SYE SIMOLDE',
-    is_active: true,
-    sort_order: 10,
-  },
-  {
-    id: 'gotyme',
-    label: 'GoTyme',
-    image_url: '/images/gotyme.jpg',
-    account_name: 'SYE SIMOLDE',
-    is_active: true,
-    sort_order: 20,
-  },
-];
-
 let qrCache = null;
 let qrCacheTimestamp = null;
 const QR_CACHE_TTL = 60_000;
@@ -32,18 +13,17 @@ function normalizeImageUrl(url) {
 }
 
 function normalizeQrCode(row, index = 0) {
-  const fallback = DEFAULT_QR_OPTIONS.find(option => option.id === row?.id);
-  const label = row?.label || fallback?.label || row?.id || 'Payment Option';
+  const label = row?.label || row?.id || 'Payment Option';
 
   return {
     id: row?.id || createQrOptionId(label),
     label,
-    image_url: normalizeImageUrl(row?.image_url) || fallback?.image_url || '',
-    account_name: row?.account_name || fallback?.account_name || '',
+    image_url: normalizeImageUrl(row?.image_url) || '',
+    account_name: row?.account_name || '',
     is_active: row?.is_active !== false,
     sort_order: Number.isFinite(Number(row?.sort_order))
       ? Number(row.sort_order)
-      : fallback?.sort_order || (index + 1) * 10,
+      : (index + 1) * 10,
   };
 }
 
@@ -88,20 +68,20 @@ export async function getQrCodes({ activeOnly = false } = {}) {
       .order('sort_order', { ascending: true })
       .order('label', { ascending: true });
 
-    if (error || !data || data.length === 0) {
-      qrCache = sortQrCodes(DEFAULT_QR_OPTIONS.map(normalizeQrCode));
+    if (error || !data) {
+      qrCache = [];
       qrCacheTimestamp = now;
       return filterOptions(qrCache, activeOnly);
     }
 
     const normalized = sortQrCodes(data.map(normalizeQrCode));
-    qrCache = normalized.length > 0
-      ? normalized
-      : sortQrCodes(DEFAULT_QR_OPTIONS.map(normalizeQrCode));
+    qrCache = normalized;
     qrCacheTimestamp = now;
     return filterOptions(qrCache, activeOnly);
   } catch {
-    return filterOptions(sortQrCodes(DEFAULT_QR_OPTIONS.map(normalizeQrCode)), activeOnly);
+    qrCache = [];
+    qrCacheTimestamp = now;
+    return filterOptions(qrCache, activeOnly);
   }
 }
 

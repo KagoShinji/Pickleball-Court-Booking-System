@@ -1,9 +1,10 @@
 import { Clock, Facebook, Instagram, Mail, MapPin, Phone } from 'lucide-react';
-import { Button } from './ui';
 import { LazyMapEmbed } from './LazyMapEmbed';
-import { Config } from '../lib/config';
+import { useCompany } from '../lib/CompanyProvider';
 
 export function Contact() {
+    const { company } = useCompany();
+
     return (
         <section id="contact" className="py-24 bg-bg-user w-full overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -16,7 +17,7 @@ export function Contact() {
                     </p>
                 </div>
 
-                <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+                <div className={`grid ${company.parkingEnabled !== false ? 'lg:grid-cols-2' : 'max-w-2xl mx-auto'} gap-8 lg:gap-12 items-start`}>
                     {/* Contact Info */}
                     <div className="space-y-8 min-w-0">
                         <div className="bg-bg-light p-6 sm:p-8 rounded-3xl border border-gray-100">
@@ -29,8 +30,7 @@ export function Contact() {
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500 font-medium">Phone Number</p>
-                                        <p className="text-lg font-semibold text-gray-800 break-words">{Config.company.phone}</p>
-                                        <p className="text-lg font-semibold text-gray-800 break-words">{Config.company.phoneAlt}</p>
+                                        <p className="text-lg font-semibold text-gray-800 break-words">{company.phone}</p>
                                     </div>
                                 </div>
 
@@ -40,8 +40,10 @@ export function Contact() {
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500 font-medium">Operating Hours</p>
-                                        <p className="text-lg font-semibold text-gray-800">Mon-Sun, 24 Hours</p>
-                                        <p className="text-sm text-gray-500">12AM-5AM (Advance Booking Required. No Walk-ins)</p>
+                                        <p className="text-lg font-semibold text-gray-800">
+                                            {company.operatingHours?.open} - {company.operatingHours?.close}
+                                        </p>
+                                        <p className="text-sm text-gray-500">Advance Booking Required for Late Night slots.</p>
                                     </div>
                                 </div>
 
@@ -51,7 +53,7 @@ export function Contact() {
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500 font-medium">Email Address</p>
-                                        <p className="text-lg font-semibold text-gray-800 break-all">{Config.company.email}</p>
+                                        <p className="text-lg font-semibold text-gray-800 break-all">{company.email}</p>
                                     </div>
                                 </div>
 
@@ -61,8 +63,8 @@ export function Contact() {
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500 font-medium">Location</p>
-                                        <p className="text-lg font-semibold text-gray-800">{Config.company.name}</p>
-                                        <p className="text-gray-600">{Config.company.location}</p>
+                                        <p className="text-lg font-semibold text-gray-800">{company.name}</p>
+                                        <p className="text-gray-600">{company.location}</p>
                                     </div>
                                 </div>
                             </div>
@@ -76,9 +78,9 @@ export function Contact() {
                             <p className="mb-6 text-white/90 relative z-10">For private event reservations, please feel free to contact us to discuss further details.</p>
 
                             <div className="flex gap-4 relative z-10">
-                                {Config.company.socialFacebook && (
+                                {company.socialFacebook && (
                                     <a
-                                        href={Config.company.socialFacebook}
+                                        href={company.socialFacebook}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="p-3 bg-white/20 hover:bg-white/30 rounded-full transition-colors backdrop-blur-sm"
@@ -87,9 +89,9 @@ export function Contact() {
                                     </a>
                                 )}
 
-                                {Config.company.socialInstagram && (
+                                {company.socialInstagram && (
                                     <a
-                                        href={Config.company.socialInstagram}
+                                        href={company.socialInstagram}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="p-3 bg-white/20 hover:bg-white/30 rounded-full transition-colors backdrop-blur-sm"
@@ -102,16 +104,18 @@ export function Contact() {
                     </div>
 
                     {/* Map */}
-                    <div className="w-full rounded-3xl overflow-hidden shadow-lg border border-gray-200 bg-white">
-                        <LazyMapEmbed
-                            src={`https://www.google.com/maps?q=${encodeURIComponent(Config.company.mapQuery || (Config.company.name + ' ' + Config.company.location))}&output=embed`}
-                            title={`${Config.company.name} map`}
-                            description="Load the venue map only when you want to view directions."
-                            buttonLabel="Show Venue Map"
-                            aspectClassName="min-h-[300px] sm:min-h-[360px] lg:min-h-[520px]"
-                            className="rounded-none border-0 shadow-none"
-                        />
-                    </div>
+                    {company.parkingEnabled !== false && (
+                        <div className="w-full rounded-3xl overflow-hidden shadow-lg border border-gray-200 bg-white">
+                            <LazyMapEmbed
+                                src={`https://www.google.com/maps?q=${encodeURIComponent(company.mapQuery || (company.name + ' ' + company.location))}&output=embed`}
+                                title={`${company.name} map`}
+                                description="Load the venue map only when you want to view directions."
+                                buttonLabel="Show Venue Map"
+                                aspectClassName="min-h-[300px] sm:min-h-[360px] lg:min-h-[520px]"
+                                className="rounded-none border-0 shadow-none"
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
         </section>
