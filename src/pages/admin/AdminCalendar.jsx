@@ -45,19 +45,22 @@ export function AdminCalendar() {
     const getMonthQueryDateRange = (monthDate) => {
         const monthStart = startOfMonth(monthDate);
         const monthEnd = endOfMonth(monthStart);
+        const startDate = startOfWeek(monthStart);
+        const endDate = endOfWeek(monthEnd);
 
         const today = new Date();
-        const isCurrentMonth =
-            monthDate.getFullYear() === today.getFullYear() &&
-            monthDate.getMonth() === today.getMonth();
+        const oneWeekAgo = new Date(today);
+        oneWeekAgo.setDate(today.getDate() - 7);
+        
+        const oneWeekAgoStr = getManilaDateStr(oneWeekAgo);
+        const gridStartStr = format(startDate, 'yyyy-MM-dd');
+        const gridEndStr = format(endDate, 'yyyy-MM-dd');
 
-        const monthStartStr = format(monthStart, 'yyyy-MM-dd');
-        const monthEndStr = format(monthEnd, 'yyyy-MM-dd');
-        const fromDate = isCurrentMonth ? getManilaDateStr(today) : monthStartStr;
+        const fromDate = gridStartStr < oneWeekAgoStr ? oneWeekAgoStr : gridStartStr;
 
         return {
             fromDate,
-            toDate: monthEndStr,
+            toDate: gridEndStr,
         };
     };
 
