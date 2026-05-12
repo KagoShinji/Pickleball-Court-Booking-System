@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '../ui';
 import { BookingCalendar } from '../BookingCalendar';
 import { calculatePriceForSlots, getDailyBookings } from '../../services/booking';
+import { listCourts } from '../../services/courts';
 
 export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
     const [step, setStep] = useState(1);
@@ -11,6 +12,8 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
     const [customReason, setCustomReason] = useState('');
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTimes, setSelectedTimes] = useState([]);
+    const [courts, setCourts] = useState([]);
+    const [selectedCourtId, setSelectedCourtId] = useState('');
     const [courtBookings, setCourtBookings] = useState([]);
     const [copied, setCopied] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -38,8 +41,19 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
             setCopied(false);
             setIsConfirming(false);
             setConfirmError(null);
+            setSelectedCourtId(booking.court_id);
+            loadCourts();
         }
     }, [isOpen, booking]);
+
+    const loadCourts = async () => {
+        try {
+            const data = await listCourts();
+            setCourts(data || []);
+        } catch (err) {
+            console.error('Error loading courts:', err);
+        }
+    };
 
     // Load bookings when date changes
     useEffect(() => {
@@ -68,12 +82,12 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
     const getBookedTimes = () => {
         const bookedSlots = new Set();
 
-        if (!booking || !courtBookings || courtBookings.length === 0) {
+        if (!booking || !courtBookings || courtBookings.length === 0 || !courts.length) {
             return Array.from(bookedSlots);
         }
 
-        const court = booking.courts;
-        const isExclusiveSelected = court?.type?.includes('Exclusive') || court?.type?.includes('Whole');
+        const targetCourt = courts.find(c => c.id === selectedCourtId) || booking.courts;
+        const isExclusiveSelected = targetCourt?.type?.includes('Exclusive') || targetCourt?.type?.includes('Whole');
 
         courtBookings.forEach(courtBooking => {
             // Skip the current booking being rescheduled
@@ -84,7 +98,7 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
             let isConflict = false;
 
             // Check for conflicts
-            if (courtBooking.court_id === booking.court_id) {
+            if (courtBooking.court_id === selectedCourtId) {
                 isConflict = true;
             } else if (isExclusiveSelected) {
                 isConflict = true;
@@ -129,8 +143,9 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
     const generateSMSMessage = () => {
         if (!booking || !selectedDate || selectedTimes.length === 0) return '';
 
+        const targetCourt = courts.find(c => c.id === selectedCourtId) || booking.courts;
         const customerName = booking.customer_name;
-        const courtName = booking.courts?.name || 'Court';
+        const courtName = targetCourt?.name || 'Court';
 
         // Original date and times
         const originalDate = format(new Date(booking.booking_date), 'MMM d, yyyy');
@@ -147,8 +162,8 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
 
         // Calculate new price
         const courtData = {
-            price: booking.courts?.price || 0,
-            pricing_rules: booking.courts?.pricing_rules || []
+            price: targetCourt?.price || 0,
+            pricing_rules: targetCourt?.pricing_rules || []
         };
         const newPrice = calculatePriceForSlots(selectedTimes, courtData);
 
@@ -198,9 +213,10 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
         const endTime = `${(hours + 1).toString().padStart(2, '0')}:00`;
 
         // Calculate new price
+        const targetCourt = courts.find(c => c.id === selectedCourtId) || booking.courts;
         const courtData = {
-            price: booking.courts?.price || 0,
-            pricing_rules: booking.courts?.pricing_rules || []
+            price: targetCourt?.price || 0,
+            pricing_rules: targetCourt?.pricing_rules || []
         };
         const newPrice = calculatePriceForSlots(selectedTimes, courtData);
 
@@ -211,6 +227,7 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
             newEndTime: endTime,
             newBookedTimes: sortedSlots,
             newTotalPrice: newPrice,
+            newCourtId: selectedCourtId,
             reason: reason === 'custom' ? customReason : reason,
             originalDate: booking.booking_date,
             originalStartTime: booking.start_time,
@@ -352,6 +369,25 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
                                     Choose the new date and time slots for this booking
                                 </p>
 
+                                {/* Select Court */}
+                                <div className="mb-6">
+                                    <label className="block text-sm font-semibold text-gray-900 mb-2">Select Court</label>
+                                    <select
+                                        value={selectedCourtId}
+                                        onChange={(e) => {
+                                            setSelectedCourtId(e.target.value);
+                                            setSelectedTimes([]); // Reset selected times when court changes
+                                        }}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-orange focus:border-brand-orange outline-none bg-white"
+                                    >
+                                        {courts.map(court => (
+                                            <option key={court.id} value={court.id}>
+                                                {court.name} - ₱{court.price}/hr {court.type ? `(${court.type})` : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
                                 {/* Show original booking info */}
                                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
                                     <p className="text-sm font-semibold text-blue-900 mb-2">📋 Original Booking Info</p>
@@ -446,6 +482,12 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
                                                         }
                                                     </p>
                                                 </div>
+                                                <div>
+                                                    <span className="text-gray-500">Court:</span>
+                                                    <p className="font-semibold text-gray-900">
+                                                        {booking.courts?.name}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -465,6 +507,12 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
                                                     <span className="text-gray-500">Time:</span>
                                                     <p className="font-semibold text-gray-900">
                                                         {selectedTimes.sort().map(t => formatTime12Hour(t)).join(', ')}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <span className="text-gray-500">Court:</span>
+                                                    <p className="font-semibold text-gray-900">
+                                                        {courts.find(c => c.id === selectedCourtId)?.name}
                                                     </p>
                                                 </div>
                                             </div>

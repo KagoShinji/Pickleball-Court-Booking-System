@@ -685,6 +685,7 @@ export async function rescheduleBooking({
   newEndTime,
   newBookedTimes,
   newTotalPrice,
+  newCourtId,
   reason,
   originalDate,
   originalStartTime,
@@ -707,14 +708,16 @@ export async function rescheduleBooking({
         throw new Error(`Booking with ID ${bookingId} not found`);
       }
 
+      const targetCourtId = newCourtId || checkData.court_id;
+
       const { data: courtData } = await supabase
         .from('courts')
         .select('type')
-        .eq('id', checkData.court_id)
+        .eq('id', targetCourtId)
         .single();
 
       const conflictCheck = await checkTimeSlotConflicts(
-        checkData.court_id,
+        targetCourtId,
         newDate,
         newBookedTimes,
         { courtType: courtData?.type || '', excludeBookingId: bookingId }
@@ -743,7 +746,8 @@ export async function rescheduleBooking({
         p_original_date: originalDate,
         p_original_start_time: originalStartTime,
         p_original_end_time: originalEndTime,
-        p_original_booked_times: originalBookedTimes || []
+        p_original_booked_times: originalBookedTimes || [],
+        p_new_court_id: newCourtId || null
       });
 
       if (error) {
@@ -794,15 +798,17 @@ export async function rescheduleBooking({
       throw new Error(`Booking with ID ${bookingId} not found`);
     }
 
+    const targetCourtId = newCourtId || checkData.court_id;
+
     // Check for conflicts on the new date/time (exclude self to avoid Bug 3)
     const { data: courtData } = await supabase
       .from('courts')
       .select('type')
-      .eq('id', checkData.court_id)
+      .eq('id', targetCourtId)
       .single();
 
     const conflictCheck = await checkTimeSlotConflicts(
-      checkData.court_id,
+      targetCourtId,
       newDate,
       newBookedTimes,
       { courtType: courtData?.type || '', excludeBookingId: bookingId }
@@ -821,6 +827,7 @@ export async function rescheduleBooking({
       end_time: newEndTime,
       booked_times: newBookedTimes,
       total_price: newTotalPrice,
+      court_id: targetCourtId,
       status: 'Rescheduled',
       rescheduled_from: {
         original_date: originalDate,
@@ -828,6 +835,7 @@ export async function rescheduleBooking({
         original_end_time: originalEndTime,
         original_booked_times: originalBookedTimes,
         original_total_price: checkData.total_price,
+        original_court_id: checkData.court_id,
         reason: reason,
         rescheduled_at: new Date().toISOString()
       }
