@@ -1,81 +1,89 @@
-import { MapPin, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from './ui';
 import { useCompany } from '../lib/CompanyProvider';
+
+const navItems = [
+    { href: '#courts', label: 'Courts' },
+    { href: '#offers', label: 'Amenities' },
+    { href: '#contact', label: 'Visit' },
+];
 
 export function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const { company } = useCompany();
 
+    const scrollToCourts = () => {
+        setIsOpen(false);
+        document.getElementById('courts')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-white/50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-16">
-                    <div className="flex items-center gap-2">
-                        <div className="bg-secondary p-1.5 rounded-lg rotate-3 shadow-sm shadow-secondary/20">
-                            <span className="text-white font-bold text-lg">{company.initials}</span>
-                        </div>
-                        <span className="font-display font-bold text-xl tracking-tight text-primary-dark">
-                            {company.name}<span className="text-secondary">.</span>
+        <nav className="fixed inset-x-0 top-0 z-50 px-3 py-5 sm:px-6" aria-label="Primary navigation">
+            <div className="glass-panel mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-full px-3 py-2">
+                <a href="#top" className="flex min-w-0 items-center gap-3 rounded-full pr-2" aria-label={`${company.name} home`}>
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-1 shadow-[0_18px_34px_-24px_rgba(9,31,26,0.9)]">
+                        <img src="/kennydink/kennydinklogo.jpg" alt={`${company.name} logo`} className="h-full w-full rounded-full object-cover" />
+                    </div>
+                    <div className="min-w-0 pr-2">
+                        <span className="block truncate font-display text-base font-extrabold tracking-[-0.04em] text-primary-dark sm:text-lg">
+                            {company.name}
+                        </span>
+                        <span className="hidden truncate font-mono text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-stone-500 sm:block">
+                            Reserve courts fast
                         </span>
                     </div>
+                </a>
 
-                    <div className="hidden md:block">
-                        <div className="ml-10 flex items-baseline space-x-8 text-gray-600">
-                            <a href="#courts" className="font-medium hover:text-secondary transition-colors">Courts</a>
-                            <a href="#offers" className="font-medium hover:text-secondary transition-colors">Offers</a>
-                            <a href="#contact" className="font-medium hover:text-secondary transition-colors">Contact</a>
-                        </div>
-                    </div>
-
-                    <div className="hidden md:flex items-center gap-4">
-                        <div className="flex items-center gap-1 text-sm text-gray-500">
-                            <MapPin size={16} className="text-primary" />
-                            <span className="max-w-[200px] truncate">{company.location}</span>
-                        </div>
-                    </div>
-
-                    <div className="-mr-2 flex md:hidden">
-                        <button onClick={() => setIsOpen(!isOpen)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                            {isOpen ? <X /> : <Menu />}
-                        </button>
-                    </div>
+                <div className="hidden items-center rounded-full border border-stone-900/8 bg-white/50 p-1 md:flex">
+                    {navItems.map((item) => (
+                        <a
+                            key={item.href}
+                            href={item.href}
+                            className="rounded-full px-4 py-2 text-sm font-bold text-stone-600 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-primary-dark hover:text-white"
+                        >
+                            {item.label}
+                        </a>
+                    ))}
                 </div>
+
+                <div className="hidden items-center gap-3 md:flex">
+                    <div className="hidden max-w-[190px] truncate rounded-full bg-white/50 px-3 py-2 font-mono text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-stone-500 lg:block">
+                        {company.location}
+                    </div>
+                    <Button size="sm" onClick={scrollToCourts} className="bg-primary-dark text-white hover:bg-primary">
+                        Book now
+                    </Button>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="relative flex h-11 w-11 items-center justify-center rounded-full bg-primary-dark text-white transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95 md:hidden"
+                    aria-label="Toggle navigation menu"
+                    aria-expanded={isOpen}
+                >
+                    {isOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
+                </button>
             </div>
 
             {isOpen && (
-                <div className="md:hidden bg-bg-user border-t border-gray-100 animate-in slide-in-from-top duration-200">
-                    <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                        <a
-                            href="#courts"
-                            onClick={() => setIsOpen(false)}
-                            className="block px-3 py-3 rounded-xl text-base font-medium hover:bg-gray-50 text-gray-700"
-                        >
-                            Courts
-                        </a>
-                        <a
-                            href="#offers"
-                            onClick={() => setIsOpen(false)}
-                            className="block px-3 py-3 rounded-xl text-base font-medium hover:bg-gray-50 text-gray-700"
-                        >
-                            Offers
-                        </a>
-                        <a
-                            href="#contact"
-                            onClick={() => setIsOpen(false)}
-                            className="block px-3 py-3 rounded-xl text-base font-medium hover:bg-gray-50 text-gray-700"
-                        >
-                            Contact
-                        </a>
-                        <div className="pt-2">
-                            <Button
-                                onClick={() => {
-                                    setIsOpen(false);
-                                    document.getElementById('courts')?.scrollIntoView({ behavior: 'smooth' });
-                                }}
-                                className="w-full text-white shadow-lg shadow-primary/20"
+                <div className="mx-auto mt-3 max-w-6xl px-1 md:hidden">
+                    <div className="rounded-[2rem] border border-white/16 bg-primary-dark/94 p-3 text-white shadow-[0_36px_100px_-64px_rgba(9,31,26,0.9)] backdrop-blur-3xl">
+                        {navItems.map((item, index) => (
+                            <a
+                                key={item.href}
+                                href={item.href}
+                                onClick={() => setIsOpen(false)}
+                                className="block rounded-[1.4rem] px-5 py-4 font-display text-3xl font-extrabold tracking-[-0.05em] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/10"
+                                style={{ transitionDelay: `${index * 45}ms` }}
                             >
-                                Book Now
+                                {item.label}
+                            </a>
+                        ))}
+                        <div className="p-2 pt-4">
+                            <Button onClick={scrollToCourts} className="w-full bg-secondary text-primary-dark hover:bg-white">
+                                Book now
                             </Button>
                         </div>
                     </div>

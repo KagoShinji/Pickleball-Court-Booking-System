@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -7,23 +8,24 @@ export function cn(...inputs) {
 
 export function Button({ className, variant = 'primary', size = 'md', children, ...props }) {
     const variants = {
-        primary: 'bg-primary text-primary-dark hover:bg-primary/90 shadow-sm',
-        secondary: 'bg-secondary text-white hover:bg-secondary/90 shadow-sm',
-        outline: 'border-2 border-primary text-primary-dark hover:bg-primary-light',
-        ghost: 'hover:bg-black/5 text-primary-dark',
-        danger: 'bg-red-500 text-white hover:bg-red-600 shadow-sm',
+        primary: 'bg-primary text-white hover:bg-primary-dark shadow-[0_18px_36px_-22px_rgba(10,63,55,0.8)]',
+        secondary: 'bg-secondary text-white hover:bg-secondary/90 shadow-[0_18px_34px_-22px_rgba(184,109,47,0.82)]',
+        outline: 'border border-primary/25 bg-white/55 text-primary-dark hover:border-primary/45 hover:bg-primary-light/70',
+        ghost: 'text-primary-dark hover:bg-primary-dark/5',
+        danger: 'bg-red-600 text-white hover:bg-red-700 shadow-[0_18px_34px_-24px_rgba(185,28,28,0.8)]',
     };
 
     const sizes = {
-        sm: 'px-3 py-1.5 text-sm',
+        sm: 'px-4 py-2 text-sm',
         md: 'px-6 py-2.5 text-base',
-        lg: 'px-8 py-3 text-lg',
+        lg: 'px-7 py-3.5 text-base sm:text-lg',
     };
 
     return (
         <button
             className={cn(
-                'rounded-full font-display font-semibold transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2',
+                'inline-flex items-center justify-center gap-2 rounded-full font-display font-semibold tracking-tight transition-all duration-300 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none',
+                'focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-secondary/55',
                 variants[variant],
                 sizes[size],
                 className
@@ -39,7 +41,7 @@ export function Card({ className, children, ...props }) {
     return (
         <div
             className={cn(
-                'bg-bg-surface rounded-2xl shadow-sm border border-black/5 overflow-hidden hover:shadow-md transition-shadow duration-300',
+                'venue-panel overflow-hidden rounded-[2rem] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_30px_90px_-56px_rgba(52,39,21,0.72)]',
                 className
             )}
             {...props}
@@ -51,14 +53,14 @@ export function Card({ className, children, ...props }) {
 
 export function Badge({ className, variant = 'green', children }) {
     const variants = {
-        green: 'bg-primary-light text-primary-dark',
-        orange: 'bg-secondary-light text-orange-800',
-        gray: 'bg-gray-100 text-gray-700',
-        red: 'bg-red-100 text-red-800',
+        green: 'bg-primary-light text-primary-dark ring-primary/15',
+        orange: 'bg-secondary-light text-orange-900 ring-secondary/20',
+        gray: 'bg-stone-100 text-stone-700 ring-stone-200',
+        red: 'bg-red-50 text-red-700 ring-red-200',
     };
 
     return (
-        <span className={cn('px-2.5 py-0.5 rounded-full text-xs font-semibold', variants[variant], className)}>
+        <span className={cn('inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1', variants[variant], className)}>
             {children}
         </span>
     );
@@ -101,8 +103,8 @@ export function Pagination({ currentPage, totalPages, onPageChange }) {
     const pageItems = buildPageItems();
 
     return (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50">
-            <div className="flex-1 flex justify-between sm:hidden">
+        <div className="flex items-center justify-between border-t border-stone-200/70 bg-stone-50/80 px-4 py-3">
+            <div className="flex flex-1 justify-between sm:hidden">
                 <Button
                     variant="outline"
                     size="sm"
@@ -120,18 +122,18 @@ export function Pagination({ currentPage, totalPages, onPageChange }) {
                     Next
                 </Button>
             </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                 <div>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-stone-700">
                         Page <span className="font-medium">{safeCurrentPage}</span> of <span className="font-medium">{safeTotalPages}</span>
                     </p>
                 </div>
                 <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <nav className="relative inline-flex overflow-hidden rounded-full border border-stone-200 bg-white shadow-sm" aria-label="Pagination">
                         <button
                             onClick={() => onPageChange(Math.max(1, safeCurrentPage - 1))}
                             disabled={safeCurrentPage === 1}
-                            className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-stone-500 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <span className="sr-only">Previous</span>
                             <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -143,7 +145,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }) {
                                 return (
                                     <span
                                         key={item}
-                                        className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-400"
+                                        className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-stone-400"
                                     >
                                         ...
                                     </span>
@@ -154,9 +156,9 @@ export function Pagination({ currentPage, totalPages, onPageChange }) {
                                 <button
                                     key={item}
                                     onClick={() => onPageChange(item)}
-                                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${safeCurrentPage === item
-                                        ? 'z-10 bg-primary-light border-primary text-primary-dark'
-                                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-medium transition-colors ${safeCurrentPage === item
+                                        ? 'bg-primary text-white'
+                                        : 'text-stone-500 hover:bg-stone-50'
                                         }`}
                                 >
                                     {item}
@@ -166,7 +168,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }) {
                         <button
                             onClick={() => onPageChange(Math.min(safeTotalPages, safeCurrentPage + 1))}
                             disabled={safeCurrentPage === safeTotalPages}
-                            className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-stone-500 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <span className="sr-only">Next</span>
                             <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -179,11 +181,12 @@ export function Pagination({ currentPage, totalPages, onPageChange }) {
         </div>
     );
 }
+
 export function Input({ className, ...props }) {
     return (
         <input
             className={cn(
-                'w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-gray-400',
+                'w-full rounded-2xl border border-stone-200 bg-white/80 px-4 py-3 text-stone-900 outline-none transition-all placeholder:text-stone-400 focus:border-primary/50 focus:bg-white focus:ring-4 focus:ring-primary/10',
                 className
             )}
             {...props}

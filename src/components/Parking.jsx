@@ -1,68 +1,76 @@
-import { Car } from 'lucide-react';
+import { Car, Moon, SunMedium } from 'lucide-react';
 import { LazyMapEmbed } from './LazyMapEmbed';
 
 export function Parking() {
     return (
-        <section id="parking" className="py-24 bg-bg-user relative overflow-hidden">
-            {/* Background Elements */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-            </div>
+        <section id="parking" className="relative overflow-hidden bg-[linear-gradient(145deg,#edf4d7_0%,#f5ead4_48%,#d9eef2_100%)] py-24 sm:py-36">
+            <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent" aria-hidden="true" />
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-                    <div className="p-8 sm:p-10 border-b border-gray-100 bg-gray-50/50">
-                        <div className="flex items-center gap-3 mb-2">
-                            <Car className="text-secondary" size={28} />
-                            <h3 className="text-2xl font-display font-bold text-primary-dark">Parking Availability</h3>
-                        </div>
-                        <p className="text-gray-600">Secure parking options available nearby depending on your playing time.</p>
-                    </div>
-
-                    <div className="grid lg:grid-cols-2">
-                        {/* Day Parking */}
-                        <div className="p-6 sm:p-8 lg:p-10 border-b lg:border-b-0 lg:border-r border-gray-100">
-                            <div className="mb-6">
-                                <div>
-                                    <span className="inline-block px-3 py-1 bg-secondary-light text-secondary text-xs font-bold uppercase tracking-wider rounded-full mb-2">
-                                        6:00 AM - 8:00 PM
-                                    </span>
-                                    <h4 className="text-lg sm:text-xl font-bold text-gray-900">Mandaue City Parking Building</h4>
-                                </div>
+            <div className="relative mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
+                <div className="venue-panel overflow-hidden rounded-[2.5rem]">
+                    <div className="grid gap-0 lg:grid-cols-[0.8fr_1.2fr]">
+                        <div className="relative bg-primary-dark p-8 text-white sm:p-10 lg:p-12">
+                            <div className="absolute bottom-[-6rem] right-[-5rem] h-64 w-64 rounded-full bg-secondary/28 blur-3xl" aria-hidden="true" />
+                            <div className="relative">
+                                <span className="inline-flex h-14 w-14 items-center justify-center rounded-[1.35rem] bg-white/12 text-secondary ring-1 ring-white/14">
+                                    <Car size={27} aria-hidden="true" />
+                                </span>
+                                <h3 className="mt-7 text-balance text-4xl font-extrabold leading-[0.98] tracking-[-0.045em]">
+                                    Parking guidance for different play windows.
+                                </h3>
+                                <p className="mt-5 max-w-md text-sm leading-7 text-white/72">
+                                    Keep arrival details clear without forcing every venue into the same parking layout.
+                                </p>
                             </div>
-                            <LazyMapEmbed
+                        </div>
+
+                        <div className="grid gap-0 md:grid-cols-2">
+                            <ParkingMap
+                                icon={<SunMedium size={20} />}
+                                label="6:00 AM - 8:00 PM"
+                                title="Mandaue City Parking Building"
                                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1231.7332439194204!2d123.94227780570394!3d10.326561079742241!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33a999b23fbbda97%3A0x873ce5859e106bfd!2sMandaue%20City%20Parking%20Building!5e1!3m2!1sen!2sph!4v1769845352536!5m2!1sen!2sph"
-                                title="Mandaue City Parking Building map"
-                                description="Open the day parking map only when needed."
-                                buttonLabel="Show Day Parking Map"
-                                aspectClassName="min-h-[260px] sm:min-h-[300px] lg:min-h-[340px]"
+                                mapTitle="Mandaue City Parking Building map"
+                                buttonLabel="Show day parking map"
+                                helper="Located a short walk from the courts."
                             />
-                            <p className="mt-4 text-sm text-gray-500 text-center">Located just a short walk from the courts.</p>
-                        </div>
-
-                        {/* Night Parking */}
-                        <div className="p-6 sm:p-8 lg:p-10 bg-gray-50/50">
-                            <div className="mb-6">
-                                <div>
-                                    <span className="inline-block px-3 py-1 bg-primary-light text-primary-dark text-xs font-bold uppercase tracking-wider rounded-full mb-2">
-                                        8:00 PM - 6:00 AM
-                                    </span>
-                                    <h4 className="text-lg sm:text-xl font-bold text-gray-900">Mandaue City Hall</h4>
-                                </div>
-                            </div>
-                            <LazyMapEmbed
+                            <ParkingMap
+                                icon={<Moon size={20} />}
+                                label="8:00 PM - 6:00 AM"
+                                title="Mandaue City Hall"
                                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d615.8653893176781!2d123.94299730826987!3d10.327190424017024!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33a999b240f0bd77%3A0xbfe6ac0f099de4a4!2sLANDBANK%20-%20Mandaue%20City%20Hall!5e1!3m2!1sen!2sph!4v1769845543147!5m2!1sen!2sph"
-                                title="Mandaue City Hall map"
-                                description="Open the night parking map only when needed."
-                                buttonLabel="Show Night Parking Map"
-                                aspectClassName="min-h-[260px] sm:min-h-[300px] lg:min-h-[340px]"
+                                mapTitle="Mandaue City Hall map"
+                                buttonLabel="Show night parking map"
+                                helper="Use the City Hall grounds for late sessions."
                             />
-                            <p className="mt-4 text-sm text-gray-500 text-center">Safe and secure parking at the City Hall grounds.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+    );
+}
+
+function ParkingMap({ icon, label, title, src, mapTitle, buttonLabel, helper }) {
+    return (
+        <div className="border-b border-stone-200/70 p-5 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0 sm:p-6 lg:p-8">
+            <div className="mb-5 flex items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-secondary-light text-secondary">
+                    {icon}
+                </div>
+                <div>
+                    <span className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-secondary">{label}</span>
+                    <h4 className="mt-1 text-xl font-bold tracking-tight text-primary-dark">{title}</h4>
+                </div>
+            </div>
+            <LazyMapEmbed
+                src={src}
+                title={mapTitle}
+                description={`Open the ${title} map only when needed.`}
+                buttonLabel={buttonLabel}
+                aspectClassName="min-h-[260px] sm:min-h-[310px] lg:min-h-[360px]"
+            />
+            <p className="mt-4 text-center text-sm text-stone-500">{helper}</p>
+        </div>
     );
 }

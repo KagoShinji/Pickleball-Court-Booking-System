@@ -1,259 +1,252 @@
-import { MapPin, Users, DollarSign, X, Info } from 'lucide-react';
-import { Badge, Button, Card } from './ui';
+import { DollarSign, Info, MapPin, Maximize2, Timer, Users, X } from 'lucide-react';
 import { useState } from 'react';
+import { Badge, Button, Card } from './ui';
 
-export function CourtCard({ court, onBook }) {
+const KENNYDINK_COURT_IMAGES = [
+    '/kennydink/court%203.jpg',
+    '/kennydink/net.jpg',
+    '/kennydink/paddle.jpg',
+    '/kennydink/kennydinkhero.jpg',
+    '/kennydink/court%201.jpg',
+];
+
+export function CourtCard({ court, onBook, featured = false, visualIndex = 0 }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const courtTypeLabel = court.type?.trim() || 'Court';
+    const hasPricingRules = court.pricing_rules && court.pricing_rules.length > 0;
+    const maxPlayers = court.max_players || 10;
+    const isActive = court.is_active !== false;
+    const imageSrc = KENNYDINK_COURT_IMAGES[visualIndex % KENNYDINK_COURT_IMAGES.length]
+        || (court.images && court.images[0]?.url)
+        || court.image
+        || '/images/court1.jpg';
 
-    // Format hour to 12-hour format
     const formatHour12 = (hour) => {
         const period = hour >= 12 ? 'PM' : 'AM';
         const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
         return `${displayHour.toString().padStart(2, '0')}:00 ${period}`;
     };
 
-    // Check if court has dynamic pricing rules
-    const hasPricingRules = court.pricing_rules && court.pricing_rules.length > 0;
-
-    // Get max players (default to 10 if not set)
-    const maxPlayers = court.max_players || 10;
-
-    // Check if court is active (default to true if not specified)
-    const isActive = court.is_active !== false;
+    const formattedPrice = `PHP ${court.price || 0}`;
 
     return (
         <>
-            <Card className={`group h-full flex flex-col ${!isActive ? 'opacity-75' : ''}`}>
-                <div
-                    className="relative h-48 overflow-hidden bg-gray-100 cursor-pointer"
-                    onClick={() => setIsExpanded(true)}
-                >
-                    <img
-                        src={(court.images && court.images[0]?.url) || court.image || '/images/court1.jpg'}
-                        alt={court.name}
-                        className={`w-full h-full object-cover transition-transform duration-500 ${isActive ? 'group-hover:scale-110' : 'grayscale'}`}
-                        onError={(e) => { e.target.src = '/images/court1.jpg'; }}
-                    />
-                    <div className="absolute top-4 right-4">
-                        <Badge variant={isActive ? (court.status === 'Available' ? 'green' : 'gray') : 'red'}>
-                            {isActive ? (court.status || 'Available') : 'Unavailable'}
-                        </Badge>
-                    </div>
-                    {/* Info overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">
-                        <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-medium text-gray-700">
-                            <Info size={14} />
-                            Click to view details
+            <Card className={`group h-full ${!isActive ? 'opacity-80' : ''}`}>
+                <div className={`grid h-full ${featured ? 'md:grid-cols-[1.05fr_0.95fr]' : 'grid-cols-1'}`}>
+                    <button
+                        type="button"
+                        className={`relative min-h-64 overflow-hidden bg-stone-200 text-left ${featured ? 'md:min-h-full' : 'h-64'}`}
+                        onClick={() => setIsExpanded(true)}
+                        aria-label={`View details for ${court.name}`}
+                    >
+                        <img
+                            src={imageSrc}
+                            alt={court.name}
+                            className={`h-full w-full object-cover transition-transform duration-700 ease-out ${isActive ? 'group-hover:scale-105' : 'grayscale'}`}
+                            onError={(e) => { e.currentTarget.src = '/images/court1.jpg'; }}
+                        />
+                        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,38,33,0.04),rgba(13,38,33,0.76))]" />
+
+                        <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+                            <Badge variant={isActive ? (court.status === 'Available' ? 'green' : 'gray') : 'red'}>
+                                {isActive ? (court.status || 'Available') : 'Unavailable'}
+                            </Badge>
+                            {featured && <Badge variant="orange">Featured</Badge>}
                         </div>
-                    </div>
-                    {!isActive && (
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                            <div className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold text-sm">
-                                COURT UNAVAILABLE
+
+                        <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4 text-white">
+                            <div>
+                                <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-white/70">{courtTypeLabel}</p>
+                                <p className="mt-1 text-2xl font-bold tracking-tight">{court.name}</p>
+                            </div>
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/18 bg-white/16 backdrop-blur-md transition-transform duration-300 group-hover:scale-105">
+                                <Maximize2 size={18} aria-hidden="true" />
                             </div>
                         </div>
-                    )}
-                </div>
 
-                <div className="p-5 flex-1 flex flex-col">
-                    <div className="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 className="font-display font-bold text-lg text-primary-dark">{court.name}</h3>
-                            <div className="flex items-center gap-1 text-gray-500 text-sm mt-1">
-                                <MapPin size={14} />
-                                <span>{courtTypeLabel}</span>
+                        {!isActive && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-primary-dark/45">
+                                <div className="rounded-full bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-lg">
+                                    Court unavailable
+                                </div>
+                            </div>
+                        )}
+                    </button>
+
+                    <div className="flex min-h-full flex-col p-5 sm:p-6">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                                <h3 className="text-2xl font-extrabold tracking-[-0.03em] text-primary-dark">{court.name}</h3>
+                                <div className="mt-2 flex items-center gap-2 text-sm font-medium text-stone-500">
+                                    <MapPin size={15} aria-hidden="true" />
+                                    <span>{courtTypeLabel}</span>
+                                </div>
+                            </div>
+                            <div className="shrink-0 text-right">
+                                <span className="block font-mono text-lg font-semibold text-secondary">{formattedPrice}</span>
+                                <span className="text-xs font-medium text-stone-400">per hour</span>
                             </div>
                         </div>
-                        <div className="text-right">
-                            <span className="block font-bold text-secondary text-lg">₱{court.price}</span>
-                            <span className="text-xs text-gray-400">/ hour</span>
-                        </div>
-                    </div>
 
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{court.description}</p>
+                        <p className="mt-4 line-clamp-3 text-sm leading-6 text-stone-600">
+                            {court.description || 'A venue-managed court ready for timed reservations.'}
+                        </p>
 
-                    {/* See More button for description */}
-                    {court.description && court.description.length > 80 && (
-                        <button
-                            onClick={() => setIsExpanded(true)}
-                            className="text-xs text-primary hover:text-primary-dark font-medium mb-3 text-left underline"
-                        >
-                            See full description →
-                        </button>
-                    )}
+                        {court.description && court.description.length > 96 && (
+                            <button
+                                type="button"
+                                onClick={() => setIsExpanded(true)}
+                                className="mt-3 inline-flex w-fit items-center gap-2 rounded-full text-sm font-semibold text-primary transition-colors hover:text-primary-dark"
+                            >
+                                Read venue notes <Info size={14} aria-hidden="true" />
+                            </button>
+                        )}
 
-                    {/* Dynamic Pricing Rules Badge */}
-                    {hasPricingRules && isActive && (
-                        <div className="mb-3 p-2.5 bg-secondary/10 border border-secondary/30 rounded-lg">
-                            <div className="flex items-start gap-2">
-                                <DollarSign size={14} className="text-secondary mt-0.5 flex-shrink-0" />
-                                <div className="text-xs space-y-1.5 flex-1">
-                                    <p className="font-semibold text-secondary">Time-Based Pricing</p>
+                        {hasPricingRules && isActive && (
+                            <div className="mt-5 rounded-[1.35rem] border border-secondary/18 bg-secondary-light/55 p-4">
+                                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-secondary">
+                                    <Timer size={16} aria-hidden="true" />
+                                    Time-based pricing
+                                </div>
+                                <div className="space-y-2">
                                     {court.pricing_rules.map((rule, idx) => (
-                                        <p key={idx} className="text-gray-700">
-                                            {formatHour12(rule.startHour)} - {formatHour12(rule.endHour)}: <span className="font-bold text-secondary">₱{rule.price}/hr</span>
-                                        </p>
+                                        <div key={idx} className="flex items-center justify-between gap-3 text-xs text-stone-700">
+                                            <span>{formatHour12(rule.startHour)} - {formatHour12(rule.endHour)}</span>
+                                            <span className="font-mono font-semibold text-secondary">PHP {rule.price}/hr</span>
+                                        </div>
                                     ))}
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Unavailable Notice for disabled courts */}
-                    {!isActive && (
-                        <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-xs text-red-600 font-medium text-center">
-                                This court is currently unavailable for booking
-                            </p>
-                        </div>
-                    )}
+                        {!isActive && (
+                            <div className="mt-5 rounded-[1.2rem] border border-red-200 bg-red-50 px-4 py-3 text-center">
+                                <p className="text-xs font-semibold text-red-700">This court is currently unavailable for booking.</p>
+                            </div>
+                        )}
 
-                    <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
-                        <div className="flex items-center gap-1 text-xs text-gray-500 font-medium">
-                            <Users size={14} className="text-primary" />
-                            Up to {maxPlayers} pax{maxPlayers !== 1 ? '' : ''}
+                        <div className="mt-auto flex items-center justify-between gap-4 pt-6">
+                            <div className="flex items-center gap-2 text-sm font-semibold text-stone-500">
+                                <Users size={16} className="text-primary" aria-hidden="true" />
+                                Up to {maxPlayers} pax
+                            </div>
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => onBook(court)}
+                                disabled={!isActive}
+                                className="text-white"
+                            >
+                                {isActive ? 'Book' : 'Unavailable'}
+                            </Button>
                         </div>
-                        <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => onBook(court)}
-                            disabled={!isActive}
-                            className={!isActive ? 'opacity-50 cursor-not-allowed' : 'text-white'}
-                        >
-                            {isActive ? 'Book Now' : 'Unavailable'}
-                        </Button>
                     </div>
                 </div>
             </Card>
 
-            {/* Expanded Modal */}
             {isExpanded && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-primary-dark/72 p-4 backdrop-blur-sm"
                     onClick={() => setIsExpanded(false)}
                 >
                     <div
-                        className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
+                        className="venue-panel max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[2.25rem]"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Header with Image */}
-                        <div className="relative h-64 sm:h-80 overflow-hidden bg-gray-100">
+                        <div className="relative h-72 overflow-hidden bg-stone-200 sm:h-96">
                             <img
-                                src={(court.images && court.images[0]?.url) || court.image || '/images/court1.jpg'}
+                                src={imageSrc}
                                 alt={court.name}
-                                className={`w-full h-full object-cover ${!isActive ? 'grayscale' : ''}`}
-                                onError={(e) => { e.target.src = '/images/court1.jpg'; }}
+                                className={`h-full w-full object-cover ${!isActive ? 'grayscale' : ''}`}
+                                onError={(e) => { e.currentTarget.src = '/images/court1.jpg'; }}
                             />
+                            <div className="absolute inset-0 bg-gradient-to-t from-primary-dark/78 via-primary-dark/18 to-transparent" />
                             <button
+                                type="button"
                                 onClick={() => setIsExpanded(false)}
-                                className="absolute top-4 right-4 p-2 bg-white/90 hover:bg-white rounded-full transition-colors shadow-lg"
+                                className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-primary-dark shadow-lg transition-colors hover:bg-white"
+                                aria-label="Close court details"
                             >
-                                <X size={20} className="text-gray-700" />
+                                <X size={20} aria-hidden="true" />
                             </button>
-                            <div className="absolute top-4 left-4">
+                            <div className="absolute left-5 top-5">
                                 <Badge variant={isActive ? (court.status === 'Available' ? 'green' : 'gray') : 'red'}>
                                     {isActive ? (court.status || 'Available') : 'Unavailable'}
                                 </Badge>
                             </div>
-                            {!isActive && (
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                    <div className="bg-red-500 text-white px-6 py-3 rounded-lg font-bold text-lg">
-                                        COURT UNAVAILABLE
-                                    </div>
-                                </div>
-                            )}
+                            <div className="absolute bottom-6 left-6 right-6 text-white">
+                                <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-white/70">{courtTypeLabel}</p>
+                                <h2 className="mt-2 text-3xl font-extrabold tracking-[-0.04em] sm:text-5xl">{court.name}</h2>
+                            </div>
                         </div>
 
-                        {/* Content */}
-                        <div className="p-6 sm:p-8 space-y-6">
-                            {/* Title and Price */}
-                            <div className="flex justify-between items-start">
+                        <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_18rem]">
+                            <div className="space-y-7">
                                 <div>
-                                    <h2 className="font-display font-bold text-2xl sm:text-3xl text-primary-dark mb-2">
-                                        {court.name}
-                                    </h2>
-                                    <div className="flex items-center gap-2 text-gray-600">
-                                        <MapPin size={16} />
-                                        <span className="text-sm">{courtTypeLabel}</span>
-                                    </div>
+                                    <h3 className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">Court description</h3>
+                                    <p className="mt-3 whitespace-pre-line text-base leading-8 text-stone-700">
+                                        {court.description || 'No description available.'}
+                                    </p>
                                 </div>
-                                <div className="text-right">
-                                    <span className="block font-bold text-secondary text-2xl">₱{court.price}</span>
-                                    <span className="text-sm text-gray-400">per hour</span>
-                                </div>
-                            </div>
 
-                            {/* Full Description */}
-                            <div className="space-y-2">
-                                <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wider">Description</h3>
-                                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                                    {court.description || 'No description available.'}
-                                </p>
-                            </div>
-
-                            {/* Capacity */}
-                            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                <Users size={18} className="text-primary" />
-                                <span className="text-sm font-medium text-gray-700">
-                                    Capacity: Up to {maxPlayers} player{maxPlayers !== 1 ? 's' : ''}
-                                </span>
-                            </div>
-
-                            {/* Dynamic Pricing Rules */}
-                            {hasPricingRules && isActive && (
-                                <div className="space-y-3">
-                                    <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wider">Time-Based Pricing</h3>
-                                    <div className="bg-secondary/10 border border-secondary/30 rounded-lg p-4">
-                                        <div className="space-y-3">
+                                {hasPricingRules && isActive && (
+                                    <div>
+                                        <h3 className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">Time-based pricing</h3>
+                                        <div className="mt-3 overflow-hidden rounded-[1.5rem] border border-secondary/18 bg-secondary-light/55">
                                             {court.pricing_rules.map((rule, idx) => (
-                                                <div key={idx} className="flex items-center justify-between py-2 border-b border-secondary/20 last:border-0">
-                                                    <div className="flex items-center gap-2">
-                                                        <DollarSign size={16} className="text-secondary" />
-                                                        <span className="text-sm font-medium text-gray-700">
-                                                            {formatHour12(rule.startHour)} - {formatHour12(rule.endHour)}
-                                                        </span>
+                                                <div key={idx} className="flex items-center justify-between gap-4 border-b border-secondary/15 px-5 py-4 last:border-b-0">
+                                                    <div className="flex items-center gap-3 text-sm font-medium text-stone-700">
+                                                        <DollarSign size={16} className="text-secondary" aria-hidden="true" />
+                                                        {formatHour12(rule.startHour)} - {formatHour12(rule.endHour)}
                                                     </div>
-                                                    <span className="font-bold text-secondary text-lg">
-                                                        ₱{rule.price}/hr
-                                                    </span>
+                                                    <span className="font-mono font-semibold text-secondary">PHP {rule.price}/hr</span>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
-                                </div>
-                            )}
-
-                            {/* Unavailable Notice */}
-                            {!isActive && (
-                                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                                    <p className="text-sm text-red-600 font-medium text-center">
-                                        ⚠️ This court is currently unavailable for booking
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Action Buttons */}
-                            <div className="flex gap-3 pt-4 border-t border-gray-100">
-                                <Button
-                                    variant="ghost"
-                                    className="flex-1"
-                                    onClick={() => setIsExpanded(false)}
-                                >
-                                    Close
-                                </Button>
-                                <Button
-                                    variant="primary"
-                                    className="flex-1 text-white"
-                                    onClick={() => {
-                                        setIsExpanded(false);
-                                        onBook(court);
-                                    }}
-                                    disabled={!isActive}
-                                >
-                                    {isActive ? 'Book This Court' : 'Unavailable'}
-                                </Button>
+                                )}
                             </div>
+
+                            <aside className="rounded-[1.75rem] bg-white/58 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+                                <div className="space-y-5">
+                                    <div>
+                                        <p className="text-sm font-medium text-stone-500">Base rate</p>
+                                        <p className="mt-1 font-mono text-2xl font-semibold text-secondary">{formattedPrice}</p>
+                                        <p className="text-xs text-stone-400">per hour</p>
+                                    </div>
+                                    <div className="h-px bg-stone-200" />
+                                    <div className="flex items-center gap-3 text-sm font-semibold text-stone-700">
+                                        <Users size={17} className="text-primary" aria-hidden="true" />
+                                        Capacity: up to {maxPlayers} player{maxPlayers !== 1 ? 's' : ''}
+                                    </div>
+                                    {!isActive && (
+                                        <div className="rounded-[1.15rem] border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                                            This court is currently unavailable for booking.
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="mt-6 grid gap-3">
+                                    <Button
+                                        variant="primary"
+                                        className="w-full text-white"
+                                        onClick={() => {
+                                            setIsExpanded(false);
+                                            onBook(court);
+                                        }}
+                                        disabled={!isActive}
+                                    >
+                                        {isActive ? 'Book this court' : 'Unavailable'}
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        className="w-full"
+                                        onClick={() => setIsExpanded(false)}
+                                    >
+                                        Close
+                                    </Button>
+                                </div>
+                            </aside>
                         </div>
                     </div>
                 </div>

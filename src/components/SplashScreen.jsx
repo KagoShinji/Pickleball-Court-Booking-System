@@ -6,18 +6,15 @@ export function SplashScreen({ onComplete }) {
     const { company } = useCompany();
 
     useEffect(() => {
-        // Prevent scrolling while splash screen is active
         document.body.style.overflow = 'hidden';
 
-        // Start fade out after 2 seconds
         const timer1 = setTimeout(() => {
             setIsFadingOut(true);
-        }, 2000);
+        }, 1800);
 
-        // Call onComplete after transition finishes (e.g., 2.7s total)
         const timer2 = setTimeout(() => {
             onComplete();
-        }, 2700);
+        }, 2450);
 
         return () => {
             document.body.style.overflow = 'unset';
@@ -28,39 +25,33 @@ export function SplashScreen({ onComplete }) {
 
     return (
         <div
-            className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-primary-dark transition-all duration-700 ease-in-out ${isFadingOut ? 'opacity-0 scale-110 pointer-events-none' : 'opacity-100 scale-100'
-                }`}
+            className={`fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-primary-dark transition-all duration-700 ease-out ${isFadingOut ? 'scale-105 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
         >
-            <div className="relative flex flex-col items-center">
-                {/* Animated Background Glow */}
-                <div className="absolute inset-0 bg-secondary-light rounded-full blur-[100px] opacity-20 animate-pulse"></div>
+            <div className="absolute left-1/2 top-1/2 h-[32rem] w-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-secondary/18 blur-3xl" aria-hidden="true" />
+            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/18 to-transparent" aria-hidden="true" />
 
-                {/* Logo Icon */}
-                <div className="relative mb-6">
-                    <div className="w-24 h-24 bg-secondary rounded-3xl flex items-center justify-center rotate-12 animate-bounce-slow shadow-[0_0_40px_rgba(249,115,22,0.4)]">
-                        <span className="text-white font-bold text-5xl">{company.initials}</span>
+            <div className="relative flex flex-col items-center px-6 text-center">
+                <div className="relative mb-7">
+                    <div className="absolute inset-0 rounded-[2rem] bg-secondary/35 blur-2xl" aria-hidden="true" />
+                    <div className="relative flex h-24 w-24 rotate-6 items-center justify-center overflow-hidden rounded-[2rem] border border-white/12 bg-white/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-xl animate-bounce-slow">
+                        <span className="text-4xl font-extrabold tracking-tight">{company.initials}</span>
                     </div>
-                    {/* Decorative ring */}
-                    <div className="absolute inset-0 border-4 border-white/20 rounded-3xl -rotate-6 animate-pulse"></div>
                 </div>
 
-                {/* Brand Name Text */}
-                <div className="overflow-hidden mt-4">
-                    <h1 className="text-4xl sm:text-6xl font-display font-bold text-white tracking-tight animate-slide-up-fade">
-                        {company.name}<span className="text-secondary">.</span>
+                <div className="overflow-hidden">
+                    <h1 className="animate-slide-up-fade text-4xl font-extrabold tracking-[-0.05em] text-white sm:text-6xl">
+                        {company.name}
                     </h1>
                 </div>
 
-                {/* Subtitle */}
-                <div className="overflow-hidden mt-3">
-                    <p className="text-primary-light/80 font-medium tracking-[0.3em] uppercase text-sm sm:text-base animate-slide-up-fade" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
-                        {company.location}
+                <div className="mt-4 overflow-hidden">
+                    <p className="animate-slide-up-fade font-mono text-xs font-semibold uppercase tracking-[0.28em] text-white/60 sm:text-sm" style={{ animationDelay: '160ms', animationFillMode: 'both' }}>
+                        Court booking portal
                     </p>
                 </div>
 
-                {/* Loading Bar */}
-                <div className="w-48 h-1 bg-white/10 rounded-full mt-16 overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-secondary to-amber-300 rounded-full animate-progress origin-left"></div>
+                <div className="mt-14 h-1 w-56 overflow-hidden rounded-full bg-white/10">
+                    <div className="h-full origin-left rounded-full bg-secondary animate-progress" />
                 </div>
             </div>
         </div>
