@@ -46,12 +46,14 @@ export function BookingSlotModal({
 
     useEffect(() => {
         if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setStep(1);
         }
     }, [isOpen, selectedCourt?.id]);
 
     useEffect(() => {
         if (step === 2 && !selectedDate) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setStep(1);
         }
     }, [step, selectedDate]);

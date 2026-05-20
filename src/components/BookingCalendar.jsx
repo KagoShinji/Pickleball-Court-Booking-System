@@ -32,6 +32,7 @@ export function BookingCalendar({
 
     useEffect(() => {
         if (selectedDate) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCurrentMonth(startOfMonth(selectedDate));
         }
     }, [selectedDate]);

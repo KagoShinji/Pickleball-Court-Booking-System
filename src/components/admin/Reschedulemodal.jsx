@@ -15,7 +15,6 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
     const [selectedTimes, setSelectedTimes] = useState([]);
     const [courtBookings, setCourtBookings] = useState([]);
     const [copied, setCopied] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [isConfirming, setIsConfirming] = useState(false);
     const [confirmError, setConfirmError] = useState(null);
 
@@ -48,21 +47,19 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
         if (selectedDate && booking) {
             loadBookings();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedDate, booking]);
 
     const loadBookings = async () => {
         if (!selectedDate || !booking) return;
 
         try {
-            setLoading(true);
             const dateStr = format(selectedDate, 'yyyy-MM-dd');
             const bookings = await getDailyBookings(dateStr);
             setCourtBookings(bookings || []);
         } catch (err) {
             console.error('Error loading bookings:', err);
             setCourtBookings([]);
-        } finally {
-            setLoading(false);
         }
     };
 

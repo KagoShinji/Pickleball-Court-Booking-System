@@ -19,6 +19,7 @@ export function AdminActionModal({
 
     useEffect(() => {
         if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setStatus('idle');
             setErrorMessage('');
         }

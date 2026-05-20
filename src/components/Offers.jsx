@@ -31,6 +31,15 @@ const AMENITY_TITLES = {
 
 const AMENITY_IMAGES = ['/kennydink/paddle.jpg', '/kennydink/court%201.jpg', '/kennydink/kennydinktarp.jpg'];
 
+function formatAmenityTitle(key) {
+    if (AMENITY_TITLES[key]) return AMENITY_TITLES[key];
+    return String(key)
+        .replace(/[-_]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export function Offers() {
     const { company } = useCompany();
 
@@ -39,37 +48,54 @@ export function Offers() {
         : ['shower', 'lounge', 'parking', 'wifi', 'music'];
 
     return (
-        <section id="offers" className="relative overflow-hidden bg-[linear-gradient(135deg,#e4edd8_0%,#fff1d4_48%,#d8eef0_100%)] py-28 sm:py-40">
-            <div className="absolute right-[-14rem] top-24 h-[34rem] w-[34rem] rounded-full bg-secondary/18 blur-3xl" aria-hidden="true" />
-            <div className="absolute left-[-12rem] bottom-0 h-[30rem] w-[30rem] rounded-full bg-sky-300/18 blur-3xl" aria-hidden="true" />
+        <section id="offers" className="sport-section sport-section-offers flex items-center py-16 sm:py-20 lg:py-24">
+            <p className="pointer-events-none absolute right-4 top-6 z-1 hidden select-none font-condensed text-[clamp(5rem,14vw,15rem)] uppercase leading-none text-primary-dark/4.5 sm:block lg:right-12">
+                Amenities
+            </p>
 
-            <div className="relative mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
-                <div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
-                    <div className="lg:sticky lg:top-32">
+            <div className="mx-auto w-full max-w-385 px-5 sm:px-8 lg:px-12 xl:px-14">
+                <div className="grid gap-7 lg:grid-cols-[0.58fr_1.42fr] lg:items-center">
+                    <div className="lg:self-start">
                         <span className="section-kicker">After the rally</span>
-                        <h2 className="mt-6 max-w-4xl text-balance font-display text-5xl font-extrabold leading-[0.88] tracking-[-0.065em] text-primary-dark sm:text-6xl lg:text-8xl">
-                            Stay for the court. Come back for the atmosphere.
+                        <h2 className="mt-4 max-w-104 font-condensed text-[clamp(3.8rem,6vw,6.8rem)] uppercase leading-[0.78] tracking-normal text-primary-dark">
+                            Tropical extras. Match-ready.
                         </h2>
-                        <p className="mt-7 max-w-xl text-base leading-8 text-stone-600">
-                            Amenities are presented like part of the venue story: practical, visual, and easy to scan before a player commits to a booking.
+                        <p className="mt-5 max-w-sm text-sm font-semibold leading-7 text-primary-dark/62">
+                            Quick comforts for players, diners, and groups without letting the amenity list dominate the scroll.
                         </p>
 
-                        <div className="mt-10 grid grid-cols-3 gap-3 sm:max-w-xl">
+                        <div className="mt-6 grid max-w-sm grid-cols-3 gap-2">
                             {AMENITY_IMAGES.map((src, index) => (
-                                <div key={src} className={`premium-shell overflow-hidden rounded-[2rem] p-1 ${index === 1 ? 'translate-y-8' : ''}`}>
-                                    <img src={src} alt="Kenny Dink venue detail" className="aspect-[3/4] h-full w-full rounded-[1.6rem] object-cover transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-105" />
+                                <div key={src} className={`overflow-hidden rounded-[0.45rem] border border-primary-dark/10 bg-white/70 p-1 shadow-[0_18px_48px_-38px_rgba(9,31,26,0.45)] ${index === 1 ? 'translate-y-4' : ''}`}>
+                                    <img src={src} alt="Kenny Dink venue detail" className="aspect-4/5 h-full w-full rounded-[0.28rem] object-cover brightness-[1.04] contrast-[1.08] saturate-[1.05] transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-105" />
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div className="grid auto-rows-[minmax(14rem,auto)] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6 lg:grid-flow-dense">
-                        {amenities.slice(0, 6).map((key, index) => {
-                            const icon = ICONS[key] || <Armchair size={22} strokeWidth={1.5} />;
-                            const title = AMENITY_TITLES[key] || key;
-                            const span = index === 0 ? 'lg:col-span-4 lg:row-span-2' : index === 3 ? 'lg:col-span-4' : 'lg:col-span-2';
-                            return <AmenityCard key={`${key}-${index}`} icon={icon} title={title} index={index} className={span} large={index === 0} />;
-                        })}
+                    <div className="rounded-[0.65rem] border border-primary-dark/10 bg-white/72 p-3 shadow-[0_34px_100px_-72px_rgba(9,31,26,0.5)] sm:p-4">
+                        <div className="flex flex-col gap-3 border-b border-primary-dark/10 px-2 pb-4 sm:flex-row sm:items-end sm:justify-between">
+                            <div>
+                                <p className="font-mono text-[0.64rem] font-bold uppercase tracking-[0.18em] text-secondary">Venue extras</p>
+                                <h3 className="mt-2 font-condensed text-4xl uppercase leading-none text-primary-dark sm:text-5xl">
+                                    {amenities.length} ready-to-use perks
+                                </h3>
+                            </div>
+                            <p className="max-w-xs text-sm font-semibold leading-6 text-primary-dark/56">
+                                Compact cards keep the section balanced as the list grows.
+                            </p>
+                        </div>
+
+                        <div
+                            className="mt-4 grid max-h-[min(36rem,calc(100dvh-12rem))] gap-2.5 overflow-y-auto pr-1"
+                            style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(10.5rem, 100%), 1fr))' }}
+                        >
+                            {amenities.map((key, index) => {
+                                const icon = ICONS[key] || <Armchair size={20} strokeWidth={1.5} />;
+                                const title = formatAmenityTitle(key);
+                                return <AmenityCard key={`${key}-${index}`} icon={icon} title={title} />;
+                            })}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -77,24 +103,19 @@ export function Offers() {
     );
 }
 
-function AmenityCard({ icon, title, index, className = '', large = false }) {
+function AmenityCard({ icon, title }) {
     return (
-        <div className={`group premium-shell rounded-[2.35rem] p-1.5 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-2 ${className}`}>
-            <div className={`relative flex h-full flex-col overflow-hidden rounded-[1.95rem] bg-[#fff8e8] p-6 sm:p-7 ${large ? 'justify-between' : ''}`}>
-                {large && (
-                    <img src="/kennydink/court%203.jpg" alt="Kenny Dink blue pickleball court" className="absolute inset-0 h-full w-full object-cover opacity-35 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-105" />
-                )}
-                <div className="relative flex items-start justify-between gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-dark text-secondary shadow-[0_18px_38px_-28px_rgba(9,31,26,0.85)]">
+        <div className="group min-h-[6.35rem] rounded-[0.45rem] border border-primary-dark/10 bg-[#fffdf4]/88 p-3 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-1 hover:border-secondary/55 hover:bg-white">
+            <div className="flex h-full flex-col justify-between gap-5">
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-primary-dark/10 bg-primary-dark text-secondary transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-105">
                         {icon}
                     </div>
-                    <span className="font-mono text-[0.64rem] font-semibold text-primary-dark/40">{String(index + 1).padStart(2, '0')}</span>
+                    <span className="h-2 w-2 rounded-full bg-secondary shadow-[0_0_20px_rgba(185,255,63,0.55)]" />
                 </div>
-                <div className="relative mt-10">
-                    <h3 className={`${large ? 'max-w-sm text-4xl sm:text-5xl' : 'text-2xl'} font-display font-extrabold leading-[0.95] tracking-[-0.05em] text-primary-dark`}>{title}</h3>
-                    <p className="mt-4 max-w-sm text-sm leading-6 text-stone-600">
-                        Practical venue detail, shaped for quick decisions before booking.
-                    </p>
+                <div>
+                    <h3 className="text-base font-extrabold leading-tight tracking-[-0.02em] text-primary-dark">{title}</h3>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary-dark/38">Included</p>
                 </div>
             </div>
         </div>

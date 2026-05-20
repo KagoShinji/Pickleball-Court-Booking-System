@@ -89,6 +89,7 @@ export function AdminBookings() {
                 subscription.unsubscribe();
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Lazy-load full dataset only when admin explicitly switches to All Dates
@@ -96,6 +97,7 @@ export function AdminBookings() {
         if (filterDate === 'all' && !hasLoadedAllBookings) {
             loadBookings({ force: true });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filterDate, hasLoadedAllBookings]);
 
     // Reset pagination when search or filter changes

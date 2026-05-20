@@ -3,22 +3,25 @@ import { LazyMapEmbed } from './LazyMapEmbed';
 
 export function Parking() {
     return (
-        <section id="parking" className="relative overflow-hidden bg-[linear-gradient(145deg,#edf4d7_0%,#f5ead4_48%,#d9eef2_100%)] py-24 sm:py-36">
-            <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent" aria-hidden="true" />
+        <section id="parking" className="sport-section sport-section-parking flex items-center py-16 sm:py-20 lg:py-24">
+            <p className="pointer-events-none absolute -bottom-6 right-4 z-1 hidden select-none font-condensed text-[clamp(5rem,14vw,15rem)] uppercase leading-none text-primary-dark/4.5 sm:block lg:right-12">
+                Parking
+            </p>
 
-            <div className="relative mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
-                <div className="venue-panel overflow-hidden rounded-[2.5rem]">
-                    <div className="grid gap-0 lg:grid-cols-[0.8fr_1.2fr]">
-                        <div className="relative bg-primary-dark p-8 text-white sm:p-10 lg:p-12">
-                            <div className="absolute bottom-[-6rem] right-[-5rem] h-64 w-64 rounded-full bg-secondary/28 blur-3xl" aria-hidden="true" />
-                            <div className="relative">
-                                <span className="inline-flex h-14 w-14 items-center justify-center rounded-[1.35rem] bg-white/12 text-secondary ring-1 ring-white/14">
+            <div className="mx-auto w-full max-w-385 px-5 sm:px-8 lg:px-12 xl:px-14">
+                <div className="venue-panel overflow-hidden rounded-xl p-2">
+                    <div className="grid gap-0 overflow-hidden rounded-[0.55rem] border border-primary-dark/10 bg-white/72 lg:grid-cols-[0.58fr_1.42fr]">
+                        <div className="relative overflow-hidden p-6 text-primary-dark sm:p-8 lg:p-9">
+                            <img src="/kennydink/kennydinktarp.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-24 brightness-[1.04] contrast-[1.08] saturate-[1.06]" />
+                            <div className="absolute inset-0 bg-linear-to-r from-[#fff8e7]/96 via-[#fff8e7]/84 to-[#fff8e7]/58" aria-hidden="true" />
+                            <div className="relative z-1">
+                                <span className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-primary-dark/10 bg-primary-dark text-secondary">
                                     <Car size={27} aria-hidden="true" />
                                 </span>
-                                <h3 className="mt-7 text-balance text-4xl font-extrabold leading-[0.98] tracking-[-0.045em]">
-                                    Parking guidance for different play windows.
+                                <h3 className="mt-6 font-condensed text-[clamp(3.8rem,5.6vw,6.2rem)] uppercase leading-[0.78] tracking-normal">
+                                    Easy arrival, day or night.
                                 </h3>
-                                <p className="mt-5 max-w-md text-sm leading-7 text-white/72">
+                                <p className="mt-5 max-w-md text-sm font-semibold leading-7 text-primary-dark/62">
                                     Keep arrival details clear without forcing every venue into the same parking layout.
                                 </p>
                             </div>
@@ -53,9 +56,9 @@ export function Parking() {
 
 function ParkingMap({ icon, label, title, src, mapTitle, buttonLabel, helper }) {
     return (
-        <div className="border-b border-stone-200/70 p-5 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0 sm:p-6 lg:p-8">
+        <div className="border-b border-primary-dark/10 p-4 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0 sm:p-5 lg:p-6">
             <div className="mb-5 flex items-start gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-secondary-light text-secondary">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary-dark/10 bg-primary-dark text-secondary">
                     {icon}
                 </div>
                 <div>
@@ -69,8 +72,9 @@ function ParkingMap({ icon, label, title, src, mapTitle, buttonLabel, helper }) 
                 description={`Open the ${title} map only when needed.`}
                 buttonLabel={buttonLabel}
                 aspectClassName="min-h-[260px] sm:min-h-[310px] lg:min-h-[360px]"
+                className="rounded-lg border-primary-dark/10"
             />
-            <p className="mt-4 text-center text-sm text-stone-500">{helper}</p>
+            <p className="mt-4 text-center text-sm font-semibold text-primary-dark/52">{helper}</p>
         </div>
     );
 }

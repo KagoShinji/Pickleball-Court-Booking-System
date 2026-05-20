@@ -12,6 +12,7 @@ import { Hero } from '../components/Hero';
 import { Navbar } from '../components/Navbar';
 import { Button } from '../components/ui';
 import { orderCourtsForHomepage } from '../lib/courtDisplayOrder';
+import { useCompany } from '../lib/CompanyProvider';
 import { listCourts, subscribeToCourts } from '../services/courts';
 import { subscribeToBookings } from '../services/booking';
 
@@ -37,6 +38,7 @@ function invalidateBookingCaches() {
 }
 
 export function Home() {
+    const { company } = useCompany();
     const [selectedCourt, setSelectedCourt] = useState(null);
     const [selectedDate, setSelectedDate] = useState(startOfToday());
     const [selectedTimes, setSelectedTimes] = useState([]);
@@ -157,6 +159,7 @@ export function Home() {
             }
             window.removeEventListener('bookingConflict', handleBookingConflict);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCourt, selectedDate, activeCourts]);
 
     const loadBookings = async ({ force = false } = {}) => {
@@ -516,7 +519,7 @@ export function Home() {
     };
 
     return (
-        <div className="min-h-[100dvh] overflow-hidden bg-bg-user font-sans text-primary-dark selection:bg-secondary-light selection:text-secondary">
+        <div className="min-h-[100dvh] overflow-hidden bg-[#fff8e7] font-sans text-primary-dark selection:bg-secondary-light selection:text-secondary">
             <a href="#courts" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:rounded-full focus:bg-white focus:px-5 focus:py-3 focus:text-sm focus:font-semibold focus:text-primary-dark focus:shadow-xl">
                 Skip to court booking
             </a>
@@ -524,38 +527,44 @@ export function Home() {
             <Hero />
             <Offers />
 
-            <main className="relative overflow-hidden bg-[linear-gradient(145deg,#f6ebd2_0%,#ebf5d5_46%,#dceff4_100%)]">
-                <section id="courts" className="relative mx-auto max-w-[1500px] scroll-mt-28 px-4 py-28 sm:px-6 sm:py-36 lg:px-8">
-                    <div className="absolute -left-36 top-20 h-96 w-96 rounded-full bg-secondary/20 blur-3xl" aria-hidden="true" />
-                    <div className="absolute -right-24 bottom-20 h-80 w-80 rounded-full bg-sky-300/20 blur-3xl" aria-hidden="true" />
+            <main className="sport-section sport-section-courts flex items-center">
+                <p className="pointer-events-none absolute left-4 bottom-[-1.5rem] z-[1] hidden select-none font-condensed text-[clamp(5rem,14vw,15rem)] uppercase leading-none text-primary-dark/[0.045] sm:block lg:left-12">
+                    Courts
+                </p>
 
-                    <div className="relative mb-16 grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-end">
-                        <div>
-                            <span className="section-kicker">Court selection</span>
-                            <h2 className="mt-6 max-w-5xl text-balance font-display text-5xl font-extrabold leading-[0.86] tracking-[-0.065em] text-primary-dark sm:text-6xl lg:text-8xl">
-                                Choose the court. Keep the rest easy.
-                            </h2>
-                        </div>
-
-                        <div className="premium-shell rounded-[2.6rem] p-2">
-                            <div className="grid overflow-hidden rounded-[2.1rem] bg-primary-dark text-white sm:grid-cols-[0.8fr_1.2fr]">
-                                <div className="p-7 sm:p-8">
-                                    <p className="font-mono text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-secondary">Booking flow</p>
-                                    <p className="mt-4 text-2xl font-extrabold tracking-[-0.04em]">Real court photos, real slots, no admin clutter.</p>
-                                    <p className="mt-3 text-sm leading-6 text-white/68">
-                                        Guests see the court, pick a date, select available hours, and continue to payment details.
-                                    </p>
-                                </div>
-                                <div className="relative min-h-64 overflow-hidden">
-                                    <img src="/kennydink/net.jpg" alt="Kenny Dink court seen through the net" className="h-full w-full object-cover" />
-                                    <div className="absolute inset-0 bg-gradient-to-l from-transparent to-primary-dark/28" />
+                <section id="courts" className="mx-auto w-full max-w-[1540px] scroll-mt-28 px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24 xl:px-14">
+                    <div className="mb-10 grid gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
+                        <div className="order-2 lg:order-1">
+                            <div className="rounded-[0.65rem] border border-primary-dark/10 bg-white/72 p-2 shadow-[0_34px_100px_-72px_rgba(9,31,26,0.5)]">
+                                <div className="grid overflow-hidden rounded-[0.45rem] border border-primary-dark/10 bg-[#fffdf4]/88 text-primary-dark sm:grid-cols-[0.82fr_1.18fr]">
+                                    <div className="p-5 sm:p-6">
+                                        <p className="font-mono text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-secondary">Booking flow</p>
+                                        <p className="mt-4 font-condensed text-4xl uppercase leading-[0.86] text-primary-dark sm:text-5xl">Real court photos. Real slots.</p>
+                                        <p className="mt-4 text-sm font-semibold leading-6 text-primary-dark/58">
+                                            Guests see the court, pick a date, select available hours, and continue to payment details.
+                                        </p>
+                                    </div>
+                                    <div className="relative min-h-52 overflow-hidden sm:min-h-60">
+                                        <img src="/kennydink/net.jpg" alt="Kenny Dink court seen through the net" className="h-full w-full object-cover brightness-[1.06] contrast-[1.08] saturate-[1.06]" />
+                                        <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#fff8e7]/34" />
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="order-1 lg:order-2 lg:justify-self-end lg:text-right">
+                            <span className="section-kicker">Court selection</span>
+                            <h2 className="mt-4 max-w-[34rem] font-condensed text-[clamp(3.9rem,6.8vw,7.6rem)] uppercase leading-[0.78] tracking-normal text-primary-dark">
+                                Choose a court. Start fast.
+                            </h2>
+                            <p className="mt-5 max-w-md text-sm font-semibold leading-7 text-primary-dark/62 lg:ml-auto">
+                                The booking surface stays direct: real venue imagery, active court inventory, and a clear handoff into dates and time slots.
+                            </p>
                         </div>
                     </div>
 
                     {visibleCourts.length > 0 ? (
-                        <div className="grid gap-6 lg:grid-cols-12">
+                        <div className="grid gap-4 lg:grid-cols-12">
                             {visibleCourts.map((court, index) => {
                                 const isFeatured = index % 5 === 0;
                                 const spanClass = isFeatured ? 'lg:col-span-7' : 'lg:col-span-5';
@@ -568,12 +577,12 @@ export function Home() {
                             })}
                         </div>
                     ) : (
-                        <div className="venue-panel mx-auto max-w-2xl rounded-[2rem] p-8 text-center">
-                            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-light text-primary-dark">
+                        <div className="venue-panel mx-auto max-w-2xl rounded-[0.65rem] p-8 text-center">
+                            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-primary-dark/10 bg-primary-dark text-secondary">
                                 <CalendarDays size={24} aria-hidden="true" />
                             </div>
                             <h3 className="mt-5 text-2xl font-bold tracking-tight text-primary-dark">No courts are published yet</h3>
-                            <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-stone-600">
+                            <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-primary-dark/62">
                                 Courts will appear here as soon as active inventory is published from the admin area.
                             </p>
                         </div>
@@ -586,16 +595,16 @@ export function Home() {
                     )}
 
                     {selectedCourt && !isSlotModalOpen && !isModalOpen && (
-                        <div className="venue-panel mx-auto mt-8 flex max-w-3xl flex-col gap-5 rounded-[2rem] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                        <div className="venue-panel mx-auto mt-8 flex max-w-3xl flex-col gap-5 rounded-[0.65rem] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                             <div>
                                 <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-secondary">Last selected court</p>
                                 <h3 className="mt-2 text-2xl font-bold tracking-tight text-primary-dark">{selectedCourt.name}</h3>
-                                <p className="mt-1 text-sm text-stone-600">Open the booking drawer again to choose a fresh date and time.</p>
+                                <p className="mt-1 text-sm text-primary-dark/62">Open the booking drawer again to choose a fresh date and time.</p>
                             </div>
                             <Button
                                 variant="secondary"
                                 onClick={() => handleBookClick(selectedCourt)}
-                                className="w-full sm:w-auto"
+                                className="w-full bg-white text-[#071514] hover:bg-secondary sm:w-auto"
                             >
                                 Continue booking <ArrowRight size={17} aria-hidden="true" />
                             </Button>
@@ -605,7 +614,7 @@ export function Home() {
             </main>
 
             <Contact />
-            <Parking />
+            {company.parkingEnabled !== false && <Parking />}
             <Footer />
 
             <BookingSlotModal

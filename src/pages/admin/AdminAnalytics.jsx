@@ -1,6 +1,6 @@
 import { BarChart3, TrendingUp, Download, DollarSign, BookOpen, Calendar } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { subDays, format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { Card, Button } from '../../components/ui';
 import { getAllBookings, subscribeToBookings } from '../../services/booking';
 import { listCourts } from '../../services/courts';

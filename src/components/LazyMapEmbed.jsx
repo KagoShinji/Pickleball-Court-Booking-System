@@ -13,7 +13,7 @@ export function LazyMapEmbed({
     const [isVisible, setIsVisible] = useState(false);
 
     return (
-        <div className={`${aspectClassName} relative w-full bg-gray-100 rounded-2xl overflow-hidden shadow-inner border border-gray-200 ${className}`}>
+        <div className={`${aspectClassName} relative w-full overflow-hidden rounded-2xl border border-primary-dark/10 bg-primary-light shadow-inner ${className}`}>
             {isVisible ? (
                 <iframe
                     src={src}
@@ -27,18 +27,18 @@ export function LazyMapEmbed({
                     className="absolute inset-0 w-full h-full"
                 ></iframe>
             ) : (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-white via-primary-light to-secondary-light p-5 sm:p-6 text-center">
-                    <div className="max-w-sm w-full rounded-2xl bg-white/70 px-4 py-6 shadow-sm backdrop-blur-sm sm:px-6">
-                        <div className="mx-auto mb-4 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-white/90 text-primary-dark shadow-sm">
+                <div className="absolute inset-0 flex items-center justify-center bg-[linear-gradient(135deg,rgba(255,253,244,0.92),rgba(241,255,212,0.78),rgba(218,246,242,0.76))] p-5 text-center sm:p-6">
+                    <div className="w-full max-w-sm rounded-[0.55rem] border border-primary-dark/10 bg-white/72 px-4 py-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] sm:px-6">
+                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-primary-dark/10 bg-primary-dark text-secondary sm:h-14 sm:w-14">
                             <MapPin size={24} className="sm:w-7 sm:h-7" />
                         </div>
-                        <h4 className="text-base sm:text-lg font-display font-bold text-primary-dark">{title}</h4>
+                        <h4 className="font-display text-base font-bold text-primary-dark sm:text-lg">{title}</h4>
                         {description ? (
-                            <p className="mt-2 text-sm leading-relaxed text-gray-600">{description}</p>
+                            <p className="mt-2 text-sm leading-relaxed text-primary-dark/58">{description}</p>
                         ) : null}
                         <Button
                             type="button"
-                            className="mt-5 w-full sm:w-auto sm:mx-auto text-white"
+                            className="mt-5 w-full bg-primary-dark text-white hover:bg-primary sm:mx-auto sm:w-auto"
                             onClick={() => setIsVisible(true)}
                         >
                             {buttonLabel}

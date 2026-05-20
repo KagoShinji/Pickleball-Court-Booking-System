@@ -8,6 +8,7 @@ const CompanyContext = createContext({
   refresh: () => {}
 });
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCompany = () => useContext(CompanyContext);
 
 export const CompanyProvider = ({ children }) => {
@@ -50,6 +51,7 @@ export const CompanyProvider = ({ children }) => {
 
   useEffect(() => {
     // In production/deployment fetch from DB; during development you can toggle this
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCompany();
   }, []);
 

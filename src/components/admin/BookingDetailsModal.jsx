@@ -131,6 +131,7 @@ export function BookingDetailsModal({ isOpen, onClose, booking, onUpdateStatus, 
             // Clean up the blob URL
             window.URL.revokeObjectURL(blobUrl);
         } catch (error) {
+            console.error('[BookingDetailsModal] Receipt download failed:', error);
             setDownloadError('Download failed. Please try again or view the image in a new tab.');
         } finally {
             setIsDownloading(false);

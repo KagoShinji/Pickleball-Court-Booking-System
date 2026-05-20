@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Activity, Calendar, Clock, DollarSign, TrendingUp, Users } from 'lucide-react';
+import { Activity, Calendar, DollarSign, TrendingUp, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge, Card } from '../../components/ui';
@@ -56,24 +56,28 @@ export function AdminDashboard() {
         }
     };
 
-    const StatCard = ({ title, value, icon: Icon, colorClass }) => (
-        <Card className="p-6 border-none shadow-md">
-            <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-sm font-medium text-gray-500">{title}</p>
-                    <p className="text-2xl font-bold mt-1 text-gray-800">{value}</p>
+    const StatCard = ({ title, value, icon, colorClass }) => {
+        const IconComponent = icon;
+
+        return (
+            <Card className="p-6 border-none shadow-md">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm font-medium text-gray-500">{title}</p>
+                        <p className="text-2xl font-bold mt-1 text-gray-800">{value}</p>
+                    </div>
+                    <div className={`p-3 rounded-xl ${colorClass}`}>
+                        <IconComponent size={24} />
+                    </div>
                 </div>
-                <div className={`p-3 rounded-xl ${colorClass}`}>
-                    <Icon size={24} />
+                <div className="mt-4 flex items-center text-sm text-green-600">
+                    <TrendingUp size={16} className="mr-1" />
+                    <span className="font-medium">+12%</span>
+                    <span className="text-gray-400 ml-1">from last month</span>
                 </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm text-green-600">
-                <TrendingUp size={16} className="mr-1" />
-                <span className="font-medium">+12%</span>
-                <span className="text-gray-400 ml-1">from last month</span>
-            </div>
-        </Card>
-    );
+            </Card>
+        );
+    };
 
     return (
         <div className="space-y-8 w-full max-w-full overflow-x-hidden">

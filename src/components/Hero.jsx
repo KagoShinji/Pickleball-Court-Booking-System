@@ -1,183 +1,124 @@
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Button } from './ui';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useCompany } from '../lib/CompanyProvider';
 
-const KENNYDINK_IMAGES = [
-    {
-        src: '/kennydink/court%203.jpg',
-        title: 'Blue court, open air',
-        subtitle: 'A breezy outdoor court framed by trees and warm Cebu light.'
-    },
-    {
-        src: '/kennydink/net.jpg',
-        title: 'Through the net',
-        subtitle: 'Textured court details with depth, shade, and movement.'
-    },
-    {
-        src: '/kennydink/paddle.jpg',
-        title: 'Ready at the baseline',
-        subtitle: 'Paddle, ball, and court details made for focused play.'
-    },
-    {
-        src: '/kennydink/kennydinkhero.jpg',
-        title: 'Kenny Dink court',
-        subtitle: 'Play where the breeze meets the game.'
-    }
+const heroImage = '/kennydink/court%203.jpg';
+const detailImages = [
+    '/kennydink/kennydinkhero.jpg',
+    '/kennydink/paddle.jpg',
+    '/kennydink/net.jpg'
 ];
+
+function compactBrandName(name = 'KENNYDINK') {
+    return name.replace(/pickleball court/gi, '').replace(/[-|].*$/g, '').trim() || 'KENNYDINK';
+}
 
 export function Hero() {
     const { company } = useCompany();
-    const [currentSlide, setCurrentSlide] = useState(0);
+    const brand = compactBrandName(company.shortName || company.name);
+    const location = company.location || 'Upper Tunga, Moalboal';
+    const heroBadge = company.heroBadge || location;
+    const heroTitle = (company.heroTitle || `Book your next ${brand}`).trim();
+    const heroSubtitle = company.heroSubtitle || 'Check available time slots and reserve before you head to the court.';
+    const rawPlayerStat = String(company.heroStatPlayers || '50+ active players');
+    const playerStatMatch = rawPlayerStat.match(/^([\d.,+]+)/);
+    const playerStat = playerStatMatch ? playerStatMatch[1] : rawPlayerStat;
+    const playerLabel = playerStatMatch ? rawPlayerStat.replace(playerStatMatch[1], '').trim() || 'players' : 'players';
+    const openStat = company.heroStatDays || 'Open 7 days';
 
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % KENNYDINK_IMAGES.length);
-        }, 5200);
-        return () => clearInterval(timer);
-    }, []);
-
-    const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % KENNYDINK_IMAGES.length);
-    const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + KENNYDINK_IMAGES.length) % KENNYDINK_IMAGES.length);
-    const heroTitle = 'Play where the breeze meets the game.';
-    const heroSubtitle = `${company.name} keeps court booking fast, calm, and visual. Choose a court, pick your time, and arrive ready to play.`;
+    const scrollToCourts = () => {
+        document.getElementById('courts')?.scrollIntoView({ behavior: 'smooth' });
+    };
 
     return (
-        <section id="top" className="relative isolate min-h-[100dvh] overflow-hidden bg-primary-dark text-white lg:h-[100dvh] lg:min-h-[720px]">
-            <div className="absolute inset-0" aria-hidden="true">
-                {KENNYDINK_IMAGES.map((image, index) => (
-                    <img
-                        key={image.src}
-                        src={image.src}
-                        alt=""
-                        className={`absolute inset-0 h-full w-full object-cover transition-all duration-[1400ms] ease-[cubic-bezier(0.32,0.72,0,1)] ${index === currentSlide ? 'opacity-100 animate-image-drift' : 'opacity-0 scale-105'}`}
-                    />
-                ))}
-                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,22,19,0.92)_0%,rgba(6,22,19,0.78)_36%,rgba(6,22,19,0.22)_70%,rgba(6,22,19,0.5)_100%)]" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_16%,rgba(185,255,63,0.22),transparent_25rem),radial-gradient(circle_at_78%_70%,rgba(0,170,220,0.22),transparent_30rem)]" />
-            </div>
+        <section id="top" className="relative isolate overflow-hidden bg-[#061617]">
+            <div className="relative isolate min-h-svh overflow-hidden bg-[#061617] text-white">
+                <img
+                    src={heroImage}
+                    alt="KennyDink pickleball court framed by trees and netting"
+                    className="absolute inset-0 h-full w-full scale-[1.04] object-cover object-center brightness-[0.58] contrast-[1.18] saturate-[0.72] animate-image-drift"
+                />
 
-            <div className="relative z-10 mx-auto flex min-h-[100dvh] max-w-[1500px] flex-col px-4 pb-7 pt-24 sm:px-6 lg:h-[100dvh] lg:min-h-[720px] lg:px-8 lg:pt-24 xl:pt-28">
-                <div className="grid flex-1 gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-                    <div className="max-w-[52rem] pb-4 lg:pb-8">
-                        <div className="mb-5 flex w-fit items-center gap-3 rounded-full border border-white/14 bg-white/8 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
-                            <span className="h-2 w-2 rounded-full bg-secondary shadow-[0_0_22px_rgba(185,255,63,0.78)]" />
-                            {company.location || 'Pickleball court booking'}
+                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,8,8,0.94)_0%,rgba(3,18,20,0.78)_36%,rgba(4,31,34,0.48)_62%,rgba(3,13,13,0.72)_100%)]" aria-hidden="true" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_26%,rgba(34,211,238,0.24),transparent_25rem),radial-gradient(circle_at_22%_78%,rgba(190,242,100,0.18),transparent_25rem)]" aria-hidden="true" />
+                <div className="absolute inset-0 opacity-[0.13] bg-[linear-gradient(rgba(255,255,255,0.28)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.2)_1px,transparent_1px)] bg-size-[72px_72px]" aria-hidden="true" />
+
+                <div className="relative z-10 mx-auto flex min-h-svh max-w-385 flex-col px-5 pb-5 pt-24 sm:px-8 sm:pb-7 lg:px-12 lg:pb-8 lg:pt-28 xl:px-14">
+                    <div className="flex flex-1 items-center pb-6 pt-6 sm:pb-8 lg:pb-10">
+                        <div className="max-w-5xl">
+                            <p className="mb-4 max-w-md font-mono text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-white/62 sm:mb-6">
+                                {heroBadge}
+                            </p>
+                            <h1 className="max-w-5xl font-condensed text-[clamp(5rem,12vw,12.4rem)] uppercase leading-[0.74] tracking-normal text-white drop-shadow-[0_18px_50px_rgba(0,0,0,0.32)] sm:text-[clamp(6.5rem,11vw,12.4rem)]">
+                                {heroTitle.split('\n').map((line, index) => (
+                                    <span key={`${line}-${index}`} className="block">
+                                        {line}
+                                    </span>
+                                ))}
+                            </h1>
                         </div>
+                    </div>
 
-                        <h1 className="max-w-[52rem] text-balance font-display text-[clamp(3.2rem,5.15vw,6rem)] font-extrabold leading-[0.9] tracking-[-0.068em] text-white">
-                            {heroTitle}
-                        </h1>
+                    <div className="pointer-events-none absolute inset-x-4 bottom-4 z-0 hidden select-none overflow-hidden sm:inset-x-8 sm:block lg:inset-x-12">
+                        <p className="translate-y-[18%] text-right font-condensed text-[clamp(8rem,22vw,24rem)] uppercase leading-none tracking-normal text-white/18 mix-blend-screen">
+                            {brand}
+                        </p>
+                    </div>
 
-                        <div className="mt-6 grid max-w-3xl gap-5 md:grid-cols-[1fr_auto] md:items-end">
-                            <p className="max-w-lg text-sm leading-7 text-white/72 sm:text-base">
+                    <div className="relative z-20 grid gap-4 lg:grid-cols-[minmax(19rem,24rem)_1fr_auto] lg:items-end">
+                        <div className="rounded-[0.45rem] border border-white/30 bg-[#130f0d]/72 p-5 shadow-[0_26px_70px_-44px_rgba(0,0,0,0.95)] backdrop-blur-sm lg:p-6">
+                            <div className="flex items-center gap-3">
+                                <span className="font-mono text-[0.63rem] font-bold uppercase tracking-[0.14em] text-secondary">Step 1/3</span>
+                                <span className="h-px w-14 bg-secondary" />
+                                <span className="h-px w-12 bg-white/24" />
+                            </div>
+                            <h2 className="mt-5 max-w-60 font-condensed text-4xl uppercase leading-[0.86] tracking-normal text-white sm:text-[2.65rem]">
+                                What court are you booking today?
+                            </h2>
+                            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                                <button
+                                    type="button"
+                                    onClick={scrollToCourts}
+                                    className="group inline-flex min-h-12 flex-1 items-center justify-between rounded-full border border-white/44 bg-white/5 px-5 text-sm font-extrabold text-white transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/12 active:scale-[0.98]"
+                                >
+                                    Choose court
+                                    <ChevronDown size={17} className="transition-transform duration-500 group-hover:translate-y-0.5" aria-hidden="true" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={scrollToCourts}
+                                    className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-extrabold text-[#071514] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-secondary active:scale-[0.98]"
+                                >
+                                    Next
+                                    <ArrowRight size={17} className="transition-transform duration-500 group-hover:translate-x-1" aria-hidden="true" />
+                                </button>
+                            </div>
+                            <p className="mt-5 text-sm font-medium leading-6 text-white/72">
                                 {heroSubtitle}
                             </p>
-                            <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
-                                <Button
-                                    size="lg"
-                                    className="group bg-secondary text-primary-dark hover:bg-white"
-                                    onClick={() => document.getElementById('courts')?.scrollIntoView({ behavior: 'smooth' })}
-                                >
-                                    Book a court
-                                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-dark/10 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-1 group-hover:-translate-y-0.5">
-                                        <ArrowRight size={16} aria-hidden="true" />
-                                    </span>
-                                </Button>
-                                <a
-                                    href="#contact"
-                                    className="inline-flex items-center justify-center rounded-full px-6 py-3.5 text-sm font-bold text-white/86 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/10 active:scale-[0.98]"
-                                >
-                                    Venue details
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="relative hidden h-[min(54dvh,34rem)] min-h-[30rem] lg:block">
-                        <div className="premium-shell absolute right-0 top-0 h-[62%] w-[48%] rounded-[2.6rem] p-2 rotate-[4deg]">
-                            <div className="relative h-full overflow-hidden rounded-[2.05rem] bg-white">
-                                <img src="/kennydink/kennydinkhero.jpg" alt="Kenny Dink court banner and paddle" className="h-full w-full object-cover" />
-                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-primary-dark/82 to-transparent p-5 pt-16">
-                                    <p className="font-mono text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-white/80">Breeze meets play</p>
-                                </div>
-                            </div>
                         </div>
 
-                        <div className="premium-shell absolute left-[7%] top-[42%] h-[38%] w-[26%] rounded-[2.1rem] p-2 rotate-[-7deg]">
-                            <div className="relative h-full overflow-hidden rounded-[1.65rem] bg-white">
-                                <img src="/kennydink/paddle.jpg" alt="Pickleball paddle and ball on court" className="h-full w-full object-cover" />
-                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-primary-dark/80 to-transparent p-4 pt-14">
-                                    <p className="font-mono text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-white/80">Paddle ready</p>
-                                </div>
-                            </div>
-                        </div>
+                        <div className="hidden lg:block" aria-hidden="true" />
 
-                        <div className="premium-shell absolute bottom-[7%] right-[3%] w-[min(28rem,48vw)] rounded-[2.6rem] p-2 animate-float-soft" style={{ '--float-rotate': '-1.5deg' }}>
-                            <div className="rounded-[2.05rem] bg-white p-5 text-primary-dark shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] sm:p-6">
-                                <div className="flex items-start justify-between gap-5">
-                                    <div>
-                                        <p className="font-mono text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-primary/70">Currently showing</p>
-                                        <h2 className="mt-2 font-display text-3xl font-extrabold leading-none tracking-[-0.045em]">{KENNYDINK_IMAGES[currentSlide]?.title}</h2>
-                                        <p className="mt-3 max-w-xs text-sm leading-6 text-stone-600">{KENNYDINK_IMAGES[currentSlide]?.subtitle}</p>
+                        <div className="flex items-center justify-between gap-5 rounded-full border border-white/18 bg-black/22 py-3 pl-4 pr-3 backdrop-blur-sm sm:justify-end lg:bg-transparent lg:p-0 lg:backdrop-blur-0">
+                            <div className="flex -space-x-3">
+                                {detailImages.map((src, index) => (
+                                    <div key={src} className="h-11 w-11 overflow-hidden rounded-full border-2 border-white/70 bg-white shadow-[0_14px_28px_-18px_rgba(0,0,0,0.9)] sm:h-12 sm:w-12">
+                                        <img src={src} alt="" className="h-full w-full object-cover" style={{ objectPosition: index === 0 ? '50% 76%' : '50% 50%' }} />
                                     </div>
-                                    <div className="hidden h-24 w-24 shrink-0 overflow-hidden rounded-[1.45rem] bg-stone-100 sm:block">
-                                        <img src={KENNYDINK_IMAGES[currentSlide]?.src} alt="" className="h-full w-full object-cover" />
-                                    </div>
-                                </div>
-                                <div className="mt-5 flex items-center justify-between">
-                                    <div className="flex gap-1.5">
-                                        {KENNYDINK_IMAGES.map((_, index) => (
-                                            <button
-                                                key={index}
-                                                type="button"
-                                                onClick={() => setCurrentSlide(index)}
-                                                className={`h-2 rounded-full transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${index === currentSlide ? 'w-8 bg-primary-dark' : 'w-2 bg-primary-dark/18 hover:bg-primary-dark/34'}`}
-                                                aria-label={`Show hero image ${index + 1}`}
-                                            />
-                                        ))}
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <HeroArrow label="Previous image" onClick={prevSlide}>
-                                            <ChevronLeft size={16} aria-hidden="true" />
-                                        </HeroArrow>
-                                        <HeroArrow label="Next image" onClick={nextSlide}>
-                                            <ChevronRight size={16} aria-hidden="true" />
-                                        </HeroArrow>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
+                            <div className="border-r border-white/24 pr-5 text-right sm:min-w-[6.8rem]">
+                                <p className="font-condensed text-4xl uppercase leading-none text-white sm:text-5xl">{playerStat}</p>
+                                <p className="text-xs font-semibold leading-tight text-white/68">{playerLabel}</p>
+                            </div>
+                            <div className="hidden h-20 w-20 overflow-hidden rounded-full border border-white/40 bg-white p-1 shadow-[0_22px_48px_-30px_rgba(0,0,0,0.9)] sm:block">
+                                <img src="/kennydink/kennydinklogo.jpg" alt={`${brand} logo`} className="h-full w-full rounded-full object-cover" />
+                            </div>
+                            <p className="hidden max-w-24 text-xs font-semibold leading-tight text-white/68 xl:block">{openStat}</p>
                         </div>
-                    </div>
-                </div>
-
-                <div className="relative mt-auto overflow-hidden border-y border-white/12 py-3 text-white/54">
-                    <div className="flex w-max animate-marquee gap-10 font-mono text-xs font-semibold uppercase tracking-[0.22em]">
-                        {Array.from({ length: 2 }).map((_, group) => (
-                            <div key={group} className="flex gap-10">
-                                <span>Open air court</span>
-                                <span>Fast reservations</span>
-                                <span>Clear time slots</span>
-                                <span>Private games</span>
-                                <span>Community rallies</span>
-                            </div>
-                        ))}
                     </div>
                 </div>
             </div>
         </section>
-    );
-}
-
-function HeroArrow({ children, label, onClick }) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-dark text-white transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-105 active:scale-95"
-            aria-label={label}
-        >
-            {children}
-        </button>
     );
 }

@@ -19,7 +19,7 @@ const AVAILABLE_AMENITIES = [
 ];
 
 export function AdminSettings() {
-    const { company: currentCompany, refresh: refreshCompany } = useCompany();
+    const { refresh: refreshCompany } = useCompany();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');

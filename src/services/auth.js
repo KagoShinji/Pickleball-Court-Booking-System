@@ -104,44 +104,40 @@ export async function isAdmin() {
  * @returns {Promise} - Resolves if successful, rejects with error if not
  */
 export async function changePassword(currentPassword, newPassword) {
-  try {
-    // First, verify the current password by attempting to sign in
-    const user = await getCurrentUser();
+  // First, verify the current password by attempting to sign in
+  const user = await getCurrentUser();
 
-    if (!user || !user.email) {
-      throw new Error('No authenticated user found');
-    }
+  if (!user || !user.email) {
+    throw new Error('No authenticated user found');
+  }
 
-    // Verify current password by attempting to sign in
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: user.email,
-      password: currentPassword,
-    });
+  // Verify current password by attempting to sign in
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+  });
 
-    if (signInError) {
-      throw new Error('Current password is incorrect');
-    }
+  if (signInError) {
+    throw new Error('Current password is incorrect');
+  }
 
-    // If current password is correct, update to new password
-    const { data, error } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
+  // If current password is correct, update to new password
+  const { data, error } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
 
-    if (error) {
-      throw error;
-    }
-
-    appendAuditLog({
-      action: 'admin.auth.change_password',
-      description: 'Admin changed password',
-      userId: user.id,
-      userEmail: user.email
-    });
-
-    return data;
-  } catch (error) {
+  if (error) {
     throw error;
   }
+
+  appendAuditLog({
+    action: 'admin.auth.change_password',
+    description: 'Admin changed password',
+    userId: user.id,
+    userEmail: user.email
+  });
+
+  return data;
 }
 
 /**

@@ -88,6 +88,7 @@ export function AdminCalendar() {
 
     useEffect(() => {
         loadBookings(currentMonth);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentMonth]);
 
     useEffect(() => {
@@ -104,6 +105,7 @@ export function AdminCalendar() {
                 subscription.unsubscribe();
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentMonth]);
 
     const firstDayNextMonth = () => {
@@ -243,7 +245,7 @@ export function AdminCalendar() {
                     </div>
 
                     <div className="grid grid-cols-7 gap-2">
-                        {calendarDays.map((day, dayIdx) => {
+                        {calendarDays.map((day) => {
                             const dayBookings = getBookingsForDate(day);
                             const isSelected = isSameDay(day, selectedDate);
                             const isCurrentMonth = isSameMonth(day, currentMonth);

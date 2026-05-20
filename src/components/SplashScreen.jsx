@@ -3,7 +3,12 @@ import { useCompany } from '../lib/CompanyProvider';
 
 export function SplashScreen({ onComplete }) {
     const [isFadingOut, setIsFadingOut] = useState(false);
+    const [logoFailed, setLogoFailed] = useState(false);
     const { company } = useCompany();
+    const logoSrc = company.logoUrl && !company.logoUrl.includes('default-logo')
+        ? company.logoUrl
+        : '/kennydink/kennydinklogo.jpg';
+    const venueLocation = company.location || 'Pickleball court booking';
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -25,34 +30,49 @@ export function SplashScreen({ onComplete }) {
 
     return (
         <div
-            className={`fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-primary-dark transition-all duration-700 ease-out ${isFadingOut ? 'scale-105 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
+            role="status"
+            aria-live="polite"
+            data-splash-state={isFadingOut ? 'leaving' : 'entering'}
+            className={`fixed inset-0 z-[100] grid place-items-center overflow-hidden bg-[#fbfaf6] px-5 text-primary-dark transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isFadingOut ? 'scale-[1.01] opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
         >
-            <div className="absolute left-1/2 top-1/2 h-[32rem] w-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-secondary/18 blur-3xl" aria-hidden="true" />
-            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/18 to-transparent" aria-hidden="true" />
+            <div className="pointer-events-none absolute inset-x-8 top-8 border-t border-primary-dark/8" aria-hidden="true" />
+            <div className="pointer-events-none absolute inset-x-8 bottom-8 border-t border-primary-dark/8" aria-hidden="true" />
 
-            <div className="relative flex flex-col items-center px-6 text-center">
-                <div className="relative mb-7">
-                    <div className="absolute inset-0 rounded-[2rem] bg-secondary/35 blur-2xl" aria-hidden="true" />
-                    <div className="relative flex h-24 w-24 rotate-6 items-center justify-center overflow-hidden rounded-[2rem] border border-white/12 bg-white/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-xl animate-bounce-slow">
-                        <span className="text-4xl font-extrabold tracking-tight">{company.initials}</span>
-                    </div>
+            <div className="splash-rise relative z-10 flex w-full max-w-sm flex-col items-center text-center">
+                <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-[#eaeaea] bg-white text-primary-dark">
+                    {!logoFailed ? (
+                        <img
+                            src={logoSrc}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            onError={() => setLogoFailed(true)}
+                        />
+                    ) : (
+                        <span className="font-display text-3xl font-extrabold tracking-[-0.04em]">
+                            {company.initials}
+                        </span>
+                    )}
                 </div>
 
-                <div className="overflow-hidden">
-                    <h1 className="animate-slide-up-fade text-4xl font-extrabold tracking-[-0.05em] text-white sm:text-6xl">
-                        {company.name}
+                <div className="mt-8">
+                    <p className="font-mono text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-primary-dark/45">
+                        Booking portal
+                    </p>
+                    <h1 className="mt-3 font-display text-[clamp(2.4rem,10vw,4rem)] font-extrabold leading-[0.9] tracking-[-0.055em] text-primary-dark">
+                        {company.shortName || company.name}
                     </h1>
-                </div>
-
-                <div className="mt-4 overflow-hidden">
-                    <p className="animate-slide-up-fade font-mono text-xs font-semibold uppercase tracking-[0.28em] text-white/60 sm:text-sm" style={{ animationDelay: '160ms', animationFillMode: 'both' }}>
-                        Court booking portal
+                    <p className="mx-auto mt-4 max-w-xs text-sm leading-6 text-primary-dark/58">
+                        {venueLocation}
                     </p>
                 </div>
 
-                <div className="mt-14 h-1 w-56 overflow-hidden rounded-full bg-white/10">
-                    <div className="h-full origin-left rounded-full bg-secondary animate-progress" />
+                <div className="mt-10 w-full max-w-64">
+                    <div className="h-px overflow-hidden bg-primary-dark/10">
+                        <div className="splash-progress h-full origin-left bg-primary-dark" />
+                    </div>
                 </div>
+
+                <span className="sr-only">Loading {company.name} court booking portal.</span>
             </div>
         </div>
     );
