@@ -6,7 +6,6 @@ import { getCurrentUser, signOut } from '../services/auth';
 import { AdminActionModal } from '../components/admin/AdminActionModal';
 import { DeveloperAuditPanel } from '../components/admin/DeveloperAuditPanel';
 import { appendAuditLog } from '../services/auditLogs';
-import { Config } from '../lib/config';
 import { useCompany } from '../lib/CompanyProvider';
 
 export function AdminLayout() {
@@ -94,15 +93,18 @@ export function AdminLayout() {
         return null; // Will redirect in useEffect
     }
 
+    // Database-driven feature flags (from tenants.features JSONB via CompanyProvider)
+    const features = company.features || {};
+
     const navItems = [
         { path: '/admin/dashboard', label: 'Overview', icon: LayoutDashboard },
         { path: '/admin/bookings', label: 'Bookings', icon: Calendar },
         { path: '/admin/courts', label: 'Court Management', icon: KeyRound },
-        ...(Config.features.timeSlots ? [{ path: '/admin/time-slots', label: 'Time Slot Control', icon: Lock }] : []),
+        ...(features.time_slots ? [{ path: '/admin/time-slots', label: 'Time Slot Control', icon: Lock }] : []),
         { path: '/admin/calendar', label: 'Calendar View', icon: Calendar },
-        { path: '/admin/settings', label: 'Company Settings', icon: Settings },
-        ...(Config.features.analytics ? [{ path: '/admin/analytics', label: 'Analytics', icon: BarChart3 }] : []),
-        ...(Config.features.qrCodes ? [{ path: '/admin/qr-codes', label: 'QR Codes', icon: QrCode }] : []),
+        ...(features.company_settings !== false ? [{ path: '/admin/settings', label: 'Company Settings', icon: Settings }] : []),
+        ...(features.analytics ? [{ path: '/admin/analytics', label: 'Analytics', icon: BarChart3 }] : []),
+        ...(features.qr_codes ? [{ path: '/admin/qr-codes', label: 'QR Codes', icon: QrCode }] : []),
         { path: '/admin/change-password', label: 'Change Password', icon: Lock },
     ];
 

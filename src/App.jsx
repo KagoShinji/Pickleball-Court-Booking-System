@@ -20,6 +20,12 @@ const AdminQRCodes = lazy(() => import('./pages/admin/AdminQRCodes').then((modul
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings').then((module) => ({ default: module.AdminSettings })));
 const Home = lazy(() => import('./pages/Home').then((module) => ({ default: module.Home })));
 
+// Super Admin (hidden /odc route)
+const SuperAdminRoute = lazy(() => import('./components/SuperAdminRoute').then((module) => ({ default: module.SuperAdminRoute })));
+const SuperAdminLayout = lazy(() => import('./layouts/SuperAdminLayout').then((module) => ({ default: module.SuperAdminLayout })));
+const SuperAdminDashboard = lazy(() => import('./pages/superadmin/SuperAdminDashboard').then((module) => ({ default: module.SuperAdminDashboard })));
+const SuperAdminLogin = lazy(() => import('./pages/superadmin/SuperAdminLogin').then((module) => ({ default: module.SuperAdminLogin })));
+
 function RouteFallback() {
   return (
     <div className="min-h-screen bg-bg-user" aria-hidden="true" />
@@ -90,8 +96,30 @@ function App() {
                     <AdminQRCodes />
                   </FeatureGate>
                 } />
-                <Route path="settings" element={<AdminSettings />} />
+                <Route path="settings" element={
+                  <FeatureGate feature="companySettings">
+                    <AdminSettings />
+                  </FeatureGate>
+                } />
               </Route>
+
+              {/* Super Admin Routes (hidden) */}
+              <Route path="/odc/login" element={<SuperAdminLogin />} />
+              <Route path="/odc" element={<SuperAdminRoute />}>
+                <Route element={<SuperAdminLayout />}>
+                  <Route index element={<SuperAdminDashboard />} />
+                </Route>
+              </Route>
+
+              {/* 404 Catch-all */}
+              <Route path="*" element={
+                <div className="min-h-screen flex items-center justify-center bg-[#09090b]">
+                  <div className="text-center">
+                    <p className="text-6xl font-display font-extrabold text-white/10">404</p>
+                    <p className="mt-4 text-sm text-white/30">Page not found.</p>
+                  </div>
+                </div>
+              } />
             </Routes>
           </Suspense>
         </BrowserRouter>

@@ -1,13 +1,24 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Config as EnvConfig } from './config';
+import { Config as EnvConfig, getCompanyId } from './config';
+import { supabase } from './supabaseClient';
 import { getTenantSettings } from '../services/settings';
 import { mergeSectionContent, mergeSiteImages, mergeThemeConfig } from './cmsDefaults';
+
+// Default feature flags — used as fallback when DB features are unavailable.
+// Maps JSONB keys from tenants.features to boolean defaults.
+const DEFAULT_FEATURES = {
+  company_settings: true,
+  analytics: EnvConfig.features.analytics,
+  qr_codes: EnvConfig.features.qrCodes,
+  time_slots: EnvConfig.features.timeSlots,
+};
 
 const defaultCompany = {
   ...EnvConfig.company,
   themeConfig: mergeThemeConfig({}, EnvConfig.theme),
   siteImages: mergeSiteImages(),
   sectionContent: mergeSectionContent(),
+  features: DEFAULT_FEATURES,
 };
 
 // Create context to provide company data throughout the app
@@ -50,6 +61,25 @@ export const CompanyProvider = ({ children }) => {
       // Fetch from tenant_settings table — scoped to this tenant via getCompanyId()
       // (company_id filtering is handled inside getTenantSettings via settings.js)
       const data = await getTenantSettings();
+
+      // Fetch feature flags from the tenants table (source of truth for feature gating)
+      let tenantFeatures = DEFAULT_FEATURES;
+      try {
+        const companyId = getCompanyId();
+        if (companyId) {
+          const { data: tenantRow } = await supabase
+            .from('tenants')
+            .select('features')
+            .eq('id', companyId)
+            .maybeSingle();
+          if (tenantRow?.features) {
+            tenantFeatures = { ...DEFAULT_FEATURES, ...tenantRow.features };
+          }
+        }
+      } catch (featErr) {
+        console.warn('Could not fetch tenant features, using defaults:', featErr);
+      }
+
       if (data) {
         const themeConfig = mergeThemeConfig(data.theme_config, EnvConfig.theme);
         const siteImages = mergeSiteImages(data.site_images);
@@ -91,8 +121,12 @@ export const CompanyProvider = ({ children }) => {
             heroBackground: data.hero_bg_url || siteImages.heroBackground,
           }),
           sectionContent,
+          features: tenantFeatures,
         };
         setCompany(mappedCompany);
+      } else {
+        // No tenant_settings row yet, but still apply features
+        setCompany((prev) => ({ ...prev, features: tenantFeatures }));
       }
     } catch (err) {
       console.error('Error fetching company config from database, falling back to env:', err);

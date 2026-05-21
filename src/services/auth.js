@@ -95,7 +95,7 @@ export async function isAdmin() {
     .select('id')
     .eq('id', user.id)
     .eq('company_id', getCompanyId())
-    .single();
+    .maybeSingle();
 
   return !!data;
 }
