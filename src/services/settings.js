@@ -1,11 +1,12 @@
 import { supabase } from '../lib/supabaseClient';
+import { getCompanyId } from '../lib/config';
 
 export async function getTenantSettings() {
     const { data, error } = await supabase
         .from('tenant_settings')
         .select('*')
-        .eq('id', 1)
-        .single();
+        .eq('company_id', getCompanyId())
+        .maybeSingle();
 
     if (error) {
         console.error('Error fetching tenant settings:', error);
@@ -18,11 +19,11 @@ export async function getTenantSettings() {
 export async function updateTenantSettings(updates) {
     const { data, error } = await supabase
         .from('tenant_settings')
-        .update({
+        .upsert({
+            company_id: getCompanyId(),
             ...updates,
             updated_at: new Date().toISOString()
-        })
-        .eq('id', 1)
+        }, { onConflict: 'company_id' })
         .select()
         .single();
 

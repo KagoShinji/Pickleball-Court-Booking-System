@@ -2,12 +2,32 @@ import { Clock, Facebook, Instagram, Mail, MapPin, Phone } from 'lucide-react';
 import { LazyMapEmbed } from './LazyMapEmbed';
 import { useCompany } from '../lib/CompanyProvider';
 
+function getOperatingDaysText(openDays) {
+    if (!openDays || openDays.length === 7) return "Open 7 Days a Week";
+    const shortDaysMap = { 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 0: 'Sun' };
+    
+    const sortedLogical = [...openDays].sort((a, b) => {
+        const orderA = a === 0 ? 7 : a;
+        const orderB = b === 0 ? 7 : b;
+        return orderA - orderB;
+    });
+    
+    const isMonFri = openDays.length === 5 && [1, 2, 3, 4, 5].every(d => openDays.includes(d));
+    if (isMonFri) return "Open Monday - Friday";
+    
+    const isMonSat = openDays.length === 6 && [1, 2, 3, 4, 5, 6].every(d => openDays.includes(d));
+    if (isMonSat) return "Open Monday - Saturday";
+    
+    const names = sortedLogical.map(d => shortDaysMap[d]);
+    return `Open: ${names.join(', ')}`;
+}
+
 export function Contact() {
     const { company } = useCompany();
     const content = company.sectionContent?.contact || {};
     const eventImage = company.siteImages?.sectionBackgrounds?.contact
         || company.siteImages?.sectionBackgrounds?.parking
-        || '/kennydink/kennydinktarp.jpg';
+        || '/images/court1.jpg';
 
     return (
         <section id="contact" className="sport-section sport-section-contact flex w-full items-center py-16 sm:py-20 lg:py-24">
@@ -39,7 +59,7 @@ export function Contact() {
                                     icon={<Clock size={22} />}
                                     label="Operating hours"
                                     value={`${company.operatingHours?.open} - ${company.operatingHours?.close}`}
-                                    helper="Late-night reservations may require advance booking."
+                                    helper={getOperatingDaysText(company.operatingHours?.openDays)}
                                 />
                                 <ContactRow icon={<Mail size={22} />} label="Email address" value={company.email} breakAll />
                                 <ContactRow icon={<MapPin size={22} />} label="Location" value={company.name} helper={company.location} />

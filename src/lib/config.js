@@ -51,4 +51,15 @@ if (!Config.company.id && import.meta.env.MODE !== 'development') {
   throw new Error('CRITICAL: VITE_COMPANY_ID is missing. This is required for tenant database isolation.');
 }
 
+/**
+ * Returns the company/tenant ID for the current deployment.
+ * This is the single source of truth used by all service files
+ * to scope every database query to the correct tenant.
+ *
+ * @returns {string} The VITE_COMPANY_ID environment variable value.
+ */
+export function getCompanyId() {
+  return Config.company.id;
+}
+
 export default Config;

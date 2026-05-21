@@ -6,6 +6,26 @@ import { BookingCalendar } from '../BookingCalendar';
 import { calculatePriceForSlots, getDailyBookings } from '../../services/booking';
 import { useCompany } from '../../lib/CompanyProvider';
 
+// Safely parse date from 'yyyy-MM-dd' to avoid local offset/timezone bugs
+function parseLocalDate(dateStr) {
+    if (!dateStr) return new Date();
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+}
+
+// Find the first open day starting from a given date
+function getFirstOpenDay(startDate, openDays) {
+    const checkDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    for (let i = 0; i < 30; i++) {
+        const dayOfWeek = checkDate.getDay();
+        if (openDays.includes(dayOfWeek)) {
+            return checkDate;
+        }
+        checkDate.setDate(checkDate.getDate() + 1);
+    }
+    return startDate; // fallback
+}
+
 export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
     const { company } = useCompany();
     const [step, setStep] = useState(1);
@@ -33,14 +53,28 @@ export function RescheduleModal({ isOpen, onClose, booking, onConfirm }) {
             setStep(1);
             setReason('');
             setCustomReason('');
-            setSelectedDate(null);
+            
+            const openDays = company?.operatingHours?.openDays || [0, 1, 2, 3, 4, 5, 6];
+            const origDate = parseLocalDate(booking.booking_date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Use original date if it's in the future and open, otherwise find first open day starting from today
+            let initialDate = origDate;
+            if (origDate < today || !openDays.includes(origDate.getDay())) {
+                initialDate = getFirstOpenDay(today, openDays);
+            } else {
+                initialDate = getFirstOpenDay(origDate, openDays);
+            }
+
+            setSelectedDate(initialDate);
             setSelectedTimes([]);
             setCourtBookings([]);
             setCopied(false);
             setIsConfirming(false);
             setConfirmError(null);
         }
-    }, [isOpen, booking]);
+    }, [isOpen, booking, company]);
 
     // Load bookings when date changes
     useEffect(() => {

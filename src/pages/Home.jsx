@@ -12,7 +12,8 @@ import { Hero } from '../components/Hero';
 import { Navbar } from '../components/Navbar';
 import { Button } from '../components/ui';
 import { orderCourtsForHomepage } from '../lib/courtDisplayOrder';
-import { useCompany } from '../lib/CompanyProvider';
+import { useCompany, isHourWithinOperatingHours } from '../lib/CompanyProvider';
+import { getCompanyId } from '../lib/config';
 import { listCourts, subscribeToCourts } from '../services/courts';
 import { subscribeToBookings } from '../services/booking';
 
@@ -41,7 +42,7 @@ export function Home() {
     const { company } = useCompany();
     const courtsContent = company.sectionContent?.courts || {};
     const courtGallery = company.siteImages?.galleries?.courts || [];
-    const flowImage = courtGallery[1] || courtGallery[0] || '/kennydink/net.jpg';
+    const flowImage = courtGallery[1] || courtGallery[0] || '/images/court2.jpg';
     const [selectedCourt, setSelectedCourt] = useState(null);
     const [selectedDate, setSelectedDate] = useState(startOfToday());
     const [selectedTimes, setSelectedTimes] = useState([]);
@@ -213,7 +214,8 @@ export function Home() {
             let query = supabase
                 .from('blocked_time_slots')
                 .select('time_slot')
-                .eq('blocked_date', dateStr);
+                .eq('blocked_date', dateStr)
+                .eq('company_id', getCompanyId());
 
             if (isExclusive && activeCourts.length > 0) {
                 query = query.in('court_id', activeCourts.map((court) => court.id));
@@ -259,6 +261,7 @@ export function Home() {
                 .select('id, court_id, booking_date, start_time, end_time, booked_times, status, courts(id, type)')
                 .gte('booking_date', format(startOfMonthDate, 'yyyy-MM-dd'))
                 .lte('booking_date', format(endOfMonthDate, 'yyyy-MM-dd'))
+                .eq('company_id', getCompanyId())
                 .in('status', ['Confirmed', 'Rescheduled']);
 
             if (error) {
@@ -281,7 +284,17 @@ export function Home() {
         }
 
         setSelectedCourt(court);
-        setSelectedDate(startOfToday());
+
+        // Find the first open day starting from today
+        const openDays = company?.operatingHours?.openDays || [0, 1, 2, 3, 4, 5, 6];
+        let targetDate = startOfToday();
+        let safetyCounter = 0;
+        while (!openDays.includes(targetDate.getDay()) && safetyCounter < 7) {
+            targetDate = new Date(targetDate.getTime() + 24 * 60 * 60 * 1000);
+            safetyCounter++;
+        }
+
+        setSelectedDate(targetDate);
         setSelectedTimes([]);
         setValidationError('');
         setIsModalOpen(false);
@@ -388,7 +401,15 @@ export function Home() {
         if (!selectedCourt || !monthlyBookings || monthlyBookings.length === 0) return [];
 
         const isExclusiveSelected = selectedCourt?.type?.includes('Exclusive') || selectedCourt?.type?.includes('Whole');
-        const allTimeSlots = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
+        
+        const operatingHours = company?.operatingHours || { open: '08:00', close: '22:00' };
+        const allTimeSlots = [];
+        for (let i = 0; i < 24; i++) {
+            if (isHourWithinOperatingHours(i, operatingHours)) {
+                allTimeSlots.push(`${i.toString().padStart(2, '0')}:00`);
+            }
+        }
+        const allTimeSlotsSet = new Set(allTimeSlots);
         const totalSlots = allTimeSlots.length;
         const bookingsByDate = {};
 
@@ -413,7 +434,10 @@ export function Home() {
             if (booking.booked_times && Array.isArray(booking.booked_times) && booking.booked_times.length > 0) {
                 booking.booked_times.forEach((time) => {
                     if (time && typeof time === 'string') {
-                        bookingsByDate[bookingDate].add(time.substring(0, 5));
+                        const t = time.substring(0, 5);
+                        if (allTimeSlotsSet.has(t)) {
+                            bookingsByDate[bookingDate].add(t);
+                        }
                     }
                 });
             } else if (booking.start_time && booking.end_time) {
@@ -421,7 +445,10 @@ export function Home() {
                 const [endHour] = booking.end_time.substring(0, 5).split(':').map(Number);
 
                 for (let hour = startHour; hour < endHour; hour += 1) {
-                    bookingsByDate[bookingDate].add(`${hour.toString().padStart(2, '0')}:00`);
+                    const t = `${hour.toString().padStart(2, '0')}:00`;
+                    if (allTimeSlotsSet.has(t)) {
+                        bookingsByDate[bookingDate].add(t);
+                    }
                 }
             }
         });

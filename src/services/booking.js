@@ -1,4 +1,20 @@
 import { supabase } from '../lib/supabaseClient';
+import { getCompanyId } from '../lib/config';
+import { getTenantSettings } from './settings';
+
+function getDayOfWeek(dateStr) {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day).getDay();
+}
+
+async function validateOpenDay(dateStr) {
+  const settings = await getTenantSettings();
+  const openDays = settings?.operating_hours?.openDays || [0, 1, 2, 3, 4, 5, 6];
+  const dayOfWeek = getDayOfWeek(dateStr);
+  if (!openDays.includes(dayOfWeek)) {
+    throw new Error('The venue is closed on this day of the week.');
+  }
+}
 
 // --- In-memory cache for getAllBookings (admin) ---
 const ALL_BOOKINGS_CACHE_TTL = 30_000; // 30 seconds
@@ -112,7 +128,8 @@ export async function uploadProofOfPayment(file, bookingId) {
 
     const fileExt = file.name.split('.').pop();
     const fileName = `${bookingId}-${Date.now()}.${fileExt}`;
-    const filePath = `booking-proofs/${fileName}`;
+    // Prefix with company_id for per-tenant storage isolation (Option A)
+    const filePath = `${getCompanyId()}/proof-of-payment/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('booking-proofs')
@@ -147,6 +164,7 @@ export async function getCourtBookings(courtId, date) {
     .select('*')
     .eq('court_id', courtId)
     .eq('booking_date', date)
+    .eq('company_id', getCompanyId())
     .in('status', ['Confirmed', 'Rescheduled']);
 
   if (error) {
@@ -163,6 +181,7 @@ export async function getDailyBookings(date) {
     .from('bookings')
     .select('*, courts(id, name, type)')
     .eq('booking_date', date)
+    .eq('company_id', getCompanyId())
     .in('status', ['Confirmed', 'Rescheduled']);
 
   if (error) {
@@ -193,6 +212,8 @@ export async function checkTimeSlotConflicts(courtId, bookingDate, bookedTimes, 
       } else {
         blockedQuery = blockedQuery.eq('court_id', courtId);
       }
+      // Always scope blocked slot checks to this tenant
+      blockedQuery = blockedQuery.eq('company_id', getCompanyId());
 
       const { data: blockedRows, error: blockedError } = await blockedQuery;
 
@@ -223,6 +244,7 @@ export async function checkTimeSlotConflicts(courtId, bookingDate, bookedTimes, 
       .from('bookings')
       .select('booked_times, start_time, end_time, id, court_id, courts(id, type)')
       .eq('booking_date', bookingDate)
+      .eq('company_id', getCompanyId())
       .in('status', ['Confirmed', 'Rescheduled']);
 
     if (error) {
@@ -310,6 +332,8 @@ export async function createBooking({
   bookedTimes = [],
   courtType = ''
 }) {
+  await validateOpenDay(bookingDate);
+
   if (typeof globalThis !== 'undefined') {
     try {
       console.log('Starting booking creation...', { courtId, bookingDate, bookedTimes });
@@ -346,7 +370,8 @@ export async function createBooking({
         p_notes: notes || '',
         p_proof_of_payment_url: proofOfPaymentUrl || null,
         p_booked_times: bookedTimes.length > 0 ? bookedTimes : [],
-        p_court_type: courtType || ''
+        p_court_type: courtType || '',
+        p_company_id: getCompanyId()
       });
 
       if (error) {
@@ -443,7 +468,8 @@ export async function createBooking({
           status: 'Confirmed',
           notes: notes || '',
           proof_of_payment_url: proofOfPaymentUrl || null,
-          booked_times: bookedTimes.length > 0 ? bookedTimes : null
+          booked_times: bookedTimes.length > 0 ? bookedTimes : null,
+          company_id: getCompanyId()
         }])
         .select();
 
@@ -561,7 +587,8 @@ export async function getAllBookings({ force = false, createdAtFrom = null, crea
 
   let query = supabase
     .from('bookings')
-    .select('*, courts(name, type, price, pricing_rules)');
+    .select('*, courts(name, type, price, pricing_rules)')
+    .eq('company_id', getCompanyId());
 
   if (createdAtFrom) {
     query = query.gte('created_at', createdAtFrom);
@@ -594,6 +621,7 @@ export async function getBookingsByDateRange({
   let query = supabase
     .from('bookings')
     .select('*, courts(name, type, price, pricing_rules)')
+    .eq('company_id', getCompanyId())
     .gte('booking_date', fromDate)
     .lte('booking_date', toDate)
     .order('booking_date', { ascending: true })
@@ -617,7 +645,8 @@ export async function getBookingsByDateRange({
 export async function getCreatedBookingsCount({ createdAtFrom, createdAtTo }) {
   let query = supabase
     .from('bookings')
-    .select('id', { count: 'exact', head: true });
+    .select('id', { count: 'exact', head: true })
+    .eq('company_id', getCompanyId());
 
   if (createdAtFrom) {
     query = query.gte('created_at', createdAtFrom);
@@ -643,6 +672,7 @@ export async function updateBookingStatus(bookingId, status) {
     .from('bookings')
     .update({ status })
     .eq('id', bookingId)
+    .eq('company_id', getCompanyId())
     .select();
 
   if (error) {
@@ -660,6 +690,7 @@ export async function getSingleBooking(id) {
     .from('bookings')
     .select('*, courts(name, type, price, pricing_rules)')
     .eq('id', id)
+    .eq('company_id', getCompanyId())
     .single();
 
   if (error) {
@@ -669,11 +700,15 @@ export async function getSingleBooking(id) {
   return data;
 }
 
-// Subscribe to bookings (real-time)
+// Subscribe to bookings (real-time) — scoped to this tenant's company_id
 export function subscribeToBookings(callback) {
   return supabase
-    .channel('bookings')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, callback)
+    .channel(`bookings:${getCompanyId()}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'bookings', filter: `company_id=eq.${getCompanyId()}` },
+      callback
+    )
     .subscribe();
 }
 
@@ -691,6 +726,8 @@ export async function rescheduleBooking({
   originalEndTime,
   originalBookedTimes
 }) {
+  await validateOpenDay(newDate);
+
   try {
     if (typeof globalThis !== 'undefined') {
       const { data: checkData, error: checkError } = await supabase
@@ -743,7 +780,8 @@ export async function rescheduleBooking({
         p_original_date: originalDate,
         p_original_start_time: originalStartTime,
         p_original_end_time: originalEndTime,
-        p_original_booked_times: originalBookedTimes || []
+        p_original_booked_times: originalBookedTimes || [],
+        p_company_id: getCompanyId()
       });
 
       if (error) {

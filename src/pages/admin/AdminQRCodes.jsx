@@ -30,8 +30,19 @@ function toForm(option) {
     };
 }
 
+function resolveQrImageUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    if (url.startsWith('/storage/v1/object/public/')) {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+        const base = supabaseUrl.endsWith('/') ? supabaseUrl.slice(0, -1) : supabaseUrl;
+        return `${base}${url}`;
+    }
+    return url;
+}
+
 function getDisplayImage(formItem) {
-    return formItem?.localPreview || formItem?.image_url || null;
+    const raw = formItem?.localPreview || formItem?.image_url || null;
+    return resolveQrImageUrl(raw);
 }
 
 export function AdminQRCodes() {
@@ -636,7 +647,7 @@ export function AdminQRCodes() {
                                             <div className="w-20 aspect-square rounded-lg overflow-hidden bg-white border border-gray-200">
                                                 {savedOption?.image_url ? (
                                                     <img
-                                                        src={savedOption.image_url}
+                                                        src={resolveQrImageUrl(savedOption.image_url)}
                                                         alt={`${savedOption.label} saved`}
                                                         className="w-full h-full object-contain"
                                                         onError={e => { e.target.onerror = null; e.target.src = `https://placehold.co/200x200?text=${encodeURIComponent(savedOption.label || 'QR')}`; }}

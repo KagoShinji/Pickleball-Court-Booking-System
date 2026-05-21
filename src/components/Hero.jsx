@@ -2,15 +2,14 @@ import { useState } from 'react';
 import { ArrowRight, CalendarDays, ChevronDown, Clock3, MapPin, Users } from 'lucide-react';
 import { useCompany } from '../lib/CompanyProvider';
 
-const defaultHeroImage = '/kennydink/court%203.jpg';
+const defaultHeroImage = '/images/court1.jpg';
 const fallbackHeroImages = [
-    '/kennydink/kennydinkhero.jpg',
-    '/kennydink/paddle.jpg',
-    '/kennydink/net.jpg'
+    '/images/court1.jpg',
+    '/images/court2.jpg'
 ];
 
-function compactBrandName(name = 'KENNYDINK') {
-    return name.replace(/pickleball court/gi, '').replace(/[-|].*$/g, '').trim() || 'KENNYDINK';
+function compactBrandName(name = 'COMPANY') {
+    return name.replace(/pickleball court/gi, '').replace(/[-|].*$/g, '').trim() || 'COMPANY';
 }
 
 function escapeRegExp(value = '') {

@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient';
 import { appendAuditLog } from './auditLogs';
+import { getCompanyId } from '../lib/config';
 
 // --- Simple in-memory cache for getCurrentUser ---
 const USER_CACHE_TTL_MS = 60_000; // 60 seconds
@@ -18,11 +19,12 @@ export async function signUp(email, password) {
 
   if (error) throw error;
 
-  // Optionally add to admin_users table
+  // Optionally add to admin_users table with company_id for tenant scoping
   if (data.user) {
     await supabase.from('admin_users').insert([{
       id: data.user.id,
-      email: data.user.email
+      email: data.user.email,
+      company_id: getCompanyId()
     }]);
 
     appendAuditLog({
@@ -90,8 +92,9 @@ export async function isAdmin() {
 
   const { data } = await supabase
     .from('admin_users')
-    .select('*')
+    .select('id')
     .eq('id', user.id)
+    .eq('company_id', getCompanyId())
     .single();
 
   return !!data;

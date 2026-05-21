@@ -7,6 +7,7 @@ import { RescheduleModal } from '../../components/admin/Reschedulemodal';
 import { AdminActionModal } from '../../components/admin/AdminActionModal';
 import { getAllBookings, getSingleBooking, updateBookingStatus, subscribeToBookings, rescheduleBooking, invalidateAllBookingsCache } from '../../services/booking';
 import { supabase } from '../../lib/supabaseClient';
+import { getCompanyId } from '../../lib/config';
 
 export function AdminBookings() {
     const [bookings, setBookings] = useState([]);
@@ -240,6 +241,7 @@ export function AdminBookings() {
                         .from('bookings')
                         .delete()
                         .eq('id', booking.id)
+                        .eq('company_id', getCompanyId())
                         .select();
 
                     if (error) {

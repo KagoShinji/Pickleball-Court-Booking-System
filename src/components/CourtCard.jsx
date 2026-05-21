@@ -3,12 +3,9 @@ import { useState } from 'react';
 import { Badge, Button } from './ui';
 import { useCompany } from '../lib/CompanyProvider';
 
-const KENNYDINK_COURT_IMAGES = [
-    '/kennydink/court%203.jpg',
-    '/kennydink/net.jpg',
-    '/kennydink/paddle.jpg',
-    '/kennydink/kennydinkhero.jpg',
-    '/kennydink/court%201.jpg',
+const DEFAULT_COURT_IMAGES = [
+    '/images/court1.jpg',
+    '/images/court2.jpg',
 ];
 
 export function CourtCard({ court, onBook, featured = false, visualIndex = 0 }) {
@@ -20,10 +17,10 @@ export function CourtCard({ court, onBook, featured = false, visualIndex = 0 }) 
     const isActive = court.is_active !== false;
     const courtGallery = company.siteImages?.galleries?.courts?.length
         ? company.siteImages.galleries.courts
-        : KENNYDINK_COURT_IMAGES;
-    const imageSrc = courtGallery[visualIndex % courtGallery.length]
-        || (court.images && court.images[0]?.url)
+        : DEFAULT_COURT_IMAGES;
+    const imageSrc = (court.images && court.images[0]?.url)
         || court.image
+        || courtGallery[visualIndex % courtGallery.length]
         || '/images/court1.jpg';
 
     const formatHour12 = (hour) => {

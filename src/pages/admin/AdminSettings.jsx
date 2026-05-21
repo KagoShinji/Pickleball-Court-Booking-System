@@ -38,6 +38,7 @@ import {
 import { formatImageSize } from '../../lib/imageCompression';
 import { useCompany } from '../../lib/CompanyProvider';
 import { uploadCmsImage } from '../../services/cmsImages';
+import { uploadQrImage } from '../../services/qrCodes';
 import { getTenantSettings, updateTenantSettings } from '../../services/settings';
 
 const AVAILABLE_AMENITIES = [
@@ -145,6 +146,8 @@ const DEFAULT_SETTINGS = {
     company_name: '',
     company_short_name: '',
     logo_url: DEFAULT_SITE_IMAGES.logoUrl,
+    hero_bg_url: '',
+    payment_qr_url: '',
     contact_info: {
         email: '',
         phone: '',
@@ -156,8 +159,11 @@ const DEFAULT_SETTINGS = {
     operating_hours: {
         open: '08:00',
         close: '22:00',
+        openDays: [0, 1, 2, 3, 4, 5, 6],
     },
     parking_enabled: true,
+    parking_is_inside: false,
+    parking_map_link: '',
     amenities: [],
     hero_badge: '',
     hero_title: '',
@@ -183,21 +189,27 @@ function colorInputValue(value) {
 function mergeLoadedSettings(data) {
     const siteImages = mergeSiteImages(data.site_images);
     const logoUrl = data.logo_url || siteImages.logoUrl || DEFAULT_SITE_IMAGES.logoUrl;
+    const heroBgUrl = data.hero_bg_url || siteImages.heroBackground || DEFAULT_SITE_IMAGES.heroBackground;
 
     return {
         ...DEFAULT_SETTINGS,
         company_name: data.company_name || '',
         company_short_name: data.company_short_name || '',
         logo_url: logoUrl,
+        hero_bg_url: heroBgUrl,
+        payment_qr_url: data.payment_qr_url || '',
         contact_info: {
             ...DEFAULT_SETTINGS.contact_info,
             ...(data.contact_info || {}),
         },
         operating_hours: {
-            ...DEFAULT_SETTINGS.operating_hours,
-            ...(data.operating_hours || {}),
+            open: data.operating_hours?.open || DEFAULT_SETTINGS.operating_hours.open,
+            close: data.operating_hours?.close || DEFAULT_SETTINGS.operating_hours.close,
+            openDays: data.operating_hours?.openDays || DEFAULT_SETTINGS.operating_hours.openDays,
         },
         parking_enabled: data.parking_enabled ?? true,
+        parking_is_inside: data.parking_is_inside ?? false,
+        parking_map_link: data.parking_map_link || '',
         amenities: data.amenities || [],
         hero_badge: data.hero_badge || '',
         hero_title: data.hero_title || '',
@@ -208,6 +220,7 @@ function mergeLoadedSettings(data) {
         site_images: {
             ...siteImages,
             logoUrl,
+            heroBackground: heroBgUrl,
         },
         section_content: mergeSectionContent(data.section_content),
     };
@@ -316,12 +329,22 @@ function CmsTabs({ activeTab, onChange }) {
 function ImageField({ label, value, onChange, onUpload, uploading, feedback, placeholder, description, className = '' }) {
     const inputId = `image-upload-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 
+    const resolvedSrc = (() => {
+        if (!value || typeof value !== 'string') return '';
+        if (value.startsWith('/storage/v1/object/public/')) {
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+            const base = supabaseUrl.endsWith('/') ? supabaseUrl.slice(0, -1) : supabaseUrl;
+            return `${base}${value}`;
+        }
+        return value;
+    })();
+
     return (
         <div className={`rounded-2xl border border-primary-dark/10 bg-white/72 p-3 ${className}`}>
             <div className="grid gap-3 sm:grid-cols-[5.5rem_1fr]">
                 <div className="h-[5.5rem] overflow-hidden rounded-2xl border border-primary-dark/10 bg-primary-light">
                     {value ? (
-                        <img src={value} alt="" className="h-full w-full object-cover" />
+                        <img src={resolvedSrc} alt="" className="h-full w-full object-cover" />
                     ) : (
                         <div className="flex h-full w-full items-center justify-center text-primary-dark/34">
                             <ImageIcon size={24} aria-hidden="true" />
@@ -358,7 +381,7 @@ function ImageField({ label, value, onChange, onUpload, uploading, feedback, pla
                             {uploading ? 'Uploading...' : 'Upload'}
                         </label>
                     </div>
-                    <Input value={value || ''} onChange={(event) => onChange(event.target.value)} placeholder={placeholder || '/kennydink/photo.jpg'} />
+                    <Input value={value || ''} onChange={(event) => onChange(event.target.value)} placeholder={placeholder || '/images/court2.jpg'} />
                     <p className="text-xs font-semibold text-primary-dark/42">
                         {feedback || 'Uploads are compressed before saving and must be 100 KB or smaller.'}
                     </p>
@@ -449,6 +472,7 @@ export function AdminSettings() {
             const sanitizedSiteImages = {
                 ...settings.site_images,
                 logoUrl: settings.logo_url || settings.site_images.logoUrl,
+                heroBackground: settings.hero_bg_url || settings.site_images.heroBackground,
                 galleries: {
                     hero: normalizeImageList(settings.site_images.galleries?.hero),
                     venue: normalizeImageList(settings.site_images.galleries?.venue),
@@ -462,6 +486,8 @@ export function AdminSettings() {
             const sanitizedSettings = {
                 ...settings,
                 logo_url: settings.logo_url || sanitizedSiteImages.logoUrl,
+                hero_bg_url: settings.hero_bg_url || sanitizedSiteImages.heroBackground,
+                payment_qr_url: settings.payment_qr_url || '',
                 site_images: sanitizedSiteImages,
             };
 
@@ -474,6 +500,8 @@ export function AdminSettings() {
             setSettings((current) => ({
                 ...current,
                 logo_url: sanitizedSettings.logo_url,
+                hero_bg_url: sanitizedSettings.hero_bg_url,
+                payment_qr_url: sanitizedSettings.payment_qr_url,
                 site_images: sanitizedSiteImages,
             }));
             setSuccess('Settings updated successfully!');
@@ -556,6 +584,53 @@ export function AdminSettings() {
                 logoUrl: value,
             },
         }));
+    };
+
+    const updateHeroBg = (value) => {
+        setSettings((prev) => ({
+            ...prev,
+            hero_bg_url: value,
+            site_images: {
+                ...prev.site_images,
+                heroBackground: value,
+            },
+        }));
+    };
+
+    const updatePaymentQr = (value) => {
+        setSettings((prev) => ({
+            ...prev,
+            payment_qr_url: value,
+        }));
+    };
+
+    const handleQrUpload = async (uploadKey, file, onUrlReady) => {
+        try {
+            setError('');
+            setSuccess('');
+            setUploadingKey(uploadKey);
+            setUploadFeedback((prev) => ({
+                ...prev,
+                [uploadKey]: `Compressing ${formatImageSize(file.size)}...`,
+            }));
+
+            const uploadedUrl = await uploadQrImage(uploadKey, file);
+            onUrlReady(uploadedUrl);
+
+            setUploadFeedback((prev) => ({
+                ...prev,
+                [uploadKey]: `Uploaded successfully.`,
+            }));
+            setSuccess('QR Code uploaded. Save settings to publish the change.');
+        } catch (err) {
+            setUploadFeedback((prev) => ({
+                ...prev,
+                [uploadKey]: err.message || 'Upload failed.',
+            }));
+            setError(err.message || 'QR Code upload failed');
+        } finally {
+            setUploadingKey('');
+        }
     };
 
     const updateSiteImage = (field, value) => {
@@ -718,8 +793,19 @@ export function AdminSettings() {
                                 onUpload={(file) => handleImageUpload('logo', file, updateLogo)}
                                 uploading={uploadingKey === 'logo'}
                                 feedback={uploadFeedback.logo}
-                                placeholder="/kennydink/kennydinklogo.jpg"
+                                placeholder="/images/pplogo.jpg"
                                 description="Used in the admin preview, nav bar, and hero logo badge."
+                            />
+                            <ImageField
+                                className="sm:col-span-2"
+                                label="Payment QR Fallback (GCash/GoTyme)"
+                                value={settings.payment_qr_url}
+                                onChange={updatePaymentQr}
+                                onUpload={(file) => handleQrUpload('fallback', file, updatePaymentQr)}
+                                uploading={uploadingKey === 'fallback'}
+                                feedback={uploadFeedback.fallback}
+                                placeholder="/images/gcash.jpg"
+                                description="Global fallback QR payment option if no active tenant QR options exist."
                             />
                         </div>
                     </div>
@@ -748,12 +834,12 @@ export function AdminSettings() {
                         <div className="grid gap-5">
                             <ImageField
                                 label="Hero Background Image"
-                                value={settings.site_images.heroBackground}
-                                onChange={(value) => updateSiteImage('heroBackground', value)}
-                                onUpload={(file) => handleImageUpload('hero-background', file, (url) => updateSiteImage('heroBackground', url))}
+                                value={settings.hero_bg_url}
+                                onChange={updateHeroBg}
+                                onUpload={(file) => handleImageUpload('hero-background', file, updateHeroBg)}
                                 uploading={uploadingKey === 'hero-background'}
                                 feedback={uploadFeedback['hero-background']}
-                                placeholder="/kennydink/court%203.jpg"
+                                placeholder="/images/court1.jpg"
                                 description="Large first-screen background image."
                             />
                             <Field
@@ -842,7 +928,7 @@ export function AdminSettings() {
                                     onUpload={(file) => handleImageUpload(`section-${section.key}`, file, (url) => updateSectionBackground(section.key, url))}
                                     uploading={uploadingKey === `section-${section.key}`}
                                     feedback={uploadFeedback[`section-${section.key}`]}
-                                    placeholder="/kennydink/photo.jpg"
+                                    placeholder="/images/section-bg.jpg"
                                     description="Optional background image for this public section."
                                 />
                             ))}
@@ -923,6 +1009,54 @@ export function AdminSettings() {
                             <Field label="Opening Time" type="time" value={settings.operating_hours.open} onChange={(value) => updateHours('open', value)} />
                             <Field label="Closing Time" type="time" value={settings.operating_hours.close} onChange={(value) => updateHours('close', value)} />
                         </div>
+
+                        <div className="space-y-3 pt-4 border-t border-primary-dark/10">
+                            <label className="text-sm font-bold text-primary-dark/72">Open Days of the Week</label>
+                            <div className="flex flex-wrap gap-2 pt-1">
+                                {[
+                                    { value: 1, label: 'Mon' },
+                                    { value: 2, label: 'Tue' },
+                                    { value: 3, label: 'Wed' },
+                                    { value: 4, label: 'Thu' },
+                                    { value: 5, label: 'Fri' },
+                                    { value: 6, label: 'Sat' },
+                                    { value: 0, label: 'Sun' },
+                                ].map((day) => {
+                                    const isOpen = (settings.operating_hours?.openDays || [0, 1, 2, 3, 4, 5, 6]).includes(day.value);
+                                    return (
+                                        <button
+                                            key={day.value}
+                                            type="button"
+                                            onClick={() => {
+                                                const currentDays = settings.operating_hours?.openDays || [0, 1, 2, 3, 4, 5, 6];
+                                                let nextDays;
+                                                if (currentDays.includes(day.value)) {
+                                                    // Ensure at least one day remains open
+                                                    if (currentDays.length <= 1) {
+                                                        alert('At least one operational day must be selected.');
+                                                        return;
+                                                    }
+                                                    nextDays = currentDays.filter(d => d !== day.value);
+                                                } else {
+                                                    nextDays = [...currentDays, day.value];
+                                                }
+                                                updateHours('openDays', nextDays);
+                                            }}
+                                            className={`flex h-12 w-12 items-center justify-center rounded-xl border-2 text-sm font-bold transition-all duration-200 ${
+                                                isOpen
+                                                    ? 'border-primary bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary-dark'
+                                                    : 'border-primary-dark/8 bg-white text-primary-dark/58 hover:border-primary-dark/16 hover:bg-primary-light/30'
+                                            }`}
+                                        >
+                                            {day.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <p className="text-xs font-semibold text-primary-dark/42">
+                                Select the days of the week your venue is open. Deselected days will be disabled for booking and slot management.
+                            </p>
+                        </div>
                     </div>
                 </Card>
 
@@ -973,6 +1107,45 @@ export function AdminSettings() {
                         </div>
                     </div>
                 </Card>
+
+                {settings.parking_enabled && (
+                    <Card className={`rounded-[1.25rem] border-none p-6 shadow-md ${activeTab === 'venue' ? '' : 'hidden'}`}>
+                        <div className="space-y-6">
+                            <SectionHeader icon={Car} title="Parking Details" description="Configure where guests can park when they arrive at the venue." />
+                            
+                            <div className="flex items-center justify-between gap-4 rounded-2xl border border-primary-dark/10 bg-white/70 p-4">
+                                <div>
+                                    <p className="font-display text-lg font-extrabold text-primary-dark">Parking is inside the court/building</p>
+                                    <p className="mt-1 text-sm text-primary-dark/54">Enable if parking is on-site inside the venue facility. Disable to specify an external parking lot pin.</p>
+                                </div>
+                                <label className="relative inline-flex cursor-pointer items-center">
+                                    <input
+                                        type="checkbox"
+                                        className="peer sr-only"
+                                        checked={settings.parking_is_inside}
+                                        onChange={(event) => setSettings((prev) => ({ ...prev, parking_is_inside: event.target.checked }))}
+                                    />
+                                    <div className="h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white" />
+                                </label>
+                            </div>
+
+                            {!settings.parking_is_inside && (
+                                <div className="space-y-4 rounded-2xl border border-primary-dark/10 bg-white/40 p-4">
+                                    <Field
+                                        label="Google Maps Pin / Query for Parking Lot"
+                                        value={settings.parking_map_link}
+                                        onChange={(value) => setSettings((prev) => ({ ...prev, parking_map_link: value }))}
+                                        placeholder="https://maps.app.goo.gl/... or latitude,longitude coordinates"
+                                    />
+                                    <p className="text-xs font-semibold text-primary-dark/42">
+                                        Type or paste the Google Maps link, raw coordinates (e.g. 10.3157,123.8854), or address for the parking lot. We will pin it on the landing page map automatically.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </Card>
+                )}
+
 
                 <div className="sticky bottom-0 z-20 mt-8 flex items-center justify-between gap-4 border-t border-primary-dark/10 bg-bg-light/86 py-4 backdrop-blur-md">
                     <div className="text-sm">

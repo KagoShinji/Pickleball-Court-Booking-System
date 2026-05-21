@@ -7,7 +7,7 @@ export function SplashScreen({ onComplete }) {
     const { company } = useCompany();
     const logoSrc = company.logoUrl && !company.logoUrl.includes('default-logo')
         ? company.logoUrl
-        : '/kennydink/kennydinklogo.jpg';
+        : '/images/pplogo.jpg';
     const venueLocation = company.location || 'Pickleball court booking';
 
     useEffect(() => {

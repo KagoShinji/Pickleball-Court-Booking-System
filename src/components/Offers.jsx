@@ -29,7 +29,7 @@ const AMENITY_TITLES = {
     outdoor: 'Outdoor court',
 };
 
-const AMENITY_IMAGES = ['/kennydink/paddle.jpg', '/kennydink/court%201.jpg', '/kennydink/kennydinktarp.jpg'];
+const AMENITY_IMAGES = ['/images/court1.jpg', '/images/court2.jpg'];
 
 function formatAmenityTitle(key) {
     if (AMENITY_TITLES[key]) return AMENITY_TITLES[key];

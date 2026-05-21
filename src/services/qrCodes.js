@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient';
 import { appendAuditLog } from './auditLogs';
+import { getCompanyId } from '../lib/config';
 
 export const MAX_QR_FILE_SIZE_MB = 5;
 
@@ -65,6 +66,7 @@ export async function getQrCodes({ activeOnly = false } = {}) {
     const { data, error } = await supabase
       .from('qr_codes')
       .select('*')
+      .eq('company_id', getCompanyId())
       .order('sort_order', { ascending: true })
       .order('label', { ascending: true });
 
@@ -108,7 +110,8 @@ export async function uploadQrImage(provider, file) {
 
   const ext = fileToUpload.name.split('.').pop() || 'jpg';
   const safeProvider = String(provider || 'payment').replace(/[^a-zA-Z0-9_-]/g, '-');
-  const path = `${safeProvider}_qr.${ext}`;
+  // Prefix with company_id for per-tenant storage isolation (Option A)
+  const path = `${getCompanyId()}/${safeProvider}_qr.${ext}`;
 
   const { error } = await supabase.storage
     .from('qr-images')
@@ -121,7 +124,13 @@ export async function uploadQrImage(provider, file) {
   if (error) throw new Error(`Image upload failed: ${error.message}`);
 
   const { data: urlData } = supabase.storage.from('qr-images').getPublicUrl(path);
-  return normalizeImageUrl(urlData.publicUrl);
+  const fullUrl = normalizeImageUrl(urlData.publicUrl);
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const relativeUrl = (supabaseUrl && fullUrl.startsWith(supabaseUrl))
+    ? fullUrl.slice(supabaseUrl.length)
+    : fullUrl;
+
+  return relativeUrl;
 }
 
 export async function createQrCode({ label, image_url = '', account_name = '', sort_order = 0 }) {
@@ -156,6 +165,9 @@ async function saveQrCode(provider, updates, actionLabel) {
   if (!payload.label && actionLabel === 'created') {
     throw new Error('Payment option name is required.');
   }
+
+  // Include company_id so new records are correctly scoped to this tenant
+  payload.company_id = getCompanyId();
 
   const { error } = await supabase.from('qr_codes').upsert(payload);
   if (error) throw new Error(`Failed to save: ${error.message}`);

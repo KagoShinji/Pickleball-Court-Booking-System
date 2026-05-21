@@ -9,32 +9,27 @@ export const DEFAULT_THEME_CONFIG = {
 };
 
 export const DEFAULT_SITE_IMAGES = {
-  logoUrl: '/kennydink/kennydinklogo.jpg',
-  heroBackground: '/kennydink/court%203.jpg',
+  logoUrl: '/images/pplogo.jpg',
+  heroBackground: '/images/court1.jpg',
   galleries: {
     hero: [
-      '/kennydink/kennydinkhero.jpg',
-      '/kennydink/paddle.jpg',
-      '/kennydink/net.jpg',
+      '/images/court1.jpg',
+      '/images/court2.jpg',
     ],
     venue: [
-      '/kennydink/paddle.jpg',
-      '/kennydink/court%201.jpg',
-      '/kennydink/kennydinktarp.jpg',
+      '/images/court1.jpg',
+      '/images/court2.jpg',
     ],
     courts: [
-      '/kennydink/court%203.jpg',
-      '/kennydink/net.jpg',
-      '/kennydink/paddle.jpg',
-      '/kennydink/kennydinkhero.jpg',
-      '/kennydink/court%201.jpg',
+      '/images/court1.jpg',
+      '/images/court2.jpg',
     ],
   },
   sectionBackgrounds: {
     offers: '',
-    courts: '/kennydink/kennydinkhero.jpg',
+    courts: '/images/court2.jpg',
     contact: '',
-    parking: '/kennydink/kennydinktarp.jpg',
+    parking: '/images/court1.jpg',
     footer: '',
   },
 };

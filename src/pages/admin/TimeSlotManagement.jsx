@@ -1,17 +1,36 @@
 import { format, startOfToday, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isBefore, isSameDay } from 'date-fns';
 import { AlertCircle, ChevronLeft, ChevronRight, Clock, Lock, Unlock, X, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../../components/ui';
 import { supabase } from '../../lib/supabaseClient';
 import { appendAuditLog } from '../../services/auditLogs';
+import { getCompanyId } from '../../lib/config';
+import { useCompany, isHourWithinOperatingHours } from '../../lib/CompanyProvider';
 
 export function TimeSlotManagement() {
+    const { company } = useCompany();
     const today = startOfToday();
     const [currentMonth, setCurrentMonth] = useState(startOfMonth(today));
     const [selectedDate, setSelectedDate] = useState(today);
     const [selectedCourt, setSelectedCourt] = useState(null);
     const [selectedSlots, setSelectedSlots] = useState([]);
+
+    useEffect(() => {
+        if (company?.operatingHours?.openDays) {
+            const openDays = company.operatingHours.openDays;
+            let targetDate = startOfToday();
+            let safetyCounter = 0;
+            while (!openDays.includes(getDay(targetDate)) && safetyCounter < 7) {
+                targetDate = new Date(targetDate.getTime() + 24 * 60 * 60 * 1000);
+                safetyCounter++;
+            }
+            if (targetDate.getTime() !== today.getTime()) {
+                setSelectedDate(targetDate);
+                setCurrentMonth(startOfMonth(targetDate));
+            }
+        }
+    }, [company?.operatingHours?.openDays]);
     
     const queryClient = useQueryClient();
 
@@ -22,6 +41,7 @@ export function TimeSlotManagement() {
             const { data, error } = await supabase
                 .from('courts')
                 .select('*')
+                .eq('company_id', getCompanyId())
                 .order('name');
 
             if (error) throw error;
@@ -77,7 +97,7 @@ export function TimeSlotManagement() {
         queryFn: async () => {
             if (!selectedCourt) return [];
 
-            let q = supabase.from('blocked_time_slots').select('*').eq('blocked_date', dateStr);
+            let q = supabase.from('blocked_time_slots').select('*').eq('blocked_date', dateStr).eq('company_id', getCompanyId());
             if (isExclusiveCourt && courts.length > 0) {
                 q = q.in('court_id', courts.map(c => c.id));
             } else {
@@ -103,6 +123,7 @@ export function TimeSlotManagement() {
                 .from('bookings')
                 .select('*, courts(id, type)')
                 .eq('booking_date', dateStr)
+                .eq('company_id', getCompanyId())
                 .in('status', ['Confirmed', 'Rescheduled']);
 
             if (error) throw error;
@@ -130,13 +151,14 @@ export function TimeSlotManagement() {
                     court_id: courtId,
                     blocked_date: dateStr,
                     time_slot: slot,
-                    reason: 'Admin blocked'
+                    reason: 'Admin blocked',
+                    company_id: getCompanyId()
                 }))
             );
 
             const { error } = await supabase
                 .from('blocked_time_slots')
-                .upsert(blocksToInsert, { onConflict: 'court_id,blocked_date,time_slot', ignoreDuplicates: true });
+                .upsert(blocksToInsert, { onConflict: 'court_id,blocked_date,time_slot,company_id', ignoreDuplicates: true });
 
             if (error) throw error;
             return blocksToInsert;
@@ -182,6 +204,7 @@ export function TimeSlotManagement() {
                 .delete()
                 .in('court_id', courtIds)
                 .eq('blocked_date', dateStr)
+                .eq('company_id', getCompanyId())
                 .in('time_slot', slots);
 
             if (error) throw error;
@@ -252,7 +275,7 @@ export function TimeSlotManagement() {
     const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
     // Generate time slots
-    const timeSlots = Array.from({ length: 24 }, (_, i) => {
+    const allSlots = Array.from({ length: 24 }, (_, i) => {
         const hour = i.toString().padStart(2, '0');
         const startPeriod = i < 12 ? 'AM' : 'PM';
         const startDisplayHour = i === 0 ? 12 : (i > 12 ? i - 12 : i);
@@ -264,6 +287,13 @@ export function TimeSlotManagement() {
             id: `${hour}:00`,
             label: `${startDisplayHour}:00${startPeriod} - ${endDisplayHour}:00${endPeriod}`
         };
+    });
+
+    const operatingHours = company?.operatingHours || { open: '08:00', close: '22:00' };
+    const openDays = operatingHours?.openDays || [0, 1, 2, 3, 4, 5, 6];
+    const timeSlots = allSlots.filter((slot) => {
+        const hour = parseInt(slot.id.split(':')[0], 10);
+        return isHourWithinOperatingHours(hour, operatingHours);
     });
 
     const isSlotBlocked = (slotId) => {
@@ -365,23 +395,27 @@ export function TimeSlotManagement() {
                             const isSelected = isSameDay(day, selectedDate);
                             const isPast = isBefore(day, today);
                             const isToday = isSameDay(day, today);
+                            const dayOfWeek = getDay(day);
+                            const isClosedDay = !openDays.includes(dayOfWeek);
 
                             return (
-                                <div key={day.toString()} className="flex justify-center py-1">
+                                <div key={day.toString()} className="flex justify-center py-1 relative">
                                     <button
                                         onClick={() => {
-                                            if (!isPast) {
+                                            if (!isPast && !isClosedDay) {
                                                 setSelectedDate(day);
                                                 setSelectedSlots([]);
                                             }
                                         }}
-                                        disabled={isPast}
+                                        disabled={isPast || isClosedDay}
+                                        title={isClosedDay ? 'Closed' : undefined}
                                         className={`
                                             h-9 w-9 rounded-full flex items-center justify-center text-sm transition-all duration-200
                                             ${isSelected ? 'bg-primary text-white font-bold shadow-sm ring-2 ring-primary ring-offset-1' : ''}
                                             ${!isSelected && isPast ? 'text-gray-300 cursor-not-allowed' : ''}
-                                            ${!isSelected && !isPast ? 'hover:bg-primary/15 text-gray-700' : ''}
-                                            ${!isSelected && isToday ? 'border-2 border-primary text-primary font-semibold' : ''}
+                                            ${!isSelected && !isPast && isClosedDay ? 'bg-stone-50 border border-dashed border-stone-200 text-stone-400 cursor-not-allowed opacity-50' : ''}
+                                            ${!isSelected && !isPast && !isClosedDay ? 'hover:bg-primary/15 text-gray-700' : ''}
+                                            ${!isSelected && isToday && !isClosedDay ? 'border-2 border-primary text-primary font-semibold' : ''}
                                         `}
                                     >
                                         {format(day, 'd')}
@@ -398,6 +432,7 @@ export function TimeSlotManagement() {
                             { color: 'bg-red-50 border-2 border-red-300', label: 'Blocked' },
                             { color: 'bg-blue-50 border-2 border-blue-500 ring-2 ring-blue-300 ring-offset-1', label: 'Booked' },
                             { color: 'bg-secondary border-2 border-secondary', label: 'Selected' },
+                            { color: 'bg-stone-50 border-2 border-dashed border-stone-300', label: 'Closed' },
                         ].map(({ color, label }) => (
                             <div key={label} className="flex items-center gap-2">
                                 <div className={`w-4 h-4 rounded shrink-0 ${color}`} />
@@ -420,130 +455,144 @@ export function TimeSlotManagement() {
                         )}
                     </div>
 
-                    {/* Court selector */}
-                    <div className="flex items-center gap-3 mb-4">
-                        <label className="text-sm font-semibold text-gray-600 whitespace-nowrap">Court:</label>
-                        <select
-                            value={selectedCourt?.id || ''}
-                            onChange={(e) => {
-                                const court = courts.find(c => c.id === e.target.value);
-                                setSelectedCourt(court);
-                                setSelectedSlots([]);
-                            }}
-                            className="flex-1 px-3 py-2 text-sm font-medium border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white text-gray-700"
-                        >
-                            {courts.map(court => (
-                                <option key={court.id} value={court.id}>{court.name}</option>
-                            ))}
-                        </select>
-                    </div>
+                    {!openDays.includes(getDay(selectedDate)) ? (
+                        <div className="flex-1 flex flex-col items-center justify-center py-12 px-4 text-center">
+                            <div className="w-16 h-16 rounded-full bg-stone-50 border-2 border-dashed border-stone-200 flex items-center justify-center mb-4 text-stone-400">
+                                <Lock size={28} />
+                            </div>
+                            <h4 className="font-display font-bold text-stone-700 text-lg mb-1">Venue is Closed</h4>
+                            <p className="text-stone-400 text-sm max-w-sm">
+                                This date falls on a closed day based on your operational hours configuration. No slots are available for booking or management.
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Court selector */}
+                            <div className="flex items-center gap-3 mb-4">
+                                <label className="text-sm font-semibold text-gray-600 whitespace-nowrap">Court:</label>
+                                <select
+                                    value={selectedCourt?.id || ''}
+                                    onChange={(e) => {
+                                        const court = courts.find(c => c.id === e.target.value);
+                                        setSelectedCourt(court);
+                                        setSelectedSlots([]);
+                                    }}
+                                    className="flex-1 px-3 py-2 text-sm font-medium border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white text-gray-700"
+                                >
+                                    {courts.map(court => (
+                                        <option key={court.id} value={court.id}>{court.name}</option>
+                                    ))}
+                                </select>
+                            </div>
 
-                    {/* Inline action bar */}
-                    <div className="flex items-center gap-2 mb-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                        <span className="text-sm text-gray-500 mr-auto">
-                            {selectedSlots.length > 0
-                                ? <><strong className="text-primary-dark">{selectedSlots.length}</strong> slot{selectedSlots.length > 1 ? 's' : ''} selected</>
-                                : 'Click slots to select'
-                            }
-                        </span>
-                        <button
-                            onClick={handleBlockSlots}
-                            disabled={selectedUnblockedSlots.length === 0 || isBlocking || isUnblocking}
-                            className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-semibold rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-40 disabled:pointer-events-none transition-colors"
-                        >
-                            {isBlocking
-                                ? <><div className="h-3.5 w-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" /> Blocking...</>
-                                : <><Lock size={13} /> Block ({selectedUnblockedSlots.length})</>
-                            }
-                        </button>
-                        <button
-                            onClick={handleUnblockSlots}
-                            disabled={selectedBlockedSlots.length === 0 || isBlocking || isUnblocking}
-                            className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-semibold rounded-lg border-2 border-primary text-primary-dark hover:bg-primary-light disabled:opacity-40 disabled:pointer-events-none transition-colors"
-                        >
-                            {isUnblocking
-                                ? <><div className="h-3.5 w-3.5 rounded-full border-2 border-primary border-t-transparent animate-spin" /> Unblocking...</>
-                                : <><Unlock size={13} /> Unblock ({selectedBlockedSlots.length})</>
-                            }
-                        </button>
-                        {selectedSlots.length > 0 && (
-                            <button
-                                onClick={() => setSelectedSlots([])}
-                                disabled={isBlocking || isUnblocking}
-                                className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 hover:text-gray-600 disabled:opacity-40 disabled:pointer-events-none transition-colors"
-                            >
-                                <X size={14} />
-                            </button>
-                        )}
-                    </div>
+                            {/* Inline action bar */}
+                            <div className="flex items-center gap-2 mb-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                <span className="text-sm text-gray-500 mr-auto">
+                                    {selectedSlots.length > 0
+                                        ? <><strong className="text-primary-dark">{selectedSlots.length}</strong> slot{selectedSlots.length > 1 ? 's' : ''} selected</>
+                                        : 'Click slots to select'
+                                    }
+                                </span>
+                                <button
+                                    onClick={handleBlockSlots}
+                                    disabled={selectedUnblockedSlots.length === 0 || isBlocking || isUnblocking}
+                                    className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-semibold rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                                >
+                                    {isBlocking
+                                        ? <><div className="h-3.5 w-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" /> Blocking...</>
+                                        : <><Lock size={13} /> Block ({selectedUnblockedSlots.length})</>
+                                    }
+                                </button>
+                                <button
+                                    onClick={handleUnblockSlots}
+                                    disabled={selectedBlockedSlots.length === 0 || isBlocking || isUnblocking}
+                                    className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-semibold rounded-lg border-2 border-primary text-primary-dark hover:bg-primary-light disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                                >
+                                    {isUnblocking
+                                        ? <><div className="h-3.5 w-3.5 rounded-full border-2 border-primary border-t-transparent animate-spin" /> Unblocking...</>
+                                        : <><Unlock size={13} /> Unblock ({selectedBlockedSlots.length})</>
+                                    }
+                                </button>
+                                {selectedSlots.length > 0 && (
+                                    <button
+                                        onClick={() => setSelectedSlots([])}
+                                        disabled={isBlocking || isUnblocking}
+                                        className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 hover:text-gray-600 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                )}
+                            </div>
 
-                    {/* Slots grid */}
-                    <div className="space-y-4 overflow-y-auto flex-1" style={{ maxHeight: '420px' }}>
-                        {TIME_SECTIONS.map((section, idx) => {
-                            const sectionSlots = timeSlots.filter(slot =>
-                                section.range.includes(parseInt(slot.id.split(':')[0]))
-                            );
+                            {/* Slots grid */}
+                            <div className="space-y-4 overflow-y-auto flex-1" style={{ maxHeight: '420px' }}>
+                                {TIME_SECTIONS.map((section, idx) => {
+                                    const sectionSlots = timeSlots.filter(slot =>
+                                        section.range.includes(parseInt(slot.id.split(':')[0]))
+                                    );
 
-                            if (sectionSlots.length === 0) return null;
+                                    if (sectionSlots.length === 0) return null;
 
-                            return (
-                                <div key={idx}>
-                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2 px-0.5">
-                                        {section.title}
-                                    </p>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {sectionSlots.map((slot) => {
-                                            const blocked = isSlotBlocked(slot.id);
-                                            const booked = isSlotBooked(slot.id);
-                                            const bookingInfo = getBookingInfo(slot.id);
-                                            const selected = selectedSlots.includes(slot.id);
-                                            const blockedCourtNames = blocked ? getBlockedCourtNames(slot.id) : [];
+                                    return (
+                                        <div key={idx}>
+                                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2 px-0.5">
+                                                {section.title}
+                                            </p>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {sectionSlots.map((slot) => {
+                                                    const blocked = isSlotBlocked(slot.id);
+                                                    const booked = isSlotBooked(slot.id);
+                                                    const bookingInfo = getBookingInfo(slot.id);
+                                                    const selected = selectedSlots.includes(slot.id);
+                                                    const blockedCourtNames = blocked ? getBlockedCourtNames(slot.id) : [];
 
-                                            return (
-                                                <button
-                                                    key={slot.id}
-                                                    onClick={() => toggleSlot(slot.id, booked)}
-                                                    disabled={booked}
-                                                    title={booked ? (bookingInfo?.customer_name || bookingInfo?.user_name || 'Booked') : blocked ? `Blocked${blockedCourtNames.length ? ': ' + blockedCourtNames.join(', ') : ''}` : slot.label}
-                                                    className={`
-                                                        py-2 px-3 rounded-xl text-xs font-medium border-2 transition-all duration-150 text-left leading-snug
-                                                        ${selected
-                                                            ? 'bg-secondary text-white border-secondary shadow-sm'
-                                                            : booked
-                                                                ? 'bg-blue-50 border-blue-500 text-blue-700 cursor-not-allowed ring-2 ring-blue-300 ring-offset-1 shadow-sm shadow-blue-100'
-                                                                : blocked
-                                                                    ? 'bg-red-50 border-red-200 text-red-600'
-                                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-primary hover:text-primary hover:bg-primary/5'
-                                                        }
-                                                    `}
-                                                >
-                                                    <div className="flex items-center justify-between gap-1">
-                                                        <span className="truncate text-[11px] font-semibold">{slot.label}</span>
-                                                        {blocked && !selected && <Lock size={10} className="shrink-0 opacity-70" />}
-                                                        {booked && <Users size={10} className="shrink-0 opacity-70" />}
-                                                    </div>
-                                                    {booked && bookingInfo && (
-                                                        <div className="text-[10px] mt-0.5 truncate opacity-75">
-                                                            {bookingInfo.customer_name || bookingInfo.user_name || 'Booked'}
-                                                        </div>
-                                                    )}
-                                                    {blocked && !selected && blockedCourtNames.length > 0 && (
-                                                        <div className="flex flex-wrap gap-0.5 mt-1">
-                                                            {blockedCourtNames.map(name => (
-                                                                <span key={name} className="inline-block bg-red-200 text-red-800 text-[9px] font-semibold px-1.5 py-0.5 rounded-full leading-none">
-                                                                    {name}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                                    return (
+                                                        <button
+                                                            key={slot.id}
+                                                            onClick={() => toggleSlot(slot.id, booked)}
+                                                            disabled={booked}
+                                                            title={booked ? (bookingInfo?.customer_name || bookingInfo?.user_name || 'Booked') : blocked ? `Blocked${blockedCourtNames.length ? ': ' + blockedCourtNames.join(', ') : ''}` : slot.label}
+                                                            className={`
+                                                                py-2 px-3 rounded-xl text-xs font-medium border-2 transition-all duration-150 text-left leading-snug
+                                                                ${selected
+                                                                    ? 'bg-secondary text-white border-secondary shadow-sm'
+                                                                    : booked
+                                                                        ? 'bg-blue-50 border-blue-500 text-blue-700 cursor-not-allowed ring-2 ring-blue-300 ring-offset-1 shadow-sm shadow-blue-100'
+                                                                        : blocked
+                                                                            ? 'bg-red-50 border-red-200 text-red-600'
+                                                                            : 'bg-white border-gray-200 text-gray-600 hover:border-primary hover:text-primary hover:bg-primary/5'
+                                                                }
+                                                            `}
+                                                        >
+                                                            <div className="flex items-center justify-between gap-1">
+                                                                <span className="truncate text-[11px] font-semibold">{slot.label}</span>
+                                                                {blocked && !selected && <Lock size={10} className="shrink-0 opacity-70" />}
+                                                                {booked && <Users size={10} className="shrink-0 opacity-70" />}
+                                                            </div>
+                                                            {booked && bookingInfo && (
+                                                                <div className="text-[10px] mt-0.5 truncate opacity-75">
+                                                                    {bookingInfo.customer_name || bookingInfo.user_name || 'Booked'}
+                                                                </div>
+                                                            )}
+                                                            {blocked && !selected && blockedCourtNames.length > 0 && (
+                                                                <div className="flex flex-wrap gap-0.5 mt-1">
+                                                                    {blockedCourtNames.map(name => (
+                                                                        <span key={name} className="inline-block bg-red-200 text-red-800 text-[9px] font-semibold px-1.5 py-0.5 rounded-full leading-none">
+                                                                            {name}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>

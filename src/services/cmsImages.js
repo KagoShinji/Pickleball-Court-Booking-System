@@ -1,5 +1,6 @@
 import { buildCmsImagePath, compressImageUnderLimit } from '../lib/imageCompression';
 import { supabase } from '../lib/supabaseClient';
+import { getCompanyId } from '../lib/config';
 
 export const CMS_IMAGES_BUCKET = 'cms-images';
 
@@ -10,7 +11,8 @@ function normalizeImageUrl(url) {
 
 export async function uploadCmsImage(slotKey, file) {
   const compressedFile = await compressImageUnderLimit(file);
-  const path = buildCmsImagePath(slotKey, compressedFile);
+  // Prefix with company_id for per-tenant storage isolation (Option A)
+  const path = `${getCompanyId()}/${buildCmsImagePath(slotKey, compressedFile)}`;
 
   const { error } = await supabase.storage
     .from(CMS_IMAGES_BUCKET)
@@ -25,10 +27,15 @@ export async function uploadCmsImage(slotKey, file) {
   }
 
   const { data: urlData } = supabase.storage.from(CMS_IMAGES_BUCKET).getPublicUrl(path);
+  const fullUrl = normalizeImageUrl(urlData.publicUrl);
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const relativeUrl = (supabaseUrl && fullUrl.startsWith(supabaseUrl))
+    ? fullUrl.slice(supabaseUrl.length)
+    : fullUrl;
 
   return {
     path,
-    url: normalizeImageUrl(urlData.publicUrl),
+    url: relativeUrl,
     size: compressedFile.size,
   };
 }

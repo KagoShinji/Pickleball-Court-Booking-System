@@ -191,7 +191,7 @@
     background-image:
       linear-gradient(105deg, rgba(255, 248, 226, 0.66) 0%, rgba(244, 250, 222, 0.54) 44%, rgba(211, 244, 240, 0.44) 100%),
       radial-gradient(circle at 18% 74%, rgba(34, 211, 238, 0.12), transparent 26rem),
-      var(--section-courts-background, url('/kennydink/kennydinkhero.jpg'));
+      var(--section-courts-background, url('/images/court2.jpg'));
     background-position: center;
     background-size: auto, auto, cover;
   }
@@ -218,7 +218,7 @@
     background-image:
       linear-gradient(105deg, rgba(255, 250, 232, 0.66) 0%, rgba(241, 249, 220, 0.54) 50%, rgba(211, 244, 240, 0.48) 100%),
       radial-gradient(circle at 18% 22%, rgba(34, 211, 238, 0.11), transparent 24rem),
-      var(--section-parking-background, url('/kennydink/kennydinktarp.jpg'));
+      var(--section-parking-background, url('/images/court1.jpg'));
     background-position: center;
     background-size: auto, auto, cover;
   }

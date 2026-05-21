@@ -14,6 +14,8 @@ import {
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { cn } from './ui';
+import { useCompany, isHourWithinOperatingHours } from '../lib/CompanyProvider';
+
 
 export function BookingCalendar({
     selectedDate,
@@ -27,6 +29,10 @@ export function BookingCalendar({
     showTimeSlots = true,
     showDatePicker = true
 }) {
+    const { company } = useCompany();
+    const operatingHours = company?.operatingHours || { open: '08:00', close: '22:00' };
+    const openDays = operatingHours?.openDays || [0, 1, 2, 3, 4, 5, 6];
+
     const today = startOfToday();
     const [currentMonth, setCurrentMonth] = useState(startOfMonth(selectedDate || today));
 
@@ -46,7 +52,7 @@ export function BookingCalendar({
     const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
     const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
-    const timeSlots = Array.from({ length: 24 }, (_, i) => {
+    const allSlots = Array.from({ length: 24 }, (_, i) => {
         const hour = i.toString().padStart(2, '0');
         const startPeriod = i < 12 ? 'AM' : 'PM';
         const startDisplayHour = i === 0 ? 12 : (i > 12 ? i - 12 : i);
@@ -59,6 +65,11 @@ export function BookingCalendar({
             id: `${hour}:00`,
             label: `${startDisplayHour}:00${startPeriod} - ${endDisplayHour}:00${endPeriod}`
         };
+    });
+
+    const timeSlots = allSlots.filter((slot) => {
+        const hour = parseInt(slot.id.split(':')[0], 10);
+        return isHourWithinOperatingHours(hour, operatingHours);
     });
 
     const getDateNote = (slotId) => {
@@ -87,6 +98,10 @@ export function BookingCalendar({
                     <div className="flex items-center gap-2">
                         <div className="w-4 h-4 rounded-full bg-red-100 border-2 border-red-400"></div>
                         <span className="text-gray-700">Fully Booked</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-stone-50 border-2 border-dashed border-stone-300"></div>
+                        <span className="text-gray-700">Closed</span>
                     </div>
                 </div>
             )}
@@ -133,27 +148,32 @@ export function BookingCalendar({
                         const dateStatus = fullyBookedDates.find((entry) => entry.date === dateStr);
                         const isFullyBooked = dateStatus?.status === 'fully-booked';
                         const isPartiallyBooked = dateStatus?.status === 'partially-booked';
+                        const dayOfWeek = getDay(day);
+                        const isClosedDay = !openDays.includes(dayOfWeek);
 
                         return (
                             <div key={day.toString()} className="flex justify-center relative">
                                 <button
-                                    onClick={() => !isPast && !isFullyBooked && onDateSelect(day)}
-                                    disabled={isPast || isFullyBooked}
+                                    onClick={() => !isPast && !isFullyBooked && !isClosedDay && onDateSelect(day)}
+                                    disabled={isPast || isFullyBooked || isClosedDay}
                                     className={cn(
                                         'h-10 w-10 rounded-full flex items-center justify-center text-sm transition-all duration-200 relative',
                                         isSelected && 'bg-primary text-white font-bold shadow-md ring-2 ring-primary ring-offset-2',
                                         !isSelected && isPast && 'text-gray-300 cursor-not-allowed',
-                                        !isSelected && !isPast && isFullyBooked && 'bg-red-100 border-2 border-red-400 text-red-600 font-semibold cursor-not-allowed',
-                                        !isSelected && !isPast && isPartiallyBooked && 'bg-secondary/30 border-2 border-secondary text-gray-700 hover:bg-secondary/40',
-                                        !isSelected && !isPast && !isFullyBooked && !isPartiallyBooked && 'hover:bg-primary/20 text-gray-700 border border-transparent hover:border-primary',
-                                        !isSelected && isTodayDate && !isFullyBooked && 'border-2 border-primary text-primary font-semibold',
+                                        !isSelected && !isPast && isClosedDay && 'bg-stone-50 border-2 border-dashed border-stone-200 text-stone-400 cursor-not-allowed opacity-50',
+                                        !isSelected && !isPast && !isClosedDay && isFullyBooked && 'bg-red-100 border-2 border-red-400 text-red-600 font-semibold cursor-not-allowed',
+                                        !isSelected && !isPast && !isClosedDay && isPartiallyBooked && 'bg-secondary/30 border-2 border-secondary text-gray-700 hover:bg-secondary/40',
+                                        !isSelected && !isPast && !isClosedDay && !isFullyBooked && !isPartiallyBooked && 'hover:bg-primary/20 text-gray-700 border border-transparent hover:border-primary',
+                                        !isSelected && isTodayDate && !isFullyBooked && !isClosedDay && 'border-2 border-primary text-primary font-semibold',
                                     )}
                                     title={
-                                        isFullyBooked
-                                            ? 'All time slots are booked for this date'
-                                            : isPartiallyBooked
-                                                ? 'Some time slots are booked for this date'
-                                                : undefined
+                                        isClosedDay
+                                            ? 'Closed'
+                                            : isFullyBooked
+                                                ? 'All time slots are booked for this date'
+                                                : isPartiallyBooked
+                                                    ? 'Some time slots are booked for this date'
+                                                    : undefined
                                     }
                                 >
                                     {format(day, 'd')}

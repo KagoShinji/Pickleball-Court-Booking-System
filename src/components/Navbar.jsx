@@ -7,15 +7,16 @@ const baseNavItems = [
     { href: '#offers', label: 'Offers' },
     { href: '#contact', label: 'Visit' },
 ];
-const navLogo = '/kennydink/kennydinklogo.jpg';
+const navLogo = '/images/pplogo.jpg';
 
 function brandLabel(company) {
     return (company.shortName || company.name || 'Company').replace(/pickleball court/gi, '').trim() || 'Company';
 }
 
-function BrandMark({ brand, compact, logoUrl }) {
+function BrandMark({ brand, compact, logoUrl, initials: propInitials }) {
     const [logoFailed, setLogoFailed] = useState(false);
-    const initials = (brand.slice(0, 2) || 'KD').slice(0, 3).toUpperCase();
+    const { company } = useCompany();
+    const initials = propInitials || company.initials || (brand.slice(0, 2) || 'PP').slice(0, 3).toUpperCase();
     const logoSrc = logoFailed ? '' : (logoUrl || navLogo);
 
     return (
