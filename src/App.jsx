@@ -4,7 +4,8 @@ import { QueryProvider } from './providers/QueryProvider';
 import { SplashScreen } from './components/SplashScreen';
 import { Config } from './lib/config';
 import { FeatureGate } from './components/FeatureGate';
-import { CompanyProvider } from './lib/CompanyProvider';
+import { CompanyProvider, useCompany } from './lib/CompanyProvider';
+import { toCssImageUrl } from './lib/cmsDefaults';
 
 const AdminLayout = lazy(() => import('./layouts/AdminLayout').then((module) => ({ default: module.AdminLayout })));
 const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics').then((module) => ({ default: module.AdminAnalytics })));
@@ -25,21 +26,41 @@ function RouteFallback() {
   );
 }
 
-function App() {
-  const [showSplash, setShowSplash] = useState(true);
+function ThemeVariables() {
+  const { company } = useCompany();
 
   useEffect(() => {
+    const theme = company.themeConfig || {};
     const root = document.documentElement;
-    root.style.setProperty('--theme-primary', Config.theme.primary);
-    root.style.setProperty('--theme-primary-light', Config.theme.primaryLight);
-    root.style.setProperty('--theme-primary-dark', Config.theme.primaryDark);
-    root.style.setProperty('--theme-secondary', Config.theme.secondary);
-    root.style.setProperty('--theme-secondary-light', Config.theme.secondaryLight);
-  }, []);
+    root.style.setProperty('--theme-primary', theme.primary || Config.theme.primary);
+    root.style.setProperty('--theme-primary-light', theme.primaryLight || Config.theme.primaryLight);
+    root.style.setProperty('--theme-primary-dark', theme.primaryDark || Config.theme.primaryDark);
+    root.style.setProperty('--theme-secondary', theme.secondary || Config.theme.secondary);
+    root.style.setProperty('--theme-secondary-light', theme.secondaryLight || Config.theme.secondaryLight);
+    root.style.setProperty('--theme-background-light', theme.backgroundLight || '#fff8e7');
+    root.style.setProperty('--theme-background-surface', theme.backgroundSurface || '#fffaf0');
+
+    const sectionBackgrounds = company.siteImages?.sectionBackgrounds || {};
+    ['offers', 'courts', 'contact', 'parking', 'footer'].forEach((section) => {
+      const cssImage = toCssImageUrl(sectionBackgrounds[section]);
+      if (cssImage) {
+        root.style.setProperty(`--section-${section}-background`, cssImage);
+      } else {
+        root.style.removeProperty(`--section-${section}-background`);
+      }
+    });
+  }, [company.siteImages, company.themeConfig]);
+
+  return null;
+}
+
+function App() {
+  const [showSplash, setShowSplash] = useState(true);
 
   return (
     <QueryProvider>
       <CompanyProvider>
+        <ThemeVariables />
         {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
         <BrowserRouter>
           <Suspense fallback={<RouteFallback />}>

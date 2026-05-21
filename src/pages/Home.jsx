@@ -39,6 +39,9 @@ function invalidateBookingCaches() {
 
 export function Home() {
     const { company } = useCompany();
+    const courtsContent = company.sectionContent?.courts || {};
+    const courtGallery = company.siteImages?.galleries?.courts || [];
+    const flowImage = courtGallery[1] || courtGallery[0] || '/kennydink/net.jpg';
     const [selectedCourt, setSelectedCourt] = useState(null);
     const [selectedDate, setSelectedDate] = useState(startOfToday());
     const [selectedTimes, setSelectedTimes] = useState([]);
@@ -528,7 +531,7 @@ export function Home() {
             <Offers />
 
             <main className="sport-section sport-section-courts flex items-center">
-                <p className="pointer-events-none absolute left-4 bottom-[-1.5rem] z-[1] hidden select-none font-condensed text-[clamp(5rem,14vw,15rem)] uppercase leading-none text-primary-dark/[0.045] sm:block lg:left-12">
+                <p className="pointer-events-none absolute left-4 bottom-[-1.5rem] z-[1] hidden select-none font-display text-[clamp(5rem,14vw,15rem)] font-extrabold uppercase leading-none text-primary-dark/[0.045] sm:block lg:left-12">
                     Courts
                 </p>
 
@@ -538,14 +541,14 @@ export function Home() {
                             <div className="rounded-[0.65rem] border border-primary-dark/10 bg-white/72 p-2 shadow-[0_34px_100px_-72px_rgba(9,31,26,0.5)]">
                                 <div className="grid overflow-hidden rounded-[0.45rem] border border-primary-dark/10 bg-[#fffdf4]/88 text-primary-dark sm:grid-cols-[0.82fr_1.18fr]">
                                     <div className="p-5 sm:p-6">
-                                        <p className="font-mono text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-secondary">Booking flow</p>
-                                        <p className="mt-4 font-condensed text-4xl uppercase leading-[0.86] text-primary-dark sm:text-5xl">Real court photos. Real slots.</p>
+                                        <p className="font-mono text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-secondary">{courtsContent.flowKicker || 'Booking flow'}</p>
+                                        <p className="mt-4 font-display text-3xl font-extrabold leading-[0.95] tracking-normal text-primary-dark sm:text-4xl">{courtsContent.flowTitle || 'Real court photos. Real slots.'}</p>
                                         <p className="mt-4 text-sm font-semibold leading-6 text-primary-dark/58">
-                                            Guests see the court, pick a date, select available hours, and continue to payment details.
+                                            {courtsContent.flowDescription || 'Guests see the court, pick a date, select available hours, and continue to payment details.'}
                                         </p>
                                     </div>
                                     <div className="relative min-h-52 overflow-hidden sm:min-h-60">
-                                        <img src="/kennydink/net.jpg" alt="Kenny Dink court seen through the net" className="h-full w-full object-cover brightness-[1.06] contrast-[1.08] saturate-[1.06]" />
+                                        <img src={flowImage} alt="Pickleball court preview" className="h-full w-full object-cover brightness-[1.06] contrast-[1.08] saturate-[1.06]" />
                                         <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#fff8e7]/34" />
                                     </div>
                                 </div>
@@ -553,12 +556,12 @@ export function Home() {
                         </div>
 
                         <div className="order-1 lg:order-2 lg:justify-self-end lg:text-right">
-                            <span className="section-kicker">Court selection</span>
-                            <h2 className="mt-4 max-w-[34rem] font-condensed text-[clamp(3.9rem,6.8vw,7.6rem)] uppercase leading-[0.78] tracking-normal text-primary-dark">
-                                Choose a court. Start fast.
+                            <span className="section-kicker">{courtsContent.kicker || 'Court selection'}</span>
+                            <h2 className="mt-4 max-w-[36rem] text-balance font-display text-[clamp(3rem,5.8vw,6.9rem)] font-extrabold leading-[0.9] tracking-normal text-primary-dark">
+                                {courtsContent.title || 'Choose a court. Start fast.'}
                             </h2>
                             <p className="mt-5 max-w-md text-sm font-semibold leading-7 text-primary-dark/62 lg:ml-auto">
-                                The booking surface stays direct: real venue imagery, active court inventory, and a clear handoff into dates and time slots.
+                                {courtsContent.description || 'The booking surface stays direct: real venue imagery, active court inventory, and a clear handoff into dates and time slots.'}
                             </p>
                         </div>
                     </div>

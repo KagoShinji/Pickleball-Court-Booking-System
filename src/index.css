@@ -15,9 +15,9 @@
   --color-secondary: var(--theme-secondary, #b9ff3f);
   --color-secondary-light: var(--theme-secondary-light, #f1ffd4);
 
-  --color-bg-light: #f4efe2;
-  --color-bg-surface: #fffaf0;
-  --color-bg-user: #f4efe2;
+  --color-bg-light: var(--theme-background-light, #fff8e7);
+  --color-bg-surface: var(--theme-background-surface, #fffaf0);
+  --color-bg-user: var(--theme-background-light, #fff8e7);
   --color-text-main: var(--theme-primary-dark, #091f1a);
 }
 
@@ -31,7 +31,7 @@
     background:
       radial-gradient(circle at 10% 8%, rgba(185, 255, 63, 0.22), transparent 26rem),
       radial-gradient(circle at 88% 10%, rgba(40, 190, 186, 0.18), transparent 28rem),
-      linear-gradient(135deg, #fff8e7 0%, #f4f9df 48%, #e6f6ee 100%);
+      linear-gradient(135deg, var(--theme-background-light, #fff8e7) 0%, #f4f9df 48%, #e6f6ee 100%);
     color: var(--color-primary-dark);
     font-family: var(--font-sans);
     text-rendering: geometricPrecision;
@@ -118,7 +118,7 @@
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    background: #fff8e7;
+    background: var(--theme-background-light, #fff8e7);
     color: var(--color-primary-dark);
   }
 
@@ -174,10 +174,13 @@
   }
 
   .sport-section-offers::before {
-    background:
+    background-image:
       radial-gradient(circle at 14% 18%, rgba(185, 255, 63, 0.28), transparent 24rem),
       radial-gradient(circle at 88% 16%, rgba(34, 211, 238, 0.16), transparent 26rem),
-      linear-gradient(105deg, #fff8e7 0%, #f5fbdb 46%, #dff6ef 100%);
+      linear-gradient(105deg, rgba(255, 248, 231, 0.7) 0%, rgba(245, 251, 219, 0.58) 46%, rgba(223, 246, 239, 0.52) 100%),
+      var(--section-offers-background, linear-gradient(105deg, #fff8e7 0%, #f5fbdb 46%, #dff6ef 100%));
+    background-position: center;
+    background-size: auto, auto, auto, cover;
   }
 
   .sport-section-courts {
@@ -185,10 +188,12 @@
   }
 
   .sport-section-courts::before {
-    background:
+    background-image:
       linear-gradient(105deg, rgba(255, 248, 226, 0.66) 0%, rgba(244, 250, 222, 0.54) 44%, rgba(211, 244, 240, 0.44) 100%),
       radial-gradient(circle at 18% 74%, rgba(34, 211, 238, 0.12), transparent 26rem),
-      url('/kennydink/kennydinkhero.jpg') center/cover no-repeat;
+      var(--section-courts-background, url('/kennydink/kennydinkhero.jpg'));
+    background-position: center;
+    background-size: auto, auto, cover;
   }
 
   .sport-section-contact {
@@ -196,10 +201,13 @@
   }
 
   .sport-section-contact::before {
-    background:
+    background-image:
       radial-gradient(circle at 82% 22%, rgba(185, 255, 63, 0.24), transparent 24rem),
       radial-gradient(circle at 14% 74%, rgba(34, 211, 238, 0.14), transparent 25rem),
-      linear-gradient(105deg, #fff6df 0%, #f6f9dd 48%, #dcf4ee 100%);
+      linear-gradient(105deg, rgba(255, 246, 223, 0.7) 0%, rgba(246, 249, 221, 0.58) 48%, rgba(220, 244, 238, 0.52) 100%),
+      var(--section-contact-background, linear-gradient(105deg, #fff6df 0%, #f6f9dd 48%, #dcf4ee 100%));
+    background-position: center;
+    background-size: auto, auto, auto, cover;
   }
 
   .sport-section-parking {
@@ -207,20 +215,25 @@
   }
 
   .sport-section-parking::before {
-    background:
+    background-image:
       linear-gradient(105deg, rgba(255, 250, 232, 0.66) 0%, rgba(241, 249, 220, 0.54) 50%, rgba(211, 244, 240, 0.48) 100%),
       radial-gradient(circle at 18% 22%, rgba(34, 211, 238, 0.11), transparent 24rem),
-      url('/kennydink/kennydinktarp.jpg') center/cover no-repeat;
+      var(--section-parking-background, url('/kennydink/kennydinktarp.jpg'));
+    background-position: center;
+    background-size: auto, auto, cover;
   }
 
   .sport-footer {
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    background:
+    background-image:
       radial-gradient(circle at 12% 18%, rgba(185, 255, 63, 0.28), transparent 24rem),
       radial-gradient(circle at 88% 18%, rgba(24, 155, 150, 0.18), transparent 26rem),
-      linear-gradient(135deg, #fff8e7 0%, #eef9dc 52%, #d9f4ed 100%);
+      linear-gradient(135deg, rgba(255, 248, 231, 0.78) 0%, rgba(238, 249, 220, 0.62) 52%, rgba(217, 244, 237, 0.54) 100%),
+      var(--section-footer-background, linear-gradient(135deg, #fff8e7 0%, #eef9dc 52%, #d9f4ed 100%));
+    background-position: center;
+    background-size: auto, auto, auto, cover;
   }
 
   .sport-footer::before {
@@ -377,6 +390,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-image-drift,
+  .animate-float-soft,
   .splash-rise,
   .splash-progress {
     animation-duration: 1ms;

@@ -1,10 +1,18 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Config as EnvConfig } from './config';
 import { getTenantSettings } from '../services/settings';
+import { mergeSectionContent, mergeSiteImages, mergeThemeConfig } from './cmsDefaults';
+
+const defaultCompany = {
+  ...EnvConfig.company,
+  themeConfig: mergeThemeConfig({}, EnvConfig.theme),
+  siteImages: mergeSiteImages(),
+  sectionContent: mergeSectionContent(),
+};
 
 // Create context to provide company data throughout the app
 const CompanyContext = createContext({
-  company: EnvConfig.company,
+  company: defaultCompany,
   refresh: () => {}
 });
 
@@ -12,20 +20,24 @@ const CompanyContext = createContext({
 export const useCompany = () => useContext(CompanyContext);
 
 export const CompanyProvider = ({ children }) => {
-  const [company, setCompany] = useState(EnvConfig.company);
+  const [company, setCompany] = useState(defaultCompany);
 
   const fetchCompany = async () => {
     try {
       // Fetch from tenant_settings table
       const data = await getTenantSettings();
       if (data) {
+        const themeConfig = mergeThemeConfig(data.theme_config, EnvConfig.theme);
+        const siteImages = mergeSiteImages(data.site_images);
+        const sectionContent = mergeSectionContent(data.section_content);
+
         // Map database fields to EnvConfig structure
         const mappedCompany = {
-          ...EnvConfig.company,
+          ...defaultCompany,
           name: data.company_name || EnvConfig.company.name,
           shortName: data.company_short_name || EnvConfig.company.shortName,
           initials: data.company_initials || data.company_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || EnvConfig.company.initials,
-          logoUrl: data.logo_url || EnvConfig.company.logoUrl,
+          logoUrl: data.logo_url || siteImages.logoUrl || EnvConfig.company.logoUrl,
           email: data.contact_info?.email || EnvConfig.company.email,
           phone: data.contact_info?.phone || EnvConfig.company.phone,
           location: data.contact_info?.address || EnvConfig.company.location,
@@ -39,7 +51,13 @@ export const CompanyProvider = ({ children }) => {
           heroSubtitle: data.hero_subtitle || `Experience the best pickleball courts in ${data.contact_info?.address || EnvConfig.company.location}. Premium surfaces, night lighting, and a vibrant community waiting for you.`,
           heroStatPlayers: data.hero_stat_players || '50+ Active Players',
           heroStatDays: data.hero_stat_days || 'Open 7 Days a Week',
-          operatingHours: data.operating_hours || { open: '08:00', close: '22:00' }
+          operatingHours: data.operating_hours || { open: '08:00', close: '22:00' },
+          themeConfig,
+          siteImages: {
+            ...siteImages,
+            logoUrl: data.logo_url || siteImages.logoUrl,
+          },
+          sectionContent,
         };
         setCompany(mappedCompany);
       }

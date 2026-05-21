@@ -1,6 +1,7 @@
 import { DollarSign, Info, MapPin, Maximize2, Timer, Users, X } from 'lucide-react';
 import { useState } from 'react';
 import { Badge, Button } from './ui';
+import { useCompany } from '../lib/CompanyProvider';
 
 const KENNYDINK_COURT_IMAGES = [
     '/kennydink/court%203.jpg',
@@ -11,12 +12,16 @@ const KENNYDINK_COURT_IMAGES = [
 ];
 
 export function CourtCard({ court, onBook, featured = false, visualIndex = 0 }) {
+    const { company } = useCompany();
     const [isExpanded, setIsExpanded] = useState(false);
     const courtTypeLabel = court.type?.trim() || 'Court';
     const hasPricingRules = court.pricing_rules && court.pricing_rules.length > 0;
     const maxPlayers = court.max_players || 10;
     const isActive = court.is_active !== false;
-    const imageSrc = KENNYDINK_COURT_IMAGES[visualIndex % KENNYDINK_COURT_IMAGES.length]
+    const courtGallery = company.siteImages?.galleries?.courts?.length
+        ? company.siteImages.galleries.courts
+        : KENNYDINK_COURT_IMAGES;
+    const imageSrc = courtGallery[visualIndex % courtGallery.length]
         || (court.images && court.images[0]?.url)
         || court.image
         || '/images/court1.jpg';
@@ -57,7 +62,7 @@ export function CourtCard({ court, onBook, featured = false, visualIndex = 0 }) 
                         <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4 text-white">
                             <div>
                                 <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-white/68">{courtTypeLabel}</p>
-                                <p className="mt-1 font-condensed text-4xl uppercase leading-none tracking-normal">{court.name}</p>
+                                <p className="mt-1 font-display text-3xl font-extrabold leading-[0.95] tracking-normal sm:text-4xl">{court.name}</p>
                             </div>
                             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/24 bg-white/12 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-105">
                                 <Maximize2 size={18} aria-hidden="true" />
@@ -76,7 +81,7 @@ export function CourtCard({ court, onBook, featured = false, visualIndex = 0 }) 
                     <div className={`flex min-h-full flex-col border-t border-primary-dark/10 bg-[#fffdf4]/88 p-5 sm:p-6 ${featured ? 'md:border-l md:border-t-0' : ''}`}>
                         <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
-                                <h3 className="font-condensed text-4xl uppercase leading-none tracking-normal text-primary-dark">{court.name}</h3>
+                                <h3 className="font-display text-3xl font-extrabold leading-[0.95] tracking-normal text-primary-dark sm:text-4xl">{court.name}</h3>
                                 <div className="mt-2 flex items-center gap-2 text-sm font-semibold text-primary-dark/52">
                                     <MapPin size={15} aria-hidden="true" />
                                     <span>{courtTypeLabel}</span>
@@ -176,7 +181,7 @@ export function CourtCard({ court, onBook, featured = false, visualIndex = 0 }) 
                             </div>
                             <div className="absolute bottom-6 left-6 right-6 text-white">
                                 <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-white/70">{courtTypeLabel}</p>
-                                <h2 className="mt-2 font-condensed text-5xl uppercase leading-none tracking-normal sm:text-7xl">{court.name}</h2>
+                                <h2 className="mt-2 text-balance font-display text-5xl font-extrabold leading-[0.9] tracking-normal sm:text-7xl">{court.name}</h2>
                             </div>
                         </div>
 

@@ -1,10 +1,15 @@
 import { Car, Moon, SunMedium } from 'lucide-react';
 import { LazyMapEmbed } from './LazyMapEmbed';
+import { useCompany } from '../lib/CompanyProvider';
 
 export function Parking() {
+    const { company } = useCompany();
+    const content = company.sectionContent?.parking || {};
+    const parkingImage = company.siteImages?.sectionBackgrounds?.parking || '/kennydink/kennydinktarp.jpg';
+
     return (
         <section id="parking" className="sport-section sport-section-parking flex items-center py-16 sm:py-20 lg:py-24">
-            <p className="pointer-events-none absolute -bottom-6 right-4 z-1 hidden select-none font-condensed text-[clamp(5rem,14vw,15rem)] uppercase leading-none text-primary-dark/4.5 sm:block lg:right-12">
+            <p className="pointer-events-none absolute -bottom-6 right-4 z-1 hidden select-none font-display text-[clamp(5rem,14vw,15rem)] font-extrabold uppercase leading-none text-primary-dark/4.5 sm:block lg:right-12">
                 Parking
             </p>
 
@@ -12,17 +17,17 @@ export function Parking() {
                 <div className="venue-panel overflow-hidden rounded-xl p-2">
                     <div className="grid gap-0 overflow-hidden rounded-[0.55rem] border border-primary-dark/10 bg-white/72 lg:grid-cols-[0.58fr_1.42fr]">
                         <div className="relative overflow-hidden p-6 text-primary-dark sm:p-8 lg:p-9">
-                            <img src="/kennydink/kennydinktarp.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-24 brightness-[1.04] contrast-[1.08] saturate-[1.06]" />
+                            <img src={parkingImage} alt="" className="absolute inset-0 h-full w-full object-cover opacity-24 brightness-[1.04] contrast-[1.08] saturate-[1.06]" />
                             <div className="absolute inset-0 bg-linear-to-r from-[#fff8e7]/96 via-[#fff8e7]/84 to-[#fff8e7]/58" aria-hidden="true" />
                             <div className="relative z-1">
                                 <span className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-primary-dark/10 bg-primary-dark text-secondary">
                                     <Car size={27} aria-hidden="true" />
                                 </span>
-                                <h3 className="mt-6 font-condensed text-[clamp(3.8rem,5.6vw,6.2rem)] uppercase leading-[0.78] tracking-normal">
-                                    Easy arrival, day or night.
+                                <h3 className="mt-6 text-balance font-display text-[clamp(3rem,5vw,6rem)] font-extrabold leading-[0.9] tracking-normal">
+                                    {content.title || 'Easy arrival, day or night.'}
                                 </h3>
                                 <p className="mt-5 max-w-md text-sm font-semibold leading-7 text-primary-dark/62">
-                                    Keep arrival details clear without forcing every venue into the same parking layout.
+                                    {content.description || 'Keep arrival details clear without forcing every venue into the same parking layout.'}
                                 </p>
                             </div>
                         </div>
