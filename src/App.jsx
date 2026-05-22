@@ -25,6 +25,7 @@ const SuperAdminRoute = lazy(() => import('./components/SuperAdminRoute').then((
 const SuperAdminLayout = lazy(() => import('./layouts/SuperAdminLayout').then((module) => ({ default: module.SuperAdminLayout })));
 const SuperAdminDashboard = lazy(() => import('./pages/superadmin/SuperAdminDashboard').then((module) => ({ default: module.SuperAdminDashboard })));
 const SuperAdminLogin = lazy(() => import('./pages/superadmin/SuperAdminLogin').then((module) => ({ default: module.SuperAdminLogin })));
+const TenantDetail = lazy(() => import('./pages/superadmin/TenantDetail').then((module) => ({ default: module.TenantDetail })));
 
 function RouteFallback() {
   return (
@@ -108,6 +109,7 @@ function App() {
               <Route path="/odc" element={<SuperAdminRoute />}>
                 <Route element={<SuperAdminLayout />}>
                   <Route index element={<SuperAdminDashboard />} />
+                  <Route path="tenant/:tenantId" element={<TenantDetail />} />
                 </Route>
               </Route>
 

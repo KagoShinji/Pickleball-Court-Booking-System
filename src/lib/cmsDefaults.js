@@ -10,6 +10,7 @@ export const DEFAULT_THEME_CONFIG = {
 
 export const DEFAULT_SITE_IMAGES = {
   logoUrl: '/images/pplogo.jpg',
+  faviconUrl: '/vite.svg',
   heroBackground: '/images/court1.jpg',
   galleries: {
     hero: [

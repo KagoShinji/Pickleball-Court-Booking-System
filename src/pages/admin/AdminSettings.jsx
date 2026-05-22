@@ -25,6 +25,7 @@ import {
     Wifi,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { ImageUploadCrop } from '../../components/ImageUploadCrop';
 import { Button, Card, Input } from '../../components/ui';
 import {
     DEFAULT_SECTION_CONTENT,
@@ -145,6 +146,7 @@ const CMS_TABS = [
 const DEFAULT_SETTINGS = {
     company_name: '',
     company_short_name: '',
+    company_initials: '',
     logo_url: DEFAULT_SITE_IMAGES.logoUrl,
     hero_bg_url: '',
     payment_qr_url: '',
@@ -195,6 +197,7 @@ function mergeLoadedSettings(data) {
         ...DEFAULT_SETTINGS,
         company_name: data.company_name || '',
         company_short_name: data.company_short_name || '',
+        company_initials: data.company_initials || '',
         logo_url: logoUrl,
         hero_bg_url: heroBgUrl,
         payment_qr_url: data.payment_qr_url || '',
@@ -327,8 +330,6 @@ function CmsTabs({ activeTab, onChange }) {
 }
 
 function ImageField({ label, value, onChange, onUpload, uploading, feedback, placeholder, description, className = '' }) {
-    const inputId = `image-upload-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
-
     const resolvedSrc = (() => {
         if (!value || typeof value !== 'string') return '';
         if (value.startsWith('/storage/v1/object/public/')) {
@@ -340,52 +341,39 @@ function ImageField({ label, value, onChange, onUpload, uploading, feedback, pla
     })();
 
     return (
-        <div className={`rounded-2xl border border-primary-dark/10 bg-white/72 p-3 ${className}`}>
-            <div className="grid gap-3 sm:grid-cols-[5.5rem_1fr]">
-                <div className="h-[5.5rem] overflow-hidden rounded-2xl border border-primary-dark/10 bg-primary-light">
-                    {value ? (
-                        <img src={resolvedSrc} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                        <div className="flex h-full w-full items-center justify-center text-primary-dark/34">
-                            <ImageIcon size={24} aria-hidden="true" />
-                        </div>
+        <div className={`rounded-2xl border border-primary-dark/10 bg-white/72 p-4 ${className}`}>
+            <div className="space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                    <div>
+                        <p className="text-sm font-bold text-primary-dark/72">{label}</p>
+                        {description && <p className="mt-0.5 text-xs font-semibold leading-5 text-primary-dark/44">{description}</p>}
+                    </div>
+                    {uploading && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-dark/8 px-3 py-1 text-xs font-bold text-primary-dark/50">
+                            <UploadCloud size={13} className="animate-bounce" />
+                            Uploading…
+                        </span>
                     )}
                 </div>
-                <div className="min-w-0 space-y-2">
-                    <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                            <label className="text-sm font-bold text-primary-dark/72">{label}</label>
-                            {description && <p className="mt-0.5 text-xs font-semibold leading-5 text-primary-dark/44">{description}</p>}
-                        </div>
-                        <input
-                            id={inputId}
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            className="sr-only"
-                            disabled={uploading}
-                            onChange={async (event) => {
-                                const file = event.target.files?.[0];
-                                if (file) await onUpload(file);
-                                event.target.value = '';
-                            }}
-                        />
-                        <label
-                            htmlFor={inputId}
-                            className={`inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-full border border-primary-dark/10 px-4 text-sm font-extrabold transition-all ${
-                                uploading
-                                    ? 'pointer-events-none bg-primary-dark/8 text-primary-dark/36'
-                                    : 'bg-primary-dark text-white hover:bg-primary'
-                            }`}
-                        >
-                            <UploadCloud size={16} aria-hidden="true" />
-                            {uploading ? 'Uploading...' : 'Upload'}
-                        </label>
-                    </div>
-                    <Input value={value || ''} onChange={(event) => onChange(event.target.value)} placeholder={placeholder || '/images/court2.jpg'} />
-                    <p className="text-xs font-semibold text-primary-dark/42">
-                        {feedback || 'Uploads are compressed before saving and must be 100 KB or smaller.'}
-                    </p>
-                </div>
+
+                {/* Live preview + crop */}
+                <ImageUploadCrop
+                    accept="image/jpeg,image/png,image/webp"
+                    previewUrl={resolvedSrc}
+                    disabled={uploading}
+                    label={uploading ? 'Uploading…' : 'Upload Image'}
+                    previewClass="h-44"
+                    onFile={async (file) => { await onUpload(file); }}
+                />
+
+                <Input
+                    value={value || ''}
+                    onChange={(event) => onChange(event.target.value)}
+                    placeholder={placeholder || '/images/court2.jpg'}
+                />
+                <p className="text-xs font-semibold text-primary-dark/42">
+                    {feedback || 'Uploads are compressed before saving and must be 100 KB or smaller.'}
+                </p>
             </div>
         </div>
     );
@@ -778,12 +766,19 @@ export function AdminSettings() {
                                 onChange={(value) => setSettings((prev) => ({ ...prev, company_name: value }))}
                                 placeholder="e.g. Pickle Point Cebu"
                                 required
+                                className="sm:col-span-2"
                             />
                             <Field
                                 label="Short Name / Display Name"
                                 value={settings.company_short_name}
                                 onChange={(value) => setSettings((prev) => ({ ...prev, company_short_name: value }))}
                                 placeholder="e.g. Pickle Point"
+                            />
+                            <Field
+                                label="Brand Abbreviation"
+                                value={settings.company_initials}
+                                onChange={(value) => setSettings((prev) => ({ ...prev, company_initials: value }))}
+                                placeholder="e.g. PP"
                             />
                             <ImageField
                                 className="sm:col-span-2"

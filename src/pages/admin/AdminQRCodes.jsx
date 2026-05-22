@@ -1,6 +1,7 @@
 import { AlertCircle, Check, CreditCard, Eye, EyeOff, Loader, Plus, RefreshCw, Save, Upload } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Card } from '../../components/ui';
+import { ImageUploadCrop } from '../../components/ImageUploadCrop';
 import {
     createQrOptionId,
     getQrCodes,
@@ -320,35 +321,28 @@ export function AdminQRCodes() {
                                     </div>
 
                                     <div>
-                                        <input
-                                            id={`qr-file-${activeOption.id}`}
-                                            type="file"
+                                        <ImageUploadCrop
                                             accept="image/*"
-                                            className="hidden"
-                                            onChange={e => handleFileSelect(activeOption.id, e)}
+                                            previewUrl={getDisplayImage(activeForm)}
+                                            disabled={saving[activeOption.id]}
+                                            label={activeForm.localPreview ? 'Change QR Image' : 'Upload New QR Image'}
+                                            previewClass="h-52 w-52 mx-auto"
+                                            onFile={(file) => {
+                                                if (file.size > MAX_QR_FILE_SIZE_MB * 1024 * 1024) {
+                                                    setFileErr(prev => ({ ...prev, [activeOption.id]: `File exceeds the ${MAX_QR_FILE_SIZE_MB} MB limit.` }));
+                                                    return;
+                                                }
+                                                setFileErr(prev => ({ ...prev, [activeOption.id]: null }));
+                                                const reader = new FileReader();
+                                                reader.onloadend = () => patch(activeOption.id, { file, localPreview: reader.result });
+                                                reader.readAsDataURL(file);
+                                            }}
                                         />
-                                        <label
-                                            htmlFor={`qr-file-${activeOption.id}`}
-                                            className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border-2 border-dashed transition-all text-sm font-medium ${
-                                                saving[activeOption.id]
-                                                    ? 'opacity-50 cursor-not-allowed'
-                                                    : 'cursor-pointer'
-                                            } ${
-                                                fileErr[activeOption.id]
-                                                    ? 'border-red-300 text-red-500 bg-red-50'
-                                                    : activeForm.localPreview
-                                                        ? 'border-primary text-primary-dark bg-green-50/60'
-                                                        : 'border-gray-300 text-gray-500 hover:border-primary hover:text-primary-dark hover:bg-green-50/40'
-                                            }`}
-                                        >
-                                            <Upload size={16} />
-                                            {activeForm.localPreview ? 'Change Image' : 'Upload New QR Image'}
-                                        </label>
                                         {fileErr[activeOption.id] ? (
                                             <p className="text-xs text-red-500 mt-1 text-center">{fileErr[activeOption.id]}</p>
                                         ) : activeForm.file ? (
                                             <p className="text-xs text-gray-400 mt-1 text-center truncate">
-                                                {activeForm.file.name} ({(activeForm.file.size / 1024).toFixed(0)} KB) - will be compressed on save
+                                                {activeForm.file.name} ({(activeForm.file.size / 1024).toFixed(0)} KB) — will be compressed on save
                                             </p>
                                         ) : (
                                             <p className="text-xs text-gray-400 mt-1 text-center">Max {MAX_QR_FILE_SIZE_MB} MB. Compressed automatically on save.</p>
@@ -491,27 +485,23 @@ export function AdminQRCodes() {
                                 className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                             />
 
-                            <input
-                                ref={newFileRef}
-                                type="file"
+                            <ImageUploadCrop
                                 accept="image/*"
-                                className="hidden"
-                                onChange={handleNewFileSelect}
-                            />
-                            <button
-                                onClick={() => newFileRef.current?.click()}
+                                previewUrl={newOption.localPreview || ''}
                                 disabled={adding}
-                                className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border-2 border-dashed transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
-                                    addFileErr
-                                        ? 'border-red-300 text-red-500 bg-red-50'
-                                        : newOption.localPreview
-                                            ? 'border-primary text-primary-dark bg-green-50/60'
-                                            : 'border-gray-300 text-gray-500 hover:border-primary hover:text-primary-dark hover:bg-green-50/40'
-                                }`}
-                            >
-                                <Upload size={16} />
-                                {newOption.localPreview ? 'Change New QR Image' : 'Upload QR Image'}
-                            </button>
+                                label={newOption.localPreview ? 'Change QR Image' : 'Upload QR Image'}
+                                previewClass="h-44"
+                                onFile={(file) => {
+                                    if (file.size > MAX_QR_FILE_SIZE_MB * 1024 * 1024) {
+                                        setAddFileErr(`File exceeds the ${MAX_QR_FILE_SIZE_MB} MB limit.`);
+                                        return;
+                                    }
+                                    setAddFileErr(null);
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => setNewOption(prev => ({ ...prev, file, localPreview: reader.result }));
+                                    reader.readAsDataURL(file);
+                                }}
+                            />
 
                             {addFileErr && <p className="text-xs text-red-500 text-center">{addFileErr}</p>}
                             {newOption.file && !addFileErr && (

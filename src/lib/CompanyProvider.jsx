@@ -24,6 +24,7 @@ const defaultCompany = {
 // Create context to provide company data throughout the app
 const CompanyContext = createContext({
   company: defaultCompany,
+  loading: true,
   refresh: () => {}
 });
 
@@ -55,9 +56,11 @@ export const resolveImageValue = (val) => {
 
 export const CompanyProvider = ({ children }) => {
   const [company, setCompany] = useState(defaultCompany);
+  const [loading, setLoading] = useState(true);
 
   const fetchCompany = async () => {
     try {
+      setLoading(true);
       // Fetch from tenant_settings table — scoped to this tenant via getCompanyId()
       // (company_id filtering is handled inside getTenantSettings via settings.js)
       const data = await getTenantSettings();
@@ -131,6 +134,8 @@ export const CompanyProvider = ({ children }) => {
     } catch (err) {
       console.error('Error fetching company config from database, falling back to env:', err);
       // Fallback is already set in initial state
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -145,7 +150,7 @@ export const CompanyProvider = ({ children }) => {
   };
 
   return (
-    <CompanyContext.Provider value={{ company, refresh }}>
+    <CompanyContext.Provider value={{ company, loading, refresh }}>
       {children}
     </CompanyContext.Provider>
   );

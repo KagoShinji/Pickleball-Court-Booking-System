@@ -2,6 +2,7 @@ import { format } from 'date-fns';
 import { Calendar, CheckCircle, Clock, CreditCard, Upload, AlertCircle, Loader, ScrollText, Download, FileText, Eye } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from './ui';
+import { ImageUploadCrop } from './ImageUploadCrop';
 import { checkTimeSlotConflicts, calculatePriceForSlots } from '../services/booking';
 import { getQrCodes } from '../services/qrCodes';
 import { Config } from '../lib/config';
@@ -937,100 +938,69 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                     <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-2">
                                         ⚠️ Upload your <strong>payment screenshot</strong> showing the reference number and amount. Make sure the screenshot is clear and legible to avoid delays in processing your booking.
                                     </p>
-                                    <div className="relative">
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            disabled={isSubmitting || isCompressing}
-                                            onChange={async (e) => {
-                                                const file = e.target.files[0];
-                                                if (!file) return;
 
-                                                // Only compress image files
-                                                if (file.type.startsWith('image/')) {
-                                                    // Reject files over 10MB — too large even for compression
-                                                    if (file.size > 10 * 1024 * 1024) {
-                                                        setErrors({ ...errors, paymentProof: 'File is too large (max 10MB). Please screenshot your payment instead of uploading a photo.' });
-                                                        e.target.value = '';
-                                                        return;
-                                                    }
+                                    <ImageUploadCrop
+                                        accept="image/*"
+                                        previewUrl={formData.paymentProof ? URL.createObjectURL(formData.paymentProof) : ''}
+                                        disabled={isSubmitting || isCompressing}
+                                        previewClass="h-48"
+                                        label={isCompressing ? 'Compressing…' : (formData.paymentProof ? 'Change Screenshot' : 'Upload Payment Screenshot')}
+                                        onFile={async (file) => {
+                                            if (!file) return;
 
-                                                    setOriginalFileSize(file.size);
+                                            if (file.type.startsWith('image/')) {
+                                                if (file.size > 10 * 1024 * 1024) {
+                                                    setErrors({ ...errors, paymentProof: 'File is too large (max 10MB). Please screenshot your payment instead.' });
+                                                    return;
+                                                }
 
-                                                    // Skip compression if already ≤100KB
-                                                    if (file.size <= 100 * 1024) {
-                                                        console.log(`[Receipt] Already small (${(file.size / 1024).toFixed(0)} KB), skipping compression`);
-                                                        setFormData({ ...formData, paymentProof: file });
-                                                        setErrors({ ...errors, paymentProof: '' });
-                                                        return;
-                                                    }
+                                                setOriginalFileSize(file.size);
 
-                                                    setIsCompressing(true);
-                                                    try {
-                                                        const { default: imageCompression } = await import('browser-image-compression');
-                                                        const options = {
-                                                            maxSizeMB: 0.1,          // Target ≤100KB
-                                                            maxWidthOrHeight: 800,   // 800px is plenty to read receipt text
-                                                            useWebWorker: true,
-                                                            initialQuality: 0.5,     // Start lower for faster convergence
-                                                            fileType: 'image/jpeg',  // Force JPEG for best compression ratio
-                                                            maxIteration: 20,        // More passes to reliably hit the target
-                                                        };
-                                                        console.log(`[Receipt] Original: ${file.name} (${(file.size / 1024).toFixed(0)} KB)`);
-                                                        const compressed = await imageCompression(file, options);
-                                                        console.log(`[Receipt] Compressed: ${(compressed.size / 1024).toFixed(0)} KB`);
-
-                                                        // Preserve the original filename for display
-                                                        const compressedFile = new File([compressed], file.name, { type: compressed.type });
-                                                        setFormData({ ...formData, paymentProof: compressedFile });
-                                                        setErrors({ ...errors, paymentProof: '' });
-                                                    } catch (err) {
-                                                        console.error('[Receipt] Compression failed, using original:', err);
-                                                        setFormData({ ...formData, paymentProof: file });
-                                                        setErrors({ ...errors, paymentProof: '' });
-                                                    } finally {
-                                                        setIsCompressing(false);
-                                                    }
-                                                } else {
+                                                if (file.size <= 100 * 1024) {
                                                     setFormData({ ...formData, paymentProof: file });
                                                     setErrors({ ...errors, paymentProof: '' });
+                                                    return;
                                                 }
-                                            }}
-                                            className="hidden"
-                                            id="payment-proof-upload"
-                                        />
-                                        <label
-                                            htmlFor="payment-proof-upload"
-                                            className={`flex items-center justify-center gap-2 w-full px-4 py-3 border-2 border-dashed ${errors.paymentProof ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-primary hover:bg-green-50/50'} rounded-xl ${(isSubmitting || isCompressing) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} transition-all`}
-                                        >
-                                            {isCompressing ? (
-                                                <>
-                                                    <Loader size={18} className="animate-spin text-primary" />
-                                                    <span className="text-sm text-primary-dark font-medium">Compressing image…</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Upload size={18} className={errors.paymentProof ? 'text-red-400' : 'text-gray-400'} />
-                                                    <span className={`text-sm ${errors.paymentProof ? 'text-red-500' : 'text-gray-500'}`}>
-                                                        {formData.paymentProof
-                                                            ? (
-                                                                <span className="flex flex-col items-center gap-0.5">
-                                                                    <span className="font-medium text-gray-700 truncate max-w-[220px]">{formData.paymentProof.name}</span>
-                                                                    {originalFileSize && originalFileSize > formData.paymentProof.size ? (
-                                                                        <span className="text-xs text-green-700">
-                                                                            Compressed: {(originalFileSize / 1024).toFixed(0)} KB → <strong>{(formData.paymentProof.size / 1024).toFixed(0)} KB</strong>
-                                                                        </span>
-                                                                    ) : (
-                                                                        <span className="text-xs text-gray-400">{(formData.paymentProof.size / 1024).toFixed(0)} KB</span>
-                                                                    )}
-                                                                </span>
-                                                            )
-                                                            : 'Upload your payment screenshot'}
-                                                    </span>
-                                                </>
-                                            )}
-                                        </label>
-                                    </div>
+
+                                                setIsCompressing(true);
+                                                try {
+                                                    const { default: imageCompression } = await import('browser-image-compression');
+                                                    const options = {
+                                                        maxSizeMB: 0.1,
+                                                        maxWidthOrHeight: 800,
+                                                        useWebWorker: true,
+                                                        initialQuality: 0.5,
+                                                        fileType: 'image/jpeg',
+                                                        maxIteration: 20,
+                                                    };
+                                                    const compressed = await imageCompression(file, options);
+                                                    const compressedFile = new File([compressed], file.name, { type: compressed.type });
+                                                    setFormData({ ...formData, paymentProof: compressedFile });
+                                                    setErrors({ ...errors, paymentProof: '' });
+                                                } catch (err) {
+                                                    console.error('[Receipt] Compression failed, using original:', err);
+                                                    setFormData({ ...formData, paymentProof: file });
+                                                    setErrors({ ...errors, paymentProof: '' });
+                                                } finally {
+                                                    setIsCompressing(false);
+                                                }
+                                            } else {
+                                                setFormData({ ...formData, paymentProof: file });
+                                                setErrors({ ...errors, paymentProof: '' });
+                                            }
+                                        }}
+                                    />
+
+                                    {isCompressing && (
+                                        <p className="text-xs text-primary-dark flex items-center gap-1.5 mt-1">
+                                            <Loader size={12} className="animate-spin" /> Compressing image…
+                                        </p>
+                                    )}
+                                    {formData.paymentProof && originalFileSize && originalFileSize > formData.paymentProof.size && (
+                                        <p className="text-xs text-green-700 mt-1">
+                                            Compressed: {(originalFileSize / 1024).toFixed(0)} KB → <strong>{(formData.paymentProof.size / 1024).toFixed(0)} KB</strong>
+                                        </p>
+                                    )}
                                     {errors.paymentProof && <p className="text-xs text-red-500 mt-1 text-center">{errors.paymentProof}</p>}
                                 </div>
                             </div>

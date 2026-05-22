@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowRight, CalendarDays, ChevronDown, Clock3, MapPin, Users } from 'lucide-react';
 import { useCompany } from '../lib/CompanyProvider';
 
@@ -48,9 +48,13 @@ function getDetailImages(heroImage, images = []) {
 function LogoBadge({ company, brand }) {
     const [logoFailed, setLogoFailed] = useState(false);
     const initials = (company.initials || brand.slice(0, 2) || 'CT').slice(0, 3).toUpperCase();
-    const logoSrc = company.logoUrl && !company.logoUrl.includes('default-logo') && !logoFailed
+    const logoSrc = company.logoUrl && !logoFailed
         ? company.logoUrl
         : '';
+        
+    useEffect(() => {
+        setLogoFailed(false);
+    }, [company.logoUrl]);
 
     return (
         <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[1.15rem] border border-primary-dark/10 bg-white shadow-[0_20px_54px_-38px_rgba(9,31,26,0.72)] sm:h-[4.5rem] sm:w-[4.5rem]">

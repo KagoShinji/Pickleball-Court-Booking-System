@@ -17,6 +17,11 @@ function BrandMark({ brand, compact, logoUrl, initials: propInitials }) {
     const [logoFailed, setLogoFailed] = useState(false);
     const { company } = useCompany();
     const initials = propInitials || company.initials || (brand.slice(0, 2) || 'PP').slice(0, 3).toUpperCase();
+    
+    useEffect(() => {
+        setLogoFailed(false);
+    }, [logoUrl]);
+
     const logoSrc = logoFailed ? '' : (logoUrl || navLogo);
 
     return (
@@ -43,7 +48,7 @@ function BrandMark({ brand, compact, logoUrl, initials: propInitials }) {
 export function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [isPastHero, setIsPastHero] = useState(false);
-    const { company } = useCompany();
+    const { company, loading } = useCompany();
     const brand = brandLabel(company);
     const logoUrl = company.logoUrl || company.siteImages?.logoUrl || navLogo;
     const navItems = company.parkingEnabled !== false
@@ -67,6 +72,37 @@ export function Navbar() {
             window.removeEventListener('resize', updateScrollState);
         };
     }, []);
+
+    if (loading) {
+        return (
+            <nav
+                className="inset-x-0 top-0 z-[70] px-4 absolute py-5 sm:px-6 lg:px-14"
+                aria-label="Primary navigation loading"
+            >
+                <div className="mx-auto flex items-center justify-between gap-4 max-w-[1540px] px-0 py-0">
+                    <div className="flex items-center gap-3 pr-2">
+                        {/* Circular skeleton for logo */}
+                        <div className="h-11 w-11 shrink-0 rounded-full bg-primary-dark/10 animate-pulse" />
+                        <div className="flex flex-col gap-1.5">
+                            {/* Text skeleton for brand */}
+                            <div className="h-5 w-28 rounded bg-primary-dark/10 animate-pulse" />
+                            <div className="h-3 w-16 rounded bg-primary-dark/10 animate-pulse" />
+                        </div>
+                    </div>
+                    {/* Skeletal nav items */}
+                    <div className="hidden lg:flex items-center gap-4">
+                        <div className="h-8 w-16 rounded-full bg-primary-dark/10 animate-pulse" />
+                        <div className="h-8 w-16 rounded-full bg-primary-dark/10 animate-pulse" />
+                        <div className="h-8 w-16 rounded-full bg-primary-dark/10 animate-pulse" />
+                    </div>
+                    {/* Button skeleton */}
+                    <div className="hidden md:block">
+                        <div className="h-12 w-32 rounded-full bg-primary-dark/10 animate-pulse" />
+                    </div>
+                </div>
+            </nav>
+        );
+    }
 
     const scrollToCourts = () => {
         setIsOpen(false);

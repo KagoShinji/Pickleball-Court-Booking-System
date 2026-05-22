@@ -4,7 +4,7 @@ import { useCompany } from '../lib/CompanyProvider';
 export function SplashScreen({ onComplete }) {
     const [isFadingOut, setIsFadingOut] = useState(false);
     const [logoFailed, setLogoFailed] = useState(false);
-    const { company } = useCompany();
+    const { company, loading } = useCompany();
     const logoSrc = company.logoUrl && !company.logoUrl.includes('default-logo')
         ? company.logoUrl
         : '/images/pplogo.jpg';
@@ -12,6 +12,13 @@ export function SplashScreen({ onComplete }) {
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, []);
+
+    useEffect(() => {
+        if (loading) return;
 
         const timer1 = setTimeout(() => {
             setIsFadingOut(true);
@@ -22,11 +29,27 @@ export function SplashScreen({ onComplete }) {
         }, 2450);
 
         return () => {
-            document.body.style.overflow = 'unset';
             clearTimeout(timer1);
             clearTimeout(timer2);
         };
-    }, [onComplete]);
+    }, [onComplete, loading]);
+
+    if (loading) {
+        return (
+            <div
+                role="status"
+                aria-live="polite"
+                className="fixed inset-0 z-[100] grid place-items-center bg-[#fbfaf6] text-primary-dark"
+            >
+                <div className="flex flex-col items-center">
+                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary-dark/10 border-t-primary-dark" />
+                    <p className="mt-4 font-mono text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-primary-dark/45">
+                        Connecting...
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div

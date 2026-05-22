@@ -12,6 +12,7 @@ import {
     Users,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 
 // ─── Feature key definitions ────────────────────────────────────────────────
@@ -110,8 +111,14 @@ function TenantRow({ tenant, onToggleFeature, updatingTenantId }) {
                         <Building2 size={14} className="text-violet-400" />
                     </div>
                     <div>
-                        <p className="text-sm font-bold text-white">{tenant.name}</p>
-                        <p className="text-xs font-medium text-white/35 mt-0.5">{tenant.id}</p>
+                        <Link to={`/odc/tenant/${tenant.id}`} className="text-sm font-bold text-white hover:text-violet-400 transition-colors">
+                            {tenant.name}
+                        </Link>
+                        <p className="text-xs font-medium text-white/35 mt-0.5 flex items-center gap-1.5">
+                            <span>ID: {tenant.id}</span>
+                            <span className="text-white/20">•</span>
+                            <span className="capitalize text-violet-400 font-semibold">{tenant.billing_tier || 'enterprise'}</span>
+                        </p>
                     </div>
                 </div>
             </td>
@@ -121,14 +128,27 @@ function TenantRow({ tenant, onToggleFeature, updatingTenantId }) {
                 </span>
             </td>
             <td className="py-4 px-5">
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${
-                    tenant.is_active
-                        ? 'bg-emerald-500/[0.12] text-emerald-400 border border-emerald-500/20'
-                        : 'bg-red-500/[0.12] text-red-400 border border-red-500/20'
-                }`}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${tenant.is_active ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                    {tenant.is_active ? 'Active' : 'Inactive'}
-                </span>
+                {!tenant.is_active ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-zinc-500/[0.12] text-zinc-400 border border-zinc-500/20">
+                        <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
+                        Suspended
+                    </span>
+                ) : tenant.billing_status === 'past_due' ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-red-500/[0.12] text-red-400 border border-red-500/20">
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
+                        Past Due
+                    </span>
+                ) : tenant.billing_status === 'trial' ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/[0.12] text-amber-400 border border-amber-500/20">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                        Trial
+                    </span>
+                ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/[0.12] text-emerald-400 border border-emerald-500/20">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                        Active
+                    </span>
+                )}
             </td>
             {FEATURE_KEYS.map((fk) => (
                 <td key={fk.key} className="py-4 px-5 text-center">

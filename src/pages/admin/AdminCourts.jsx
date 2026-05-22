@@ -1,5 +1,6 @@
-import { Plus, Trash2, Edit2, Power, AlertCircle, X, Pin, GripVertical } from 'lucide-react';
+import { Plus, Trash2, Edit2, Power, AlertCircle, X, Pin, GripVertical, ImagePlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { ImageUploadCrop } from '../../components/ImageUploadCrop';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button, Card } from '../../components/ui';
 import { AdminActionModal } from '../../components/admin/AdminActionModal';
@@ -98,22 +99,50 @@ export function AdminCourts() {
         }
     };
 
-    const handleImageSelect = (e) => {
-        const files = e.target.files;
-        setFormData({ ...formData, imageFiles: files });
+    const handleImageSelect = (index, file) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            setImagePreview(prev => {
+                const next = [...prev];
+                next[index] = event.target.result;
+                return next;
+            });
+        };
+        reader.readAsDataURL(file);
 
-        // Show preview
-        const previews = [];
-        for (let i = 0; i < files.length; i++) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                previews.push(event.target.result);
-                if (previews.length === files.length) {
-                    setImagePreview(previews);
-                }
-            };
-            reader.readAsDataURL(files[i]);
-        }
+        // Build a new FileList-like structure stored on formData
+        setFormData(prev => {
+            const existing = prev.imageFiles ? Array.from(prev.imageFiles) : [];
+            const next = [...existing];
+            next[index] = file;
+            // Build a DataTransfer to mimic FileList
+            try {
+                const dt = new DataTransfer();
+                next.filter(Boolean).forEach(f => dt.items.add(f));
+                return { ...prev, imageFiles: dt.files };
+            } catch {
+                return { ...prev, imageFiles: next };
+            }
+        });
+    };
+
+    const handleAddImageSlot = () => {
+        setImagePreview(prev => [...prev, '']);
+    };
+
+    const handleRemoveImageSlot = (index) => {
+        setImagePreview(prev => prev.filter((_, i) => i !== index));
+        setFormData(prev => {
+            const existing = prev.imageFiles ? Array.from(prev.imageFiles) : [];
+            const next = existing.filter((_, i) => i !== index);
+            try {
+                const dt = new DataTransfer();
+                next.filter(Boolean).forEach(f => dt.items.add(f));
+                return { ...prev, imageFiles: dt.files };
+            } catch {
+                return { ...prev, imageFiles: next };
+            }
+        });
     };
 
     const handleSave = async (e) => {
@@ -488,27 +517,54 @@ export function AdminCourts() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Court Images</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    multiple
-                                    onChange={handleImageSelect}
-                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-dark disabled:opacity-50"
-                                    disabled={loading}
-                                />
-                                <p className="text-xs text-gray-500 mt-1">You can upload multiple images</p>
-                            </div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-sm font-medium text-gray-700">Court Images</label>
+                                    <button
+                                        type="button"
+                                        onClick={handleAddImageSlot}
+                                        disabled={loading}
+                                        className="flex items-center gap-1 text-xs font-semibold text-primary-dark hover:text-primary disabled:opacity-40"
+                                    >
+                                        <ImagePlus size={14} /> Add Slot
+                                    </button>
+                                </div>
 
-                            {imagePreview.length > 0 && (
-                                <div className="grid grid-cols-3 gap-2">
+                                {imagePreview.length === 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={handleAddImageSlot}
+                                        className="w-full flex items-center justify-center gap-2 py-8 rounded-xl border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-primary hover:text-primary-dark transition-colors"
+                                    >
+                                        <ImagePlus size={18} /> Add Court Image
+                                    </button>
+                                )}
+
+                                <div className="space-y-3">
                                     {imagePreview.map((preview, idx) => (
-                                        <div key={idx} className="relative aspect-square">
-                                            <img src={preview} alt={`Preview ${idx}`} className="w-full h-full object-cover rounded-lg" />
+                                        <div key={idx} className="relative rounded-xl border border-gray-200 p-3 bg-gray-50">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Image {idx + 1}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveImageSlot(idx)}
+                                                    disabled={loading}
+                                                    className="ml-auto text-red-400 hover:text-red-600 disabled:opacity-40 transition-colors"
+                                                >
+                                                    <X size={15} />
+                                                </button>
+                                            </div>
+                                            <ImageUploadCrop
+                                                accept="image/*"
+                                                previewUrl={preview}
+                                                disabled={loading}
+                                                label="Upload Photo"
+                                                previewClass="h-36"
+                                                onFile={(file) => handleImageSelect(idx, file)}
+                                            />
                                         </div>
                                     ))}
                                 </div>
-                            )}
+                            </div>
 
                             {/* Pricing Rules */}
                             <div className="border-t pt-4">
