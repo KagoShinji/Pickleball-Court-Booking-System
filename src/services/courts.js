@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { getCompanyId } from '../lib/config';
 import { appendAuditLog } from './auditLogs';
 
 // --- Simple in-memory cache for listCourts ---
@@ -9,7 +10,7 @@ export function invalidateCourtsCache() {
   courtsCache = null;
 }
 
-// Upload images to storage
+// Upload images to storage — prefixed with company_id for tenant isolation
 export async function uploadCourtImages(files) {
   const results = [];
 
@@ -39,7 +40,8 @@ export async function uploadCourtImages(files) {
       }
     }
 
-    const unique = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+    // Prefix path with company_id for tenant-isolated storage
+    const unique = `${getCompanyId()}/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
     console.log(`[uploadCourtImages] Uploading as: ${unique}, contentType: ${originalType || 'image/jpeg'}`);
 
     const { error } = await supabase.storage
@@ -69,7 +71,7 @@ export async function uploadCourtImages(files) {
   return results;
 }
 
-// List all courts (cached)
+// List all courts (cached) — scoped to this tenant
 export async function listCourts({ force = false } = {}) {
   const now = Date.now();
   if (!force && courtsCache && now - courtsCache.timestamp < CACHE_TTL_MS) {
@@ -80,6 +82,7 @@ export async function listCourts({ force = false } = {}) {
   const { data, error } = await supabase
     .from('courts')
     .select('*')
+    .eq('company_id', getCompanyId())
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -91,12 +94,13 @@ export async function listCourts({ force = false } = {}) {
   return data;
 }
 
-// Get single court with bookings
+// Get single court with bookings — scoped to this tenant
 export async function getCourt(courtId) {
   const { data, error } = await supabase
     .from('courts')
     .select('*, bookings(*)')
     .eq('id', courtId)
+    .eq('company_id', getCompanyId())
     .single();
 
   if (error) {
@@ -123,7 +127,8 @@ export async function createCourt({ name, type, price, description, imageFiles, 
       admin_id: user.user.id,
       images, // store array of { path, url }
       pricing_rules: pricingRules || [], // store time-based pricing rules
-      max_players: maxPlayers || 10 // store max players capacity
+      max_players: maxPlayers || 10, // store max players capacity
+      company_id: getCompanyId()
     }])
     .select();
 
@@ -162,6 +167,7 @@ export async function updateCourt(courtId, { name, type, price, description, ima
       .from('courts')
       .select('images')
       .eq('id', courtId)
+      .eq('company_id', getCompanyId())
       .single();
 
     newImages = await uploadCourtImages(filesArray);
@@ -202,6 +208,7 @@ export async function updateCourt(courtId, { name, type, price, description, ima
     .from('courts')
     .update(updateData)
     .eq('id', courtId)
+    .eq('company_id', getCompanyId())
     .select();
 
   if (error) {
@@ -237,6 +244,7 @@ export async function toggleCourtStatus(courtId, isActive) {
     .from('courts')
     .update({ is_active: isActive })
     .eq('id', courtId)
+    .eq('company_id', getCompanyId())
     .select();
 
   if (error) {
@@ -271,6 +279,7 @@ export async function deleteCourt(courtId) {
     .from('courts')
     .select('images')
     .eq('id', courtId)
+    .eq('company_id', getCompanyId())
     .single();
 
   // Delete images from storage
@@ -284,6 +293,7 @@ export async function deleteCourt(courtId) {
     .from('blocked_time_slots')
     .delete()
     .eq('court_id', courtId)
+    .eq('company_id', getCompanyId())
     .throwOnError()
     .catch((err) => {
       console.warn('[deleteCourt] Could not remove blocked time slots:', err);
@@ -293,6 +303,7 @@ export async function deleteCourt(courtId) {
     .from('courts')
     .delete()
     .eq('id', courtId)
+    .eq('company_id', getCompanyId())
     .select();
 
   if (error) {
@@ -321,10 +332,15 @@ export async function deleteCourt(courtId) {
   invalidateCourtsCache();
 }
 
-// Subscribe to court changes (real-time)
+// Subscribe to court changes (real-time) — scoped to this tenant
 export function subscribeToCourts(callback) {
   return supabase
-    .channel('courts')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'courts' }, callback)
+    .channel(`courts:${getCompanyId()}`)
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'courts',
+      filter: `company_id=eq.${getCompanyId()}`
+    }, callback)
     .subscribe();
 }

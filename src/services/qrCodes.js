@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { getCompanyId } from '../lib/config';
 import { appendAuditLog } from './auditLogs';
 
 export const MAX_QR_FILE_SIZE_MB = 5;
@@ -75,6 +76,7 @@ export function invalidateQrCache() {
   qrCacheTimestamp = null;
 }
 
+// Fetch QR codes — scoped to this tenant
 export async function getQrCodes({ activeOnly = false } = {}) {
   const now = Date.now();
   if (qrCache && qrCacheTimestamp && now - qrCacheTimestamp < QR_CACHE_TTL) {
@@ -85,6 +87,7 @@ export async function getQrCodes({ activeOnly = false } = {}) {
     const { data, error } = await supabase
       .from('qr_codes')
       .select('*')
+      .eq('company_id', getCompanyId())
       .order('sort_order', { ascending: true })
       .order('label', { ascending: true });
 
@@ -105,6 +108,7 @@ export async function getQrCodes({ activeOnly = false } = {}) {
   }
 }
 
+// Upload QR image — prefixed with company_id for tenant-isolated storage
 export async function uploadQrImage(provider, file) {
   if (file.size > MAX_QR_FILE_SIZE_MB * 1024 * 1024) {
     throw new Error(`File is too large. Maximum size is ${MAX_QR_FILE_SIZE_MB} MB.`);
@@ -128,7 +132,8 @@ export async function uploadQrImage(provider, file) {
 
   const ext = fileToUpload.name.split('.').pop() || 'jpg';
   const safeProvider = String(provider || 'payment').replace(/[^a-zA-Z0-9_-]/g, '-');
-  const path = `${safeProvider}_qr.${ext}`;
+  // Prefix with company_id for tenant-isolated storage
+  const path = `${getCompanyId()}/${safeProvider}_qr.${ext}`;
 
   const { error } = await supabase.storage
     .from('qr-images')
@@ -161,10 +166,12 @@ export async function updateQrCode(provider, updates) {
   await saveQrCode(provider, updates, 'updated');
 }
 
+// Save (upsert) a QR code — always includes company_id
 async function saveQrCode(provider, updates, actionLabel) {
   const payload = {
     id: provider,
     updated_at: new Date().toISOString(),
+    company_id: getCompanyId(),
   };
 
   if ('label' in updates) payload.label = String(updates.label || '').trim();

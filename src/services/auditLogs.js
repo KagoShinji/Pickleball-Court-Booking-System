@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { getCompanyId } from '../lib/config';
 
 const AUDIT_STORAGE_KEY = 'adminDeveloperAuditLogsV1';
 const DEV_MODE_STORAGE_KEY = 'adminDeveloperModeEnabledV1';
@@ -68,6 +69,7 @@ function mapLogToRemoteRow(log) {
     user_email: log.userEmail,
     metadata: log.metadata,
     created_at: log.timestamp,
+    company_id: getCompanyId(),
   };
 }
 
@@ -116,7 +118,8 @@ async function fetchRemoteLogs({ sinceTimestamp = null } = {}) {
 
   let query = supabase
     .from(AUDIT_REMOTE_TABLE)
-    .select('id, action, description, user_id, user_email, metadata, created_at');
+    .select('id, action, description, user_id, user_email, metadata, created_at')
+    .eq('company_id', getCompanyId());
 
   if (sinceTimestamp) {
     query = query
@@ -259,6 +262,7 @@ export function clearAuditLogs() {
         .from(AUDIT_REMOTE_TABLE)
         .delete()
         .eq('user_id', userId)
+        .eq('company_id', getCompanyId())
         .then(({ error }) => {
           if (error) {
             if (isMissingTableError(error) || error.code === '42501') {
@@ -306,4 +310,3 @@ export function subscribeToAuditLogs(listener) {
     stopRemotePollingIfIdle();
   };
 }
-

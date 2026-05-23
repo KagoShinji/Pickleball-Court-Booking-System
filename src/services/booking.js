@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { getCompanyId } from '../lib/config';
 
 // --- In-memory cache for getAllBookings (admin) ---
 const ALL_BOOKINGS_CACHE_TTL = 30_000; // 30 seconds
@@ -103,7 +104,7 @@ export function calculatePriceForSlots(timeSlots, court) {
   return totalPrice;
 }
 
-// Upload proof of payment image
+// Upload proof of payment image — prefixed with company_id for tenant isolation
 export async function uploadProofOfPayment(file, bookingId) {
   try {
     if (!file) {
@@ -112,7 +113,7 @@ export async function uploadProofOfPayment(file, bookingId) {
 
     const fileExt = file.name.split('.').pop();
     const fileName = `${bookingId}-${Date.now()}.${fileExt}`;
-    const filePath = `booking-proofs/${fileName}`;
+    const filePath = `${getCompanyId()}/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('booking-proofs')
@@ -140,13 +141,14 @@ export async function uploadProofOfPayment(file, bookingId) {
   }
 }
 
-// Get bookings for a court on a specific date
+// Get bookings for a court on a specific date — scoped to this tenant
 export async function getCourtBookings(courtId, date) {
   const { data, error } = await supabase
     .from('bookings')
     .select('*')
     .eq('court_id', courtId)
     .eq('booking_date', date)
+    .eq('company_id', getCompanyId())
     .in('status', ['Confirmed', 'Rescheduled']);
 
   if (error) {
@@ -157,12 +159,13 @@ export async function getCourtBookings(courtId, date) {
   return data;
 }
 
-// Get ALL bookings for a specific date (for conflict checks)
+// Get ALL bookings for a specific date (for conflict checks) — scoped to this tenant
 export async function getDailyBookings(date) {
   const { data, error } = await supabase
     .from('bookings')
     .select('*, courts(id, name, type)')
     .eq('booking_date', date)
+    .eq('company_id', getCompanyId())
     .in('status', ['Confirmed', 'Rescheduled']);
 
   if (error) {
@@ -185,7 +188,8 @@ export async function checkTimeSlotConflicts(courtId, bookingDate, bookedTimes, 
       let blockedQuery = supabase
         .from('blocked_time_slots')
         .select('time_slot, court_id')
-        .eq('blocked_date', bookingDate);
+        .eq('blocked_date', bookingDate)
+        .eq('company_id', getCompanyId());
 
       if (isExclusiveBooking) {
         // Exclusive booking is blocked if ANY court has the slot blocked
@@ -223,6 +227,7 @@ export async function checkTimeSlotConflicts(courtId, bookingDate, bookedTimes, 
       .from('bookings')
       .select('booked_times, start_time, end_time, id, court_id, courts(id, type)')
       .eq('booking_date', bookingDate)
+      .eq('company_id', getCompanyId())
       .in('status', ['Confirmed', 'Rescheduled']);
 
     if (error) {
@@ -346,7 +351,8 @@ export async function createBooking({
         p_notes: notes || '',
         p_proof_of_payment_url: proofOfPaymentUrl || null,
         p_booked_times: bookedTimes.length > 0 ? bookedTimes : [],
-        p_court_type: courtType || ''
+        p_court_type: courtType || '',
+        p_company_id: getCompanyId()
       });
 
       if (error) {
@@ -381,6 +387,7 @@ export async function createBooking({
         .from('bookings')
         .select('*, courts(name, type)')
         .eq('id', data.id)
+        .eq('company_id', getCompanyId())
         .single();
 
       if (verifyError || !verifyData) {
@@ -443,7 +450,8 @@ export async function createBooking({
           status: 'Confirmed',
           notes: notes || '',
           proof_of_payment_url: proofOfPaymentUrl || null,
-          booked_times: bookedTimes.length > 0 ? bookedTimes : null
+          booked_times: bookedTimes.length > 0 ? bookedTimes : null,
+          company_id: getCompanyId()
         }])
         .select();
 
@@ -488,7 +496,7 @@ export async function createBooking({
       if (postInsertCheck.hasConflict) {
         // Race condition detected! Delete our booking and report conflict.
         console.error('Race condition detected! Deleting duplicate booking:', bookingId);
-        await supabase.from('bookings').delete().eq('id', bookingId);
+        await supabase.from('bookings').delete().eq('id', bookingId).eq('company_id', getCompanyId());
 
         // Also remove the orphaned proof of payment from storage (best-effort).
         if (proofOfPaymentUrl) {
@@ -520,6 +528,7 @@ export async function createBooking({
         .from('bookings')
         .select('*, courts(name, type)')
         .eq('id', bookingId)
+        .eq('company_id', getCompanyId())
         .single();
 
       if (verifyError) {
@@ -561,7 +570,8 @@ export async function getAllBookings({ force = false, createdAtFrom = null, crea
 
   let query = supabase
     .from('bookings')
-    .select('*, courts(name, type, price, pricing_rules)');
+    .select('*, courts(name, type, price, pricing_rules)')
+    .eq('company_id', getCompanyId());
 
   if (createdAtFrom) {
     query = query.gte('created_at', createdAtFrom);
@@ -594,6 +604,7 @@ export async function getBookingsByDateRange({
   let query = supabase
     .from('bookings')
     .select('*, courts(name, type, price, pricing_rules)')
+    .eq('company_id', getCompanyId())
     .gte('booking_date', fromDate)
     .lte('booking_date', toDate)
     .order('booking_date', { ascending: true })
@@ -617,7 +628,8 @@ export async function getBookingsByDateRange({
 export async function getCreatedBookingsCount({ createdAtFrom, createdAtTo }) {
   let query = supabase
     .from('bookings')
-    .select('id', { count: 'exact', head: true });
+    .select('id', { count: 'exact', head: true })
+    .eq('company_id', getCompanyId());
 
   if (createdAtFrom) {
     query = query.gte('created_at', createdAtFrom);
@@ -643,6 +655,7 @@ export async function updateBookingStatus(bookingId, status) {
     .from('bookings')
     .update({ status })
     .eq('id', bookingId)
+    .eq('company_id', getCompanyId())
     .select();
 
   if (error) {
@@ -660,6 +673,7 @@ export async function getSingleBooking(id) {
     .from('bookings')
     .select('*, courts(name, type, price, pricing_rules)')
     .eq('id', id)
+    .eq('company_id', getCompanyId())
     .single();
 
   if (error) {
@@ -669,11 +683,16 @@ export async function getSingleBooking(id) {
   return data;
 }
 
-// Subscribe to bookings (real-time)
+// Subscribe to bookings (real-time) — scoped to this tenant
 export function subscribeToBookings(callback) {
   return supabase
-    .channel('bookings')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, callback)
+    .channel(`bookings:${getCompanyId()}`)
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'bookings',
+      filter: `company_id=eq.${getCompanyId()}`
+    }, callback)
     .subscribe();
 }
 
@@ -698,6 +717,7 @@ export async function rescheduleBooking({
         .from('bookings')
         .select('id, status, booking_date, booked_times, total_price, court_id')
         .eq('id', bookingId)
+        .eq('company_id', getCompanyId())
         .single();
 
       if (checkError) {
@@ -714,6 +734,7 @@ export async function rescheduleBooking({
         .from('courts')
         .select('type')
         .eq('id', targetCourtId)
+        .eq('company_id', getCompanyId())
         .single();
 
       const conflictCheck = await checkTimeSlotConflicts(
@@ -747,7 +768,8 @@ export async function rescheduleBooking({
         p_original_start_time: originalStartTime,
         p_original_end_time: originalEndTime,
         p_original_booked_times: originalBookedTimes || [],
-        p_new_court_id: newCourtId || null
+        p_new_court_id: newCourtId || null,
+        p_company_id: getCompanyId()
       });
 
       if (error) {
@@ -773,6 +795,7 @@ export async function rescheduleBooking({
         .from('bookings')
         .select('*, courts(name, type, price, pricing_rules)')
         .eq('id', data.id)
+        .eq('company_id', getCompanyId())
         .single();
 
       if (verifyError || !verifyData) {
@@ -788,6 +811,7 @@ export async function rescheduleBooking({
       .from('bookings')
       .select('id, status, booking_date, booked_times, total_price, court_id')
       .eq('id', bookingId)
+      .eq('company_id', getCompanyId())
       .single();
 
     if (checkError) {
@@ -805,6 +829,7 @@ export async function rescheduleBooking({
       .from('courts')
       .select('type')
       .eq('id', targetCourtId)
+      .eq('company_id', getCompanyId())
       .single();
 
     const conflictCheck = await checkTimeSlotConflicts(
@@ -845,6 +870,7 @@ export async function rescheduleBooking({
       .from('bookings')
       .update(updatePayload)
       .eq('id', bookingId)
+      .eq('company_id', getCompanyId())
       .select('*, courts(name, type, price, pricing_rules)');
 
     if (error) {

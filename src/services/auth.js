@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { getCompanyId } from '../lib/config';
 import { appendAuditLog } from './auditLogs';
 
 // --- Simple in-memory cache for getCurrentUser ---
@@ -9,7 +10,7 @@ function invalidateUserCache() {
   userCache = null;
 }
 
-// Sign up (for admin)
+// Sign up (for admin) — ties the new admin account to this tenant
 export async function signUp(email, password) {
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -18,11 +19,12 @@ export async function signUp(email, password) {
 
   if (error) throw error;
 
-  // Optionally add to admin_users table
+  // Optionally add to admin_users table scoped to this tenant
   if (data.user) {
     await supabase.from('admin_users').insert([{
       id: data.user.id,
-      email: data.user.email
+      email: data.user.email,
+      company_id: getCompanyId()
     }]);
 
     appendAuditLog({
@@ -82,7 +84,7 @@ export function onAuthStateChange(callback) {
   return supabase.auth.onAuthStateChange(callback);
 }
 
-// Check if user is admin (optional - can expand)
+// Check if user is admin — scoped to this tenant so cross-tenant admins are blocked
 export async function isAdmin() {
   const user = await getCurrentUser();
 
@@ -90,9 +92,10 @@ export async function isAdmin() {
 
   const { data } = await supabase
     .from('admin_users')
-    .select('*')
+    .select('id')
     .eq('id', user.id)
-    .single();
+    .eq('company_id', getCompanyId())
+    .maybeSingle();
 
   return !!data;
 }
