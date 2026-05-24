@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../../components/ui';
 import { supabase } from '../../lib/supabaseClient';
 import { appendAuditLog } from '../../services/auditLogs';
+import { getCompanyId } from '../../lib/config';
 
 export function TimeSlotManagement() {
     const today = startOfToday();
@@ -17,11 +18,12 @@ export function TimeSlotManagement() {
 
     // Fetch courts with caching
     const { data: courts = [] } = useQuery({
-        queryKey: ['courts'],
+        queryKey: ['courts', getCompanyId()],
         queryFn: async () => {
             const { data, error } = await supabase
                 .from('courts')
                 .select('*')
+                .eq('company_id', getCompanyId())
                 .order('name');
 
             if (error) throw error;
@@ -73,11 +75,11 @@ export function TimeSlotManagement() {
 
     // Fetch blocked slots with caching
     const { data: blockedSlots = [], isLoading: loadingBlocked } = useQuery({
-        queryKey: isExclusiveCourt ? ['blockedSlots', 'all-courts', dateStr] : ['blockedSlots', selectedCourt?.id, dateStr],
+        queryKey: isExclusiveCourt ? ['blockedSlots', 'all-courts', dateStr, getCompanyId()] : ['blockedSlots', selectedCourt?.id, dateStr, getCompanyId()],
         queryFn: async () => {
             if (!selectedCourt) return [];
 
-            let q = supabase.from('blocked_time_slots').select('*').eq('blocked_date', dateStr);
+            let q = supabase.from('blocked_time_slots').select('*').eq('blocked_date', dateStr).eq('company_id', getCompanyId());
             if (isExclusiveCourt && courts.length > 0) {
                 q = q.in('court_id', courts.map(c => c.id));
             } else {
@@ -95,7 +97,7 @@ export function TimeSlotManagement() {
 
     // Fetch booked slots with caching
     const { data: bookedSlots = [], isLoading: loadingBooked } = useQuery({
-        queryKey: isExclusiveCourt ? ['bookedSlots', 'all-courts', dateStr] : ['bookedSlots', selectedCourt?.id, dateStr],
+        queryKey: isExclusiveCourt ? ['bookedSlots', 'all-courts', dateStr, getCompanyId()] : ['bookedSlots', selectedCourt?.id, dateStr, getCompanyId()],
         queryFn: async () => {
             if (!selectedCourt) return [];
 
@@ -103,6 +105,7 @@ export function TimeSlotManagement() {
                 .from('bookings')
                 .select('*, courts(id, type)')
                 .eq('booking_date', dateStr)
+                .eq('company_id', getCompanyId())
                 .in('status', ['Confirmed', 'Rescheduled']);
 
             if (error) throw error;
@@ -130,7 +133,8 @@ export function TimeSlotManagement() {
                     court_id: courtId,
                     blocked_date: dateStr,
                     time_slot: slot,
-                    reason: 'Admin blocked'
+                    reason: 'Admin blocked',
+                    company_id: getCompanyId()
                 }))
             );
 
@@ -182,7 +186,8 @@ export function TimeSlotManagement() {
                 .delete()
                 .in('court_id', courtIds)
                 .eq('blocked_date', dateStr)
-                .in('time_slot', slots);
+                .in('time_slot', slots)
+                .eq('company_id', getCompanyId());
 
             if (error) throw error;
             return slots;
