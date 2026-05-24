@@ -227,17 +227,46 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
         }
     };
 
-    // Format booked times as a readable range string e.g. "8:00 AM – 11:00 AM"
+    // Format booked times as readable time labels
     const formatTimeRange = (times) => {
         if (!times || times.length === 0) return '-';
         const sorted = [...times].sort();
-        const start = formatTime12Hour(sorted[0]);
-        // End time = last slot start + 1 hour
-        const [h, m] = sorted[sorted.length - 1].split(':').map(Number);
-        const endH = (h + 1) % 24;
-        const endPeriod = endH >= 12 ? 'PM' : 'AM';
-        const endDisplay = (endH === 0 ? 12 : endH > 12 ? endH - 12 : endH).toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0') + ' ' + endPeriod;
-        return `${start} – ${endDisplay}`;
+
+        // Helper: format a single slot as "start - end"
+        const formatSlot = (slotId) => {
+            const start = formatTime12Hour(slotId);
+            const [h, m] = slotId.split(':').map(Number);
+            const endH = (h + 1) % 24;
+            const endPeriod = endH >= 12 ? 'PM' : 'AM';
+            const endDisplay = (endH === 0 ? 12 : endH > 12 ? endH - 12 : endH).toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0') + ' ' + endPeriod;
+            return `${start} – ${endDisplay}`;
+        };
+
+        // Group consecutive slots into ranges
+        const ranges = [];
+        let rangeStart = sorted[0];
+        let prevHour = parseInt(sorted[0].split(':')[0], 10);
+
+        for (let i = 1; i <= sorted.length; i++) {
+            const curHour = i < sorted.length ? parseInt(sorted[i].split(':')[0], 10) : null;
+            if (curHour !== null && curHour === prevHour + 1) {
+                prevHour = curHour;
+            } else {
+                // End current range
+                const rangeEndSlot = sorted[i - 1];
+                const [endH, endM] = rangeEndSlot.split(':').map(Number);
+                const finalH = (endH + 1) % 24;
+                const finalPeriod = finalH >= 12 ? 'PM' : 'AM';
+                const finalDisplay = (finalH === 0 ? 12 : finalH > 12 ? finalH - 12 : finalH).toString().padStart(2, '0') + ':' + endM.toString().padStart(2, '0') + ' ' + finalPeriod;
+                ranges.push(`${formatTime12Hour(rangeStart)} – ${finalDisplay}`);
+                if (i < sorted.length) {
+                    rangeStart = sorted[i];
+                    prevHour = curHour;
+                }
+            }
+        }
+
+        return ranges.join(', ');
     };
 
     // Build receipt data object used by both download functions

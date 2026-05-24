@@ -6,6 +6,7 @@ import { Contact } from '../components/Contact';
 import { Offers } from '../components/Offers';
 import { Parking } from '../components/Parking';
 import { CourtCard } from '../components/CourtCard';
+import { CourtOnlyGrid } from '../components/CourtOnlyGrid';
 import { Footer } from '../components/Footer';
 import { Hero } from '../components/Hero';
 import { Navbar } from '../components/Navbar';
@@ -45,10 +46,34 @@ export function Home() {
     const [blockedSlots, setBlockedSlots] = useState([]);
     const [monthlyBookings, setMonthlyBookings] = useState([]);
     const [validationError, setValidationError] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('All');
 
     const visibleCourts = orderCourtsForHomepage(
         (activeCourts || []).filter((court) => court.is_active !== false)
     );
+
+    // Categorize courts
+    const categorizeCourt = (court) => {
+        const name = (court.name || '').toLowerCase();
+        const type = (court.type || '').toLowerCase();
+        if (name.includes('event') || type.includes('event')) return 'For Events';
+        if (name.includes('exclusive') || type.includes('exclusive') || type.includes('whole')) return 'Exclusive';
+        return 'Court Only';
+    };
+
+    const CATEGORIES = ['All', 'For Events', 'Exclusive', 'Court Only'];
+
+    // Only show categories that actually have courts (All is always shown if there are any courts)
+    const availableCategories = CATEGORIES.filter((cat) =>
+        cat === 'All'
+            ? visibleCourts.length > 0
+            : visibleCourts.some((court) => categorizeCourt(court) === cat)
+    );
+
+    // Courts filtered by selected category
+    const filteredCourts = selectedCategory === 'All'
+        ? visibleCourts
+        : visibleCourts.filter((court) => categorizeCourt(court) === selectedCategory);
 
     const isExclusiveCourtType = (courtType = '') => {
         return courtType.includes('Exclusive') || courtType.includes('Whole');
@@ -528,11 +553,70 @@ export function Home() {
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {visibleCourts.map((court) => (
-                            <CourtCard key={court.id} court={court} onBook={handleBookClick} />
-                        ))}
+                    {/* Category Tabs */}
+                    <div className="flex justify-center mb-10">
+                        <div className="inline-flex bg-white rounded-2xl shadow-md border border-gray-100 p-1.5 gap-1">
+                            {availableCategories.map((cat) => (
+                                <button
+                                    key={cat}
+                                    onClick={() => setSelectedCategory(cat)}
+                                    className={`
+                                        relative px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer
+                                        ${selectedCategory === cat
+                                            ? 'bg-gradient-to-r from-brand-green to-brand-green-dark text-white shadow-lg shadow-brand-green/25'
+                                            : 'text-gray-500 hover:text-brand-green-dark hover:bg-brand-green-light/50'
+                                        }
+                                    `}
+                                >
+                                    {cat}
+                                    {selectedCategory === cat && (
+                                        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-brand-orange rounded-full shadow-sm" />
+                                    )}
+                                </button>
+                            ))}
+                        </div>
                     </div>
+
+                    {/* Court Cards / Grid */}
+                    {selectedCategory === 'Court Only' ? (
+                        filteredCourts.length > 0 ? (
+                            <CourtOnlyGrid
+                                courts={filteredCourts}
+                                onBookSlot={(court, date, timeSlots) => {
+                                    setSelectedCourt(court);
+                                    setSelectedDate(date);
+                                    setSelectedTimes(Array.isArray(timeSlots) ? timeSlots : [timeSlots]);
+                                    setValidationError('');
+                                    setIsSlotModalOpen(false);
+                                    setIsModalOpen(true);
+                                }}
+                            />
+                        ) : (
+                            <div className="text-center py-12">
+                                <p className="text-gray-400 text-sm">No courts available in this category.</p>
+                            </div>
+                        )
+                    ) : selectedCategory === 'All' ? (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {filteredCourts.map((court) => (
+                                <CourtCard key={court.id} court={court} onBook={handleBookClick} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex justify-center">
+                            <div className="w-full max-w-md">
+                                {filteredCourts.map((court) => (
+                                    <CourtCard key={court.id} court={court} onBook={handleBookClick} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {selectedCategory !== 'Court Only' && filteredCourts.length === 0 && (
+                        <div className="text-center py-12">
+                            <p className="text-gray-400 text-sm">No courts available in this category.</p>
+                        </div>
+                    )}
 
                     {validationError && !isSlotModalOpen && (
                         <div className="mt-6 max-w-xl mx-auto text-center bg-red-50 border border-red-100 rounded-2xl px-4 py-3">
