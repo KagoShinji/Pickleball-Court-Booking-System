@@ -1,12 +1,14 @@
 import { format } from 'date-fns';
-import { Activity, Calendar, Clock, DollarSign, TrendingUp, Users } from 'lucide-react';
+import { Activity, Calendar, Clock, DollarSign, TrendingUp, Users, Share2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Badge, Card } from '../../components/ui';
+import { Badge, Card, Button } from '../../components/ui';
 import { getAllBookings } from '../../services/booking';
 import { listCourts } from '../../services/courts';
+import { CourtAvailabilityExporterModal } from '../../components/admin/CourtAvailabilityExporterModal';
 
 export function AdminDashboard() {
+    const [isExporterOpen, setIsExporterOpen] = useState(false);
     const [stats, setStats] = useState({
         totalBookings: 0,
         revenue: 0,
@@ -159,6 +161,18 @@ export function AdminDashboard() {
 
                 {/* Quick Actions / System Health */}
                 <div className="space-y-6">
+                    <h2 className="text-lg font-bold text-gray-800">Quick Actions</h2>
+                    <Card className="p-6 space-y-3">
+                        <p className="text-xs text-gray-500">Export active court availability slots as a high-resolution marketing image for your social media.</p>
+                        <Button
+                            variant="primary"
+                            className="w-full text-white font-semibold flex items-center justify-center gap-2"
+                            onClick={() => setIsExporterOpen(true)}
+                        >
+                            <Share2 size={16} /> Share Available Slots
+                        </Button>
+                    </Card>
+
                     <h2 className="text-lg font-bold text-gray-800">System Status</h2>
                     <Card className="p-6 space-y-4">
                         <div className="flex items-center justify-between p-3 bg-brand-green-light rounded-lg border border-brand-green/20">
@@ -187,6 +201,12 @@ export function AdminDashboard() {
                     </Card>
                 </div>
             </div>
+
+            <CourtAvailabilityExporterModal
+                isOpen={isExporterOpen}
+                onClose={() => setIsExporterOpen(false)}
+                initialDate={new Date()}
+            />
         </div>
     );
 }

@@ -1,11 +1,12 @@
 import { format, startOfToday, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isBefore, isSameDay } from 'date-fns';
-import { AlertCircle, ChevronLeft, ChevronRight, Clock, Lock, Unlock, X, Users } from 'lucide-react';
+import { AlertCircle, ChevronLeft, ChevronRight, Clock, Lock, Unlock, X, Users, Share2 } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../../components/ui';
 import { supabase } from '../../lib/supabaseClient';
 import { appendAuditLog } from '../../services/auditLogs';
 import { getCompanyId } from '../../lib/config';
+import { CourtAvailabilityExporterModal } from '../../components/admin/CourtAvailabilityExporterModal';
 
 export function TimeSlotManagement() {
     const today = startOfToday();
@@ -13,6 +14,7 @@ export function TimeSlotManagement() {
     const [selectedDate, setSelectedDate] = useState(today);
     const [selectedCourt, setSelectedCourt] = useState(null);
     const [selectedSlots, setSelectedSlots] = useState([]);
+    const [isExporterOpen, setIsExporterOpen] = useState(false);
     
     const queryClient = useQueryClient();
 
@@ -318,9 +320,18 @@ export function TimeSlotManagement() {
     return (
         <div className="space-y-6 w-full max-w-full overflow-x-hidden">
             {/* Header */}
-            <div>
-                <h1 className="text-2xl font-bold font-display text-brand-green-dark">Time Slot Management</h1>
-                <p className="text-gray-500 text-sm">Block or unblock time slots to control court availability</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold font-display text-brand-green-dark">Time Slot Management</h1>
+                    <p className="text-gray-500 text-sm">Block or unblock time slots to control court availability</p>
+                </div>
+                <Button
+                    variant="primary"
+                    className="flex items-center gap-2 text-white font-semibold self-start sm:self-auto cursor-pointer"
+                    onClick={() => setIsExporterOpen(true)}
+                >
+                    <Share2 size={16} /> Share Availability
+                </Button>
             </div>
 
             {/* Exclusive court notice */}
@@ -551,6 +562,12 @@ export function TimeSlotManagement() {
                     </div>
                 </div>
             </div>
+
+            <CourtAvailabilityExporterModal
+                isOpen={isExporterOpen}
+                onClose={() => setIsExporterOpen(false)}
+                initialDate={selectedDate}
+            />
         </div>
     );
 }

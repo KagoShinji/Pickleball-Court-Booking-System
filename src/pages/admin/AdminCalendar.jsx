@@ -1,5 +1,5 @@
 import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, startOfMonth, startOfWeek } from 'date-fns';
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '../../components/ui';
@@ -7,12 +7,14 @@ import { getBookingsByDateRange, getCreatedBookingsCount, subscribeToBookings, u
 import { BookingDetailsModal } from '../../components/admin/BookingDetailsModal';
 import { RescheduleModal } from '../../components/admin/Reschedulemodal';
 import { AdminActionModal } from '../../components/admin/AdminActionModal';
+import { CourtAvailabilityExporterModal } from '../../components/admin/CourtAvailabilityExporterModal';
 
 export function AdminCalendar() {
     const navigate = useNavigate();
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [bookings, setBookings] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [isExporterOpen, setIsExporterOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [todayCount, setTodayCount] = useState(0);
     const [selectedBookingDetails, setSelectedBookingDetails] = useState(null);
@@ -246,7 +248,7 @@ export function AdminCalendar() {
                     </div>
 
                     <div className="grid grid-cols-7 gap-2">
-                        {calendarDays.map((day, dayIdx) => {
+                        {calendarDays.map((day) => {
                             const dayBookings = getBookingsForDate(day);
                             const isSelected = isSameDay(day, selectedDate);
                             const isCurrentMonth = isSameMonth(day, currentMonth);
@@ -310,6 +312,13 @@ export function AdminCalendar() {
                             </span>
                         )}
                     </div>
+
+                    <button
+                        onClick={() => setIsExporterOpen(true)}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-brand-green hover:bg-brand-green-dark text-white rounded-xl text-sm font-semibold transition-colors shadow-sm cursor-pointer"
+                    >
+                        <Share2 size={16} /> Export Available Slots
+                    </button>
 
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col" style={{ maxHeight: '520px' }}>
                         {selectedDayBookings.length > 0 ? (
@@ -379,6 +388,12 @@ export function AdminCalendar() {
                 confirmLabel={actionModal.confirmLabel}
                 successTitle={actionModal.successTitle}
                 successDescription={actionModal.successDescription}
+            />
+
+            <CourtAvailabilityExporterModal
+                isOpen={isExporterOpen}
+                onClose={() => setIsExporterOpen(false)}
+                initialDate={selectedDate}
             />
         </div>
     );
