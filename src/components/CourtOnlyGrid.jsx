@@ -14,6 +14,7 @@ import {
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from './ui';
 import { subscribeToBookings } from '../services/booking';
+import { useOCR } from '../providers/OCRContext';
 
 const BOOKING_CACHE_TTL = 30_000;
 const gridBookingCache = {};
@@ -32,6 +33,7 @@ function setCache(cache, key, data) {
 
 export function CourtOnlyGrid({ courts, onBookSlot }) {
     const today = startOfToday();
+    const { initializeOCR } = useOCR();
     const [selectedDate, setSelectedDate] = useState(today);
     const [currentMonth, setCurrentMonth] = useState(startOfMonth(today));
     const [allBookings, setAllBookings] = useState([]);
@@ -51,8 +53,10 @@ export function CourtOnlyGrid({ courts, onBookSlot }) {
             setCurrentMonth(startOfMonth(selectedDate));
             setSelectedSlots([]);
             setSelectedCourtId(null);
+            // Pre-warm Tesseract OCR engine when date is selected/changed
+            initializeOCR().catch(() => {});
         }
-    }, [selectedDate]);
+    }, [selectedDate, initializeOCR]);
 
     // Load daily bookings for all courts
     const loadBookings = useCallback(async (force = false) => {

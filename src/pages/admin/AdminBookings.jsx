@@ -1,11 +1,12 @@
 import { format } from 'date-fns';
-import { Calendar, CheckCircle, Clock, Eye, MoreVertical, RefreshCw, Search, Trash2, XCircle } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, Eye, MoreVertical, RefreshCw, Search, Trash2, XCircle, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Badge, Button, Pagination } from '../../components/ui';
 import { BookingDetailsModal } from '../../components/admin/BookingDetailsModal';
 import { RescheduleModal } from '../../components/admin/Reschedulemodal';
 import { AdminActionModal } from '../../components/admin/AdminActionModal';
-import { getAllBookings, getSingleBooking, updateBookingStatus, subscribeToBookings, rescheduleBooking, invalidateAllBookingsCache } from '../../services/booking';
+import { CreateBookingModal } from '../../components/admin/CreateBookingModal';
+import { createBooking, getAllBookings, getSingleBooking, updateBookingStatus, subscribeToBookings, rescheduleBooking, invalidateAllBookingsCache } from '../../services/booking';
 import { supabase } from '../../lib/supabaseClient';
 
 export function AdminBookings() {
@@ -17,6 +18,7 @@ export function AdminBookings() {
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [hasLoadedAllBookings, setHasLoadedAllBookings] = useState(false);
 
@@ -223,6 +225,32 @@ export function AdminBookings() {
         }
     };
 
+    // Handle direct admin booking creation
+    const handleCreateBookingConfirm = async (bookingData) => {
+        try {
+            const result = await createBooking(bookingData);
+            if (!result) {
+                throw new Error('Create booking returned no data');
+            }
+
+            await refreshCurrentView({ force: true });
+
+            setActionModal({
+                isOpen: true,
+                title: 'Booking Created',
+                description: `Successfully created direct booking for ${bookingData.customerName}.`,
+                variant: 'success',
+                confirmLabel: 'OK',
+                successTitle: 'Success',
+                successDescription: 'Booking created.',
+                action: async () => {}
+            });
+        } catch (error) {
+            console.error('Direct booking creation failed:', error);
+            throw error; // Let CreateBookingModal display the error inline
+        }
+    };
+
     const handleDeleteClick = (booking) => {
         setActionModal({
             isOpen: true,
@@ -335,7 +363,7 @@ export function AdminBookings() {
         <div className="space-y-6 w-full max-w-full">
             {/* Row 1: Title + Search */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                     <div>
                         <h1 className="text-2xl font-bold font-display text-brand-green-dark">Booking Management</h1>
                         <p className="text-gray-500">View and manage customer bookings</p>
@@ -344,10 +372,17 @@ export function AdminBookings() {
                         onClick={() => refreshCurrentView({ force: true })}
                         disabled={loading}
                         title="Refresh bookings"
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand-green-dark bg-brand-green/10 hover:bg-brand-green/20 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand-green-dark bg-brand-green/10 hover:bg-brand-green/20 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                         <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
                         Refresh
+                    </button>
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-brand-green hover:bg-brand-green-dark rounded-xl transition-colors cursor-pointer"
+                    >
+                        <Plus size={15} />
+                        Create Booking
                     </button>
                 </div>
 
@@ -460,6 +495,11 @@ export function AdminBookings() {
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <p className="font-medium text-gray-900 text-sm leading-tight truncate">{booking.customer_name}</p>
                                         <Badge variant={getStatusColor(booking.status)}>{booking.status}</Badge>
+                                        {booking.ocr_data?.match_status === true && (
+                                            <span className="inline-flex items-center text-[10px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full border border-green-200">
+                                                Auto-Matched
+                                            </span>
+                                        )}
                                         {booking.id === mostRecentId && (
                                             <span className="text-[10px] font-semibold bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded-full">Recent</span>
                                         )}
@@ -564,7 +604,14 @@ export function AdminBookings() {
                                             )}
                                         </td>
                                         <td className="px-4 py-2.5">
-                                            <Badge variant={getStatusColor(booking.status)}>{booking.status}</Badge>
+                                            <div className="flex flex-col gap-1 items-start">
+                                                <Badge variant={getStatusColor(booking.status)}>{booking.status}</Badge>
+                                                {booking.ocr_data?.match_status === true && (
+                                                    <span className="inline-flex items-center text-[10px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full border border-green-200">
+                                                        Auto-Matched
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-4 py-2.5 text-right">
                                             <div className="flex items-center justify-end gap-1">
@@ -614,6 +661,13 @@ export function AdminBookings() {
                 }}
                 booking={selectedBooking}
                 onConfirm={handleRescheduleConfirm}
+            />
+
+            {/* Create Booking Modal */}
+            <CreateBookingModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onConfirm={handleCreateBookingConfirm}
             />
 
             <AdminActionModal

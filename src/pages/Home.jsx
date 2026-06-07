@@ -522,7 +522,8 @@ export function Home() {
                 notes: bookingData.reference || '',
                 proofOfPaymentUrl,
                 bookedTimes: sortedSlots,
-                courtType: selectedCourt.type
+                courtType: selectedCourt.type,
+                ocrData: bookingData.ocr_data
             });
 
             invalidateBookingCaches();

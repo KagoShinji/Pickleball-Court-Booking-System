@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from './ui';
 import { calculatePriceForSlots, checkTimeSlotConflicts } from '../services/booking';
 import { getQrCodes } from '../services/qrCodes';
+import { useReceiptOCR } from '../hooks/useReceiptOCR';
+import { useOCR } from '../providers/OCRContext';
+import { supabase } from '../lib/supabaseClient';
 
 export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
     const [step, setStep] = useState(1);
@@ -21,8 +24,12 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
     const [bookingResult, setBookingResult] = useState(null);
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [qrCodes, setQrCodes] = useState(null); // loaded from Supabase CMS
+    const [fraudFlagged, setFraudFlagged] = useState(false);
     const prevIsOpen = useRef(isOpen);
     const isSubmittingRef = useRef(false); // Synchronous guard for double-submit (Bug 5)
+
+    const { initializeOCR } = useOCR();
+    const { processAndScanReceipt, isProcessing: isOcrProcessing } = useReceiptOCR();
 
     // Calculate dynamic price based on time slots and pricing rules
     const getDynamicPrice = () => {
@@ -56,6 +63,11 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
             setIsDownloading(false);
             setDownloadError(null);
             setOriginalFileSize(null);
+            setFraudFlagged(false);
+
+            // Pre-warm Tesseract engine on modal open
+            initializeOCR().catch(() => {});
+
             // Fetch latest QR codes from CMS (cached, so very fast on repeat opens)
             getQrCodes({ activeOnly: true })
                 .then((options) => {
@@ -65,7 +77,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                 .catch(() => {});
         }
         prevIsOpen.current = isOpen;
-    }, [isOpen]);
+    }, [isOpen, initializeOCR]);
 
     if (!isOpen) return null;
 
@@ -121,8 +133,77 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
         isSubmittingRef.current = true;
         setIsSubmitting(true);
         setSubmitError(null);
+        setFraudFlagged(false);
 
         try {
+            const totalPrice = getDynamicPrice();
+
+            // Run OCR validation first
+            let ocrResult;
+            try {
+                ocrResult = await processAndScanReceipt(formData.paymentProof);
+            } catch (ocrErr) {
+                ocrResult = { extractedAmount: null, extractedRefNo: null, rawText: `Processing error: ${ocrErr.message}` };
+            }
+
+            const { extractedAmount, extractedRefNo, rawText } = ocrResult;
+
+            // Normalize text to lowercase for keyword checking
+            const lowerRawText = (rawText || '').toLowerCase();
+            
+            // Check if the text contains any indicators of a receipt
+            const financialKeywords = [
+                'gcash', 'maya', 'shopeepay', 'shopee', 'pay', 'transfer', 'sent', 
+                'payment', 'amount', 'transaction', 'ref', 'reference', 'no', 'num', 
+                'success', 'completed', 'received', 'bank', 'bdo', 'bpi', 'unionbank', 
+                'instapay', 'pesos', 'php', '₱', 'status', 'detail', 'total'
+            ];
+            
+            const hasFinancialKeywords = financialKeywords.some(keyword => lowerRawText.includes(keyword));
+            
+            // Mismatch checks (only trigger if we actually extracted the data)
+            const amountMismatches = extractedAmount !== null && Math.abs(extractedAmount - totalPrice) > 50.00;
+            
+            let refMismatches = false;
+            if (extractedRefNo !== null && formData.reference) {
+                const cleanUserRef = formData.reference.replace(/\D/g, ''); // Extract only digits
+                const cleanExtractedRef = extractedRefNo.replace(/\D/g, '');
+                if (cleanUserRef && cleanExtractedRef) {
+                    // Check if one ends with the other (to handle last 4 digits vs full reference)
+                    refMismatches = !cleanExtractedRef.endsWith(cleanUserRef) && !cleanUserRef.endsWith(cleanExtractedRef);
+                }
+            }
+
+            // A receipt is deemed fraudulent/invalid if:
+            // 1. We extracted the amount and it's a clear mismatch (> 50 PHP difference), OR
+            // 2. We extracted the reference and it does not match the user's input, OR
+            // 3. The OCR text contains absolutely no financial keywords (e.g. random non-receipt image).
+            const isInvalidReceipt = amountMismatches || refMismatches || (!hasFinancialKeywords && lowerRawText.length > 0);
+
+            if (isInvalidReceipt) {
+                setFraudFlagged(true);
+
+                // Fire-and-forget logging to security_incident_logs
+                const tenantId = bookingData.court?.company_id || 'unknown';
+                const attemptedRef = extractedRefNo || formData.reference || 'None';
+                const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown';
+
+                supabase
+                    .from('security_incident_logs')
+                    .insert([{
+                        tenant_id: tenantId,
+                        incident_type: 'receipt_fraud_interception',
+                        device_fingerprint: userAgent,
+                        attempted_reference_no: attemptedRef,
+                        raw_ocr_output: rawText || 'No text extracted'
+                    }])
+                    .then(() => {}); // Silent resolve
+
+                setIsSubmitting(false);
+                isSubmittingRef.current = false;
+                return;
+            }
+
             // Bug 4 fix: Fresh conflict check before submitting (bypasses stale cache)
             if (bookingData.court && bookingData.times?.length > 0) {
                 console.log('Running fresh conflict check before submit...');
@@ -152,14 +233,18 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                     );
                 }
             }
-            // Calculate total price based on time-based pricing rules
-            const totalPrice = calculatePriceForSlots(bookingData.times || [], bookingData.court || {});
 
             // Call the onConfirm handler which should handle the actual booking creation
             const result = await onConfirm({
                 ...formData,
                 ...bookingData,
-                totalPrice: totalPrice
+                totalPrice: totalPrice,
+                ocr_data: {
+                    match_status: (extractedAmount !== null && extractedRefNo !== null) ? 'verified' : 'unverified',
+                    extracted_amount: extractedAmount,
+                    extracted_ref_no: extractedRefNo,
+                    scanned_at: new Date().toISOString()
+                }
             });
 
             console.log('Booking result received:', result);
@@ -971,6 +1056,7 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                             onChange={async (e) => {
                                                 const file = e.target.files[0];
                                                 if (!file) return;
+                                                setFraudFlagged(false);
 
                                                 // Only compress image files
                                                 if (file.type.startsWith('image/')) {
@@ -1160,6 +1246,21 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                 </div>
                             </div>
 
+                            {fraudFlagged && (
+                                <div className="bg-red-50 border-2 border-red-500 rounded-xl p-4 flex gap-3 text-red-900 animate-in slide-in-from-top duration-200">
+                                    <AlertCircle size={24} className="text-red-600 shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="text-sm font-bold">⚠️ TRANSACTION INTERCEPTED</p>
+                                        <p className="text-xs text-red-700 mt-1 leading-relaxed">
+                                            The uploaded receipt could not be verified automatically. Either the payment reference number or the amount does not match the booking details. To prevent fraud, this transaction has been logged.
+                                        </p>
+                                        <p className="text-xs font-semibold text-red-800 mt-2">
+                                            Please click Back, and upload a valid e-wallet receipt image to proceed.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="flex gap-3 pt-2">
                                 <Button
                                     variant="ghost"
@@ -1170,15 +1271,17 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                     Back
                                 </Button>
                                 <Button
-                                    className="flex-1 text-white"
-                                    onClick={handleSubmit}
-                                    disabled={isSubmitting}
+                                    className={`flex-1 text-white ${fraudFlagged ? 'bg-red-600 border-red-600 cursor-not-allowed hover:bg-red-600 hover:border-red-600' : ''}`}
+                                    onClick={fraudFlagged ? undefined : handleSubmit}
+                                    disabled={isSubmitting || fraudFlagged}
                                 >
                                     {isSubmitting ? (
                                         <span className="flex items-center gap-2">
                                             <Loader size={16} className="animate-spin" />
-                                            Submitting...
+                                            {isOcrProcessing ? 'Verifying payment receipt…' : 'Submitting...'}
                                         </span>
+                                    ) : fraudFlagged ? (
+                                        'Re-Scan New Receipt'
                                     ) : (
                                         'Confirm Booking'
                                     )}

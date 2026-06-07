@@ -313,7 +313,8 @@ export async function createBooking({
   notes,
   proofOfPaymentUrl,
   bookedTimes = [],
-  courtType = ''
+  courtType = '',
+  ocrData = null
 }) {
   if (typeof globalThis !== 'undefined') {
     try {
@@ -381,6 +382,14 @@ export async function createBooking({
         console.error('Atomic booking RPC returned no row');
         removeProofOfPaymentByUrl(proofOfPaymentUrl);
         throw new Error('❌ Booking was not created. No data returned from database. Please try again or contact support.');
+      }
+
+      // Update OCR data if provided
+      if (ocrData) {
+        await supabase
+          .from('bookings')
+          .update({ ocr_data: ocrData })
+          .eq('id', data.id);
       }
 
       const { data: verifyData, error: verifyError } = await supabase
@@ -451,6 +460,7 @@ export async function createBooking({
           notes: notes || '',
           proof_of_payment_url: proofOfPaymentUrl || null,
           booked_times: bookedTimes.length > 0 ? bookedTimes : null,
+          discount_applied: 0,
           company_id: getCompanyId()
         }])
         .select();
@@ -483,6 +493,14 @@ export async function createBooking({
 
       const bookingId = data[0].id;
       console.log('Booking inserted with ID:', bookingId);
+
+      // Update OCR data if provided
+      if (ocrData) {
+        await supabase
+          .from('bookings')
+          .update({ ocr_data: ocrData })
+          .eq('id', bookingId);
+      }
 
       // Step 5: POST-INSERT race condition check (Bug 1 fix)
       // Re-check conflicts AFTER insert — if another booking was inserted
