@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Calendar, CheckCircle, Clock, Eye, MoreVertical, RefreshCw, Search, Trash2, XCircle, Plus } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, Eye, MoreVertical, RefreshCw, Search, Trash2, XCircle, Plus, ShieldAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Badge, Button, Pagination } from '../../components/ui';
 import { BookingDetailsModal } from '../../components/admin/BookingDetailsModal';
@@ -183,6 +183,34 @@ export function AdminBookings() {
             console.error('Error updating booking status:', err);
             alert('Failed to update booking status');
         }
+    };
+
+    const handleMarkAsFake = (booking) => {
+        setActionModal({
+            isOpen: true,
+            title: 'Mark Booking as Fake / Spoof',
+            description: `Are you sure you want to cancel this booking and flag it as a spoof/threat incident? This will block the booking slot and log the receipt in the Threat intelligence dashboard for review.`,
+            variant: 'danger',
+            confirmLabel: 'Mark as Fake',
+            successTitle: 'Tagged as Fake',
+            successDescription: 'The booking has been cancelled and logged under the Threat Intelligence dashboard.',
+            action: async () => {
+                await updateBookingStatus(booking.id, 'Cancelled');
+                const ref = booking.proof_of_payment_url?.replace('manual-admin-', '') || 'unknown';
+                await supabase
+                    .from('security_incident_logs')
+                    .insert({
+                        attempted_reference_no: ref,
+                        raw_ocr_output: `Manually marked as fake by admin.\nCustomer: ${booking.customer_name}\nEmail: ${booking.customer_email}\nPhone: ${booking.customer_phone}\nNotes: ${booking.notes || ''}`,
+                        device_fingerprint: 'Admin Bookings Panel Action',
+                        spoof_image_url: booking.proof_of_payment_url,
+                        is_false_positive: false,
+                        tenant_id: 'unknown',
+                        linked_booking_id: booking.id
+                    });
+                await refreshCurrentView({ force: true });
+            }
+        });
     };
 
     // Handle reschedule button click
@@ -529,6 +557,11 @@ export function AdminBookings() {
                                     <Button size="sm" variant="ghost" onClick={() => { setSelectedBooking(booking); setIsModalOpen(true); }} className="text-gray-500 hover:text-brand-green h-8 w-8 p-0 grid place-items-center" title="View Details">
                                         <Eye size={15} />
                                     </Button>
+                                    {booking.status !== 'Cancelled' && (
+                                        <Button size="sm" variant="ghost" onClick={() => handleMarkAsFake(booking)} className="text-amber-500 hover:text-red-600 h-8 w-8 p-0 grid place-items-center" title="Mark as Fake Booking">
+                                            <ShieldAlert size={15} />
+                                        </Button>
+                                    )}
                                     <Button size="sm" variant="ghost" onClick={() => handleDeleteClick(booking)} className="text-gray-400 hover:text-red-500 h-8 w-8 p-0 grid place-items-center">
                                         <Trash2 size={15} />
                                     </Button>
@@ -618,6 +651,11 @@ export function AdminBookings() {
                                                 <Button size="sm" variant="ghost" onClick={() => { setSelectedBooking(booking); setIsModalOpen(true); }} className="text-gray-500 hover:text-brand-green h-7 w-7 p-0 grid place-items-center" title="View Details">
                                                     <Eye size={14} />
                                                 </Button>
+                                                {booking.status !== 'Cancelled' && (
+                                                    <Button size="sm" variant="ghost" onClick={() => handleMarkAsFake(booking)} className="text-amber-500 hover:text-red-600 h-7 w-7 p-0 grid place-items-center" title="Mark as Fake Booking">
+                                                        <ShieldAlert size={14} />
+                                                    </Button>
+                                                )}
                                                 <Button size="sm" variant="ghost" onClick={() => handleDeleteClick(booking)} className="text-gray-400 hover:text-red-500 h-7 w-7 p-0 grid place-items-center">
                                                     <Trash2 size={14} />
                                                 </Button>

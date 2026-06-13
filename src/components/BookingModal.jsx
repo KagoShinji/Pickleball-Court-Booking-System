@@ -139,14 +139,17 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
             const totalPrice = getDynamicPrice();
 
             // Run OCR validation first
+            let ocrFailed = false;
             let ocrResult;
             try {
                 ocrResult = await processAndScanReceipt(formData.paymentProof);
             } catch (ocrErr) {
-                ocrResult = { extractedAmount: null, extractedRefNo: null, rawText: `Processing error: ${ocrErr.message}` };
+                console.error('[OCR] Scan failed/skipped due to initialization or processing error:', ocrErr);
+                ocrFailed = true;
+                ocrResult = { extractedAmount: null, extractedRefNo: null, allAmounts: [], allRefNos: [], rawText: '' };
             }
 
-            const { extractedAmount, extractedRefNo, rawText } = ocrResult;
+            const { extractedAmount, extractedRefNo, allAmounts, allRefNos, rawText } = ocrResult;
 
             // Normalize text to lowercase for keyword checking
             const lowerRawText = (rawText || '').toLowerCase();
@@ -162,43 +165,114 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
             const hasFinancialKeywords = financialKeywords.some(keyword => lowerRawText.includes(keyword));
             
             // Mismatch checks (only trigger if we actually extracted the data)
-            const amountMismatches = extractedAmount !== null && Math.abs(extractedAmount - totalPrice) > 50.00;
+            let amountMismatches = false;
+            let candidateAmounts = [];
+            if (extractedAmount !== null) {
+                candidateAmounts = [extractedAmount, ...(allAmounts || [])];
+                const hasValidAmount = candidateAmounts.some(amt => Math.abs(amt - totalPrice) <= 50.00);
+                amountMismatches = !hasValidAmount;
+            }
             
             let refMismatches = false;
+            let candidateRefs = [];
+            let cleanUserRef = '';
             if (extractedRefNo !== null && formData.reference) {
-                const cleanUserRef = formData.reference.replace(/\D/g, ''); // Extract only digits
-                const cleanExtractedRef = extractedRefNo.replace(/\D/g, '');
-                if (cleanUserRef && cleanExtractedRef) {
-                    // Check if one ends with the other (to handle last 4 digits vs full reference)
-                    refMismatches = !cleanExtractedRef.endsWith(cleanUserRef) && !cleanUserRef.endsWith(cleanExtractedRef);
-                }
+                cleanUserRef = formData.reference.replace(/\D/g, ''); // Extract only digits
+                candidateRefs = [extractedRefNo, ...(allRefNos || [])];
+                
+                const hasValidRef = candidateRefs.some(candidate => {
+                    const cleanExtractedRef = candidate.replace(/\D/g, '');
+                    if (!cleanUserRef || !cleanExtractedRef) return false;
+                    
+                    // Direct contains / startsWith / endsWith checks
+                    if (cleanExtractedRef.endsWith(cleanUserRef) || 
+                        cleanUserRef.endsWith(cleanExtractedRef) || 
+                        cleanExtractedRef.startsWith(cleanUserRef) || 
+                        cleanUserRef.startsWith(cleanExtractedRef) ||
+                        cleanExtractedRef.includes(cleanUserRef) ||
+                        cleanUserRef.includes(cleanExtractedRef)) {
+                        return true;
+                    }
+                    
+                    // Check for OCR character errors (like misreading '8' for '0' or '6' for '8')
+                    // If length is close (within 2 digits) and difference is <= 2 characters, count as match
+                    if (Math.abs(cleanExtractedRef.length - cleanUserRef.length) <= 2 && cleanUserRef.length >= 8) {
+                        let mismatches = 0;
+                        const minLen = Math.min(cleanExtractedRef.length, cleanUserRef.length);
+                        for (let i = 0; i < minLen; i++) {
+                            if (cleanExtractedRef[i] !== cleanUserRef[i]) mismatches++;
+                        }
+                        mismatches += Math.abs(cleanExtractedRef.length - cleanUserRef.length);
+                        if (mismatches <= 2) return true;
+                    }
+                    
+                    return false;
+                });
+                
+                refMismatches = !hasValidRef;
             }
 
             // A receipt is deemed fraudulent/invalid if:
+            // 0. The image is blank or unreadable (OCR returned < 20 chars) — catches solid-color
+            //    images, icons, and screenshots with no text (e.g. a blue gradient download icon).
             // 1. We extracted the amount and it's a clear mismatch (> 50 PHP difference), OR
             // 2. We extracted the reference and it does not match the user's input, OR
             // 3. The OCR text contains absolutely no financial keywords (e.g. random non-receipt image).
-            const isInvalidReceipt = amountMismatches || refMismatches || (!hasFinancialKeywords && lowerRawText.length > 0);
+            const imageIsBlankOrUnreadable = lowerRawText.trim().length < 20;
+            const isInvalidReceipt = !ocrFailed && (
+                (imageIsBlankOrUnreadable && extractedRefNo === null && extractedAmount === null) || 
+                amountMismatches || 
+                refMismatches || 
+                (!hasFinancialKeywords && lowerRawText.length > 0)
+            );
 
             if (isInvalidReceipt) {
-                setFraudFlagged(true);
-
-                // Fire-and-forget logging to security_incident_logs
+                // Await the upload and database insert so that iOS Safari/mobile browsers
+                // do not abort the active network request when the handler completes.
                 const tenantId = bookingData.court?.company_id || 'unknown';
                 const attemptedRef = extractedRefNo || formData.reference || 'None';
                 const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown';
 
-                supabase
-                    .from('security_incident_logs')
-                    .insert([{
-                        tenant_id: tenantId,
-                        incident_type: 'receipt_fraud_interception',
-                        device_fingerprint: userAgent,
-                        attempted_reference_no: attemptedRef,
-                        raw_ocr_output: rawText || 'No text extracted'
-                    }])
-                    .then(() => {}); // Silent resolve
+                let spoofImageUrl = null;
 
+                try {
+                    if (formData.paymentProof) {
+                        const ext = formData.paymentProof.name?.split('.').pop() || 'png';
+                        const filename = `${tenantId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+                        const { data: uploadData, error: uploadError } = await supabase.storage
+                            .from('security_intercepts')
+                            .upload(filename, formData.paymentProof, {
+                                cacheControl: '3600',
+                                upsert: false,
+                                contentType: formData.paymentProof.type || 'image/png'
+                            });
+                        if (!uploadError && uploadData?.path) {
+                            const { data: urlData } = supabase.storage
+                                .from('security_intercepts')
+                                .getPublicUrl(uploadData.path);
+                            spoofImageUrl = urlData?.publicUrl || null;
+                        }
+                    }
+                } catch (uploadErr) {
+                    console.error('Failed to upload spoof image:', uploadErr);
+                }
+
+                try {
+                    await supabase
+                        .from('security_incident_logs')
+                        .insert([{
+                            tenant_id: tenantId,
+                            incident_type: 'receipt_fraud_interception',
+                            device_fingerprint: userAgent,
+                            attempted_reference_no: attemptedRef,
+                            raw_ocr_output: rawText || 'No text extracted',
+                            spoof_image_url: spoofImageUrl,
+                        }]);
+                } catch (dbErr) {
+                    console.error('Failed to log incident:', dbErr);
+                }
+
+                setFraudFlagged(true);
                 setIsSubmitting(false);
                 isSubmittingRef.current = false;
                 return;

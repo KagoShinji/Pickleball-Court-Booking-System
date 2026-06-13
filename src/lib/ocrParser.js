@@ -11,7 +11,7 @@
  */
 export function parseReceiptText(rawText) {
   if (!rawText) {
-    return { extractedAmount: null, extractedRefNo: null, rawText: '' };
+    return { extractedAmount: null, extractedRefNo: null, allAmounts: [], allRefNos: [], rawText: '' };
   }
 
   // Replace multiple whitespaces and newlines with a single space to make regex matching easier
@@ -42,6 +42,7 @@ export function parseReceiptText(rawText) {
   // The amount value can have commas and a decimal point.
   const amountRegexes = [
     /(?:amount\s*paid|amount)\s*[:#-]?\s*(?:php|p|₱)?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d+(?:\.\d{2})?)/i,
+    /(?:amount\s*paid|amount)\s*[:#-]?\s*(?:php|p|₱)?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d+(?:\.\d{2})?)/i,
     /(?:php|p|₱)\s*[:#-]?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d+(?:\.\d{2})?)/i
   ];
 
@@ -59,9 +60,35 @@ export function parseReceiptText(rawText) {
     }
   }
 
+  // Extract all potential amounts in the text (formatted as decimals or plain integers)
+  const allAmounts = [];
+  const generalPriceRegex = /(?:php|p|₱|\b)\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})|\d{2,}(?:\.\d{2})?)\b/ig;
+  let priceMatch;
+  while ((priceMatch = generalPriceRegex.exec(normalizedText)) !== null) {
+    if (priceMatch[1]) {
+      const cleaned = priceMatch[1].replace(/,/g, '');
+      const parsedVal = parseFloat(cleaned);
+      if (!isNaN(parsedVal) && parsedVal > 0 && !allAmounts.includes(parsedVal)) {
+        allAmounts.push(parsedVal);
+      }
+    }
+  }
+
+  // Extract all potential reference number candidates (numeric sequences of 6 to 30 digits)
+  const allRefNos = [];
+  const generalRefRegex = /\b(\d{6,30})\b/g;
+  let refMatch;
+  while ((refMatch = generalRefRegex.exec(normalizedText)) !== null) {
+    if (refMatch[1] && !allRefNos.includes(refMatch[1])) {
+      allRefNos.push(refMatch[1]);
+    }
+  }
+
   return {
     extractedAmount,
     extractedRefNo,
+    allAmounts,
+    allRefNos,
     rawText
   };
 }

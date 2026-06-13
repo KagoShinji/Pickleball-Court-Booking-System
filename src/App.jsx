@@ -14,6 +14,7 @@ const AdminLogin = lazy(() => import('./pages/AdminLogin').then((module) => ({ d
 const ChangePassword = lazy(() => import('./pages/admin/AdminChangepassword').then((module) => ({ default: module.ChangePassword })));
 const TimeSlotManagement = lazy(() => import('./pages/admin/TimeSlotManagement').then((module) => ({ default: module.TimeSlotManagement })));
 const AdminQRCodes = lazy(() => import('./pages/admin/AdminQRCodes').then((module) => ({ default: module.AdminQRCodes })));
+const AdminSecurityLogs = lazy(() => import('./pages/admin/AdminSecurityLogs').then((module) => ({ default: module.AdminSecurityLogs })));
 const Home = lazy(() => import('./pages/Home').then((module) => ({ default: module.Home })));
 
 function RouteFallback() {
@@ -45,6 +46,7 @@ function App() {
                 <Route path="change-password" element={<ChangePassword />} />
                 <Route path="time-slots" element={<TimeSlotManagement />} />
                 <Route path="qr-codes" element={<AdminQRCodes />} />
+                <Route path="security" element={<AdminSecurityLogs />} />
               </Route>
             </Routes>
           </Suspense>

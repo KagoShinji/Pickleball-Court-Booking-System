@@ -1,4 +1,4 @@
-import { BarChart3, Calendar, LayoutDashboard, LogOut, Settings, Users, KeyRound, Menu, QrCode, X, Lock } from 'lucide-react';
+import { BarChart3, Calendar, LayoutDashboard, LogOut, Settings, Users, KeyRound, Menu, QrCode, X, Lock, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../components/ui';
@@ -99,6 +99,7 @@ export function AdminLayout() {
         { path: '/admin/calendar', label: 'Calendar View', icon: Calendar },
         { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
         { path: '/admin/qr-codes', label: 'QR Codes', icon: QrCode },
+        { path: '/admin/security', label: 'Security & Fraud Logs', icon: Shield },
         { path: '/admin/change-password', label: 'Change Password', icon: KeyRound },
     ];
 
@@ -135,6 +136,7 @@ export function AdminLayout() {
                     <div className="mb-3 px-3 py-2 bg-gray-50 rounded-lg">
                         <p className="text-xs text-gray-500">Signed in as</p>
                         <p className="text-sm font-medium text-gray-700 truncate">{user.email}</p>
+                        <p className="text-xs font-mono text-gray-400 truncate">{user.id}</p>
                     </div>
                     <Button variant="ghost" className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleLogout}>
                         <LogOut size={18} className="mr-2" /> Logout
