@@ -32,26 +32,38 @@ export function FalsePositiveBookingModal({ isOpen, onClose, incident, onSuccess
 
     useEffect(() => {
         if (!isOpen) return;
+        const details = incident?.booking_details || {};
         setFormData({
-            customerName: '',
-            customerEmail: '',
-            customerPhone: '',
-            reference: incident?.attempted_reference_no || '',
-            notes: 'False positive — booking approved by admin after receipt review.',
+            customerName: details.customerName || '',
+            customerEmail: details.customerEmail || '',
+            customerPhone: details.customerPhone || '',
+            reference: details.reference || incident?.attempted_reference_no || '',
+            notes: details.notes || 'False positive — booking approved by admin after receipt review.',
         });
-        setSelectedDate(null);
-        setSelectedTimes([]);
+        if (details.bookingDate) {
+            setSelectedDate(new Date(details.bookingDate));
+        } else {
+            setSelectedDate(null);
+        }
+        setSelectedTimes(details.bookedTimes || []);
+        if (details.courtId) {
+            setSelectedCourtId(details.courtId);
+        }
         setCourtBookings([]);
         setError(null);
         setIsSaving(false);
-        loadCourts();
-    }, [isOpen]);
+        loadCourts(details.courtId);
+    }, [isOpen, incident]);
 
-    const loadCourts = async () => {
+    const loadCourts = async (defaultCourtId) => {
         try {
             const data = await listCourts();
             setCourts(data || []);
-            if (data && data.length > 0) setSelectedCourtId(data[0].id);
+            if (defaultCourtId) {
+                setSelectedCourtId(defaultCourtId);
+            } else if (data && data.length > 0) {
+                setSelectedCourtId(data[0].id);
+            }
         } catch (err) {
             console.error('Error loading courts:', err);
         }
@@ -125,7 +137,7 @@ export function FalsePositiveBookingModal({ isOpen, onClose, incident, onSuccess
                 bookedTimes: sortedSlots,
                 totalPrice,
                 notes: formData.notes,
-                proofOfPaymentUrl: `false-positive-approved-ref-${formData.reference || 'admin'}`,
+                proofOfPaymentUrl: incident?.spoof_image_url || `false-positive-approved-ref-${formData.reference || 'admin'}`,
                 courtType: targetCourt?.type || '',
                 ocrData: {
                     bypass_ocr: true,

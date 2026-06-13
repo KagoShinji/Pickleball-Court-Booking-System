@@ -237,20 +237,32 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
 
                 try {
                     if (formData.paymentProof) {
-                        const ext = formData.paymentProof.name?.split('.').pop() || 'png';
-                        const filename = `${tenantId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
-                        const { data: uploadData, error: uploadError } = await supabase.storage
-                            .from('security_intercepts')
-                            .upload(filename, formData.paymentProof, {
-                                cacheControl: '3600',
-                                upsert: false,
-                                contentType: formData.paymentProof.type || 'image/png'
-                            });
-                        if (!uploadError && uploadData?.path) {
-                            const { data: urlData } = supabase.storage
+                        const uploadFile = await normalizeSecurityInterceptImage(formData.paymentProof);
+                        const uploadCandidates = uploadFile === formData.paymentProof
+                            ? [uploadFile]
+                            : [uploadFile, formData.paymentProof];
+
+                        for (const candidate of uploadCandidates) {
+                            const extensionFromType = candidate.type?.includes('jpeg') ? 'jpg' : (candidate.type?.split('/')[1] || 'png');
+                            const ext = candidate.name?.split('.').pop() || extensionFromType;
+                            const filename = `${tenantId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+                            const { data: uploadData, error: uploadError } = await supabase.storage
                                 .from('security_intercepts')
-                                .getPublicUrl(uploadData.path);
-                            spoofImageUrl = urlData?.publicUrl || null;
+                                .upload(filename, candidate, {
+                                    cacheControl: '3600',
+                                    upsert: false,
+                                    contentType: candidate.type || 'image/png'
+                                });
+
+                            if (!uploadError && uploadData?.path) {
+                                const { data: urlData } = supabase.storage
+                                    .from('security_intercepts')
+                                    .getPublicUrl(uploadData.path);
+                                spoofImageUrl = urlData?.publicUrl || null;
+                                break;
+                            }
+
+                            console.warn('[Security Log] Evidence upload failed, trying the next candidate:', uploadError);
                         }
                     }
                 } catch (uploadErr) {
@@ -267,6 +279,18 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                             attempted_reference_no: attemptedRef,
                             raw_ocr_output: rawText || 'No text extracted',
                             spoof_image_url: spoofImageUrl,
+                            booking_details: {
+                                customerName: formData.name,
+                                customerEmail: formData.email,
+                                customerPhone: formData.phone,
+                                reference: formData.reference,
+                                notes: formData.notes || '',
+                                courtId: bookingData.court?.id,
+                                bookingDate: bookingData.date ? format(bookingData.date, 'yyyy-MM-dd') : null,
+                                bookedTimes: bookingData.times || [],
+                                totalPrice: totalPrice,
+                                courtType: bookingData.court?.type || '',
+                            }
                         }]);
                 } catch (dbErr) {
                     console.error('Failed to log incident:', dbErr);
@@ -606,6 +630,39 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    };
+
+    const normalizeSecurityInterceptImage = async (file) => {
+        if (!file || !file.type?.startsWith('image/')) return file;
+
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isStandardWebImage = /image\/(jpeg|jpg|png|webp)/i.test(file.type);
+
+        if (isStandardWebImage && !isIOS) {
+            return file;
+        }
+
+        try {
+            const { default: imageCompression } = await import('browser-image-compression');
+            const compressed = await imageCompression(file, {
+                maxSizeMB: 0.8,
+                maxWidthOrHeight: 1600,
+                useWebWorker: true,
+                initialQuality: 0.8,
+                fileType: 'image/jpeg',
+                maxIteration: 10,
+            });
+
+            if (compressed instanceof File) {
+                return compressed;
+            }
+
+            const safeName = `${file.name?.replace(/\.[^.]+$/, '') || 'security-intercept'}.jpg`;
+            return new File([compressed], safeName, { type: compressed.type || 'image/jpeg' });
+        } catch (error) {
+            console.warn('[Security Log] Evidence image normalization failed, falling back to the original file:', error);
+            return file;
+        }
     };
 
     const isMobileDevice = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -1167,7 +1224,13 @@ export function BookingModal({ isOpen, onClose, bookingData, onConfirm }) {
                                                         console.log(`[Receipt] Compressed: ${(compressed.size / 1024).toFixed(0)} KB`);
 
                                                         // Preserve the original filename for display
-                                                        const compressedFile = new File([compressed], file.name, { type: compressed.type });
+                                                        let compressedFile;
+                                                        try {
+                                                            compressedFile = new File([compressed], file.name, { type: compressed.type });
+                                                        } catch (fileErr) {
+                                                            compressedFile = compressed;
+                                                            compressedFile.name = file.name;
+                                                        }
                                                         setFormData({ ...formData, paymentProof: compressedFile });
                                                         setErrors({ ...errors, paymentProof: '' });
                                                     } catch (err) {
