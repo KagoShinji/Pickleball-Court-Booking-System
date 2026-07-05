@@ -183,12 +183,16 @@ export function TimeSlotManagement() {
     const unblockSlotsMutation = useMutation({
         mutationFn: async (slots) => {
             const courtIds = isExclusiveCourt ? courts.map(c => c.id) : [selectedCourt.id];
+            
+            // Generate both 'HH:mm' and 'HH:mm:ss' formats to ensure the delete matches
+            const timeSlotValues = [...slots, ...slots.map(s => s.length === 5 ? `${s}:00` : s)];
+
             const { error } = await supabase
                 .from('blocked_time_slots')
                 .delete()
                 .in('court_id', courtIds)
                 .eq('blocked_date', dateStr)
-                .in('time_slot', slots)
+                .in('time_slot', timeSlotValues)
                 .eq('company_id', getCompanyId());
 
             if (error) throw error;
